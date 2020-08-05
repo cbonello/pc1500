@@ -11,8 +11,6 @@ environment:
 
 dependencies:
   equatable: ^1.2.0
-  memory:
-    path: ../memory
   meta: ^1.2.0
 
 dev_dependencies:
