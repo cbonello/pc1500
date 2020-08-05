@@ -3,7 +3,7 @@ version: 0.1.0
 description: Implements the chip-select decoder of a Sharp PC-1500 pocket computer.
 author: Christophe Bonello
 homepage: https://github.com/cbonello/
-repository: https://github.com/cbonello/pc1500/packages/chip_select_decoder
+repository: https://github.com/cbonello/pc1500/tree/master/packages/chip_select_decoder
 issue_tracker: https://github.com/cbonello/pc1500/issues
 
 environment:
