@@ -1,0 +1,34 @@
+name: pc1500
+version: 0.1.0
+description: Sharp PC-1500 pocket compter emulator.
+author: Christophe Bonello
+homepage: https://github.com/cbonello/
+repository: https://github.com/cbonello/pc1500
+issue_tracker: https://github.com/cbonello/pc1500/issues
+
+environment:
+  sdk: '>=2.8.1 <3.0.0'
+
+dependencies:
+  chip_select_decoder:
+    path: packages/chip_select_decoder
+  cupertino_icons: ^0.1.3
+  flutter:
+    sdk: flutter
+  lcd:
+    path: packages/lcd
+  lh5801:
+    git:
+      url: https://github.com/cbonello/lh5801.git
+  lh5811:
+    path: packages/lh5811
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lint: ^1.2.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/roms/
