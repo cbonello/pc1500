@@ -17,9 +17,11 @@ class SystemError extends Error {
 
 @freezed
 abstract class DeviceType with _$DeviceType {
-  // An illegal or non-implemented instruction.
+  // Sharp PC-1500.
   const factory DeviceType.pc1500() = _PC1500;
+  // Tandy PC-2 (same as PC-1500).
   const factory DeviceType.pc2() = PC2;
+  // Sharp PC-1500A
   const factory DeviceType.pc1500A() = _PC1500A;
 }
 
