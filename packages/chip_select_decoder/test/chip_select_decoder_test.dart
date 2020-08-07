@@ -7,10 +7,10 @@ import 'package:test/test.dart';
 class MockWriteObserver extends Mock implements WriteObserver {}
 
 void main() {
-  group('ChipSelect', () {
+  group('ChipSelectDecoder', () {
     group('appendRAM() / appendROM()', () {
       test('should raise an exception for invalid arguments', () {
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
 
         expect(
           () => cs.appendRAM(MemoryBank.me0, -1, 100),
@@ -22,23 +22,23 @@ void main() {
         );
         expect(
           () => cs.appendRAM(MemoryBank.me0, 10, 64 * 1024),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
       });
 
       test('should detect memory overlaps', () {
         final Uint8List data = Uint8List.fromList(<int>[1, 2, 3, 4]);
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 100);
         expect(
           () => cs.appendROM(MemoryBank.me0, 10, data),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
       });
 
       test('should append RAMs and ROMs successfully', () {
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
         final Uint8List data = Uint8List(0xFFFF - 0xC000 + 1);
 
         cs.appendRAM(MemoryBank.me0, 0x4000, 0x5800 - 0x4000 + 1);
@@ -52,14 +52,14 @@ void main() {
     });
 
     test('content of RAMS should be saved/restored successfully', () {
-      final ChipSelect cs1 = ChipSelect();
+      final ChipSelectDecoder cs1 = ChipSelectDecoder();
 
       cs1.appendRAM(MemoryBank.me0, 0, 5);
       cs1.writeByteAt(3, 64);
       cs1.appendRAM(MemoryBank.me0, 10, 5);
       cs1.writeByteAt(11, 125);
 
-      final ChipSelect cs2 = ChipSelect();
+      final ChipSelectDecoder cs2 = ChipSelectDecoder();
       cs2.appendRAM(MemoryBank.me0, 0, 5);
       cs2.appendRAM(MemoryBank.me0, 10, 5);
 
@@ -69,30 +69,30 @@ void main() {
 
     group('readByteAt()', () {
       test('should raise an exception for reads to invalid addresses', () {
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 1024);
 
         // Invalid addresses.
         expect(
           () => cs.readByteAt(-1),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
         expect(
           () => cs.readByteAt(256 * 1024),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
 
         // Unmapped address.
         expect(
           () => cs.readByteAt(2048),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
       });
 
       test('should read successfully', () {
         final Uint8List data = Uint8List.fromList(<int>[10, 20, 30, 40]);
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendROM(MemoryBank.me0, 10, data);
         expect(cs.readByteAt(11), equals(20));
@@ -101,29 +101,29 @@ void main() {
 
     group('writeByteAt()', () {
       test('should raise an exception for writes to invalid addresses', () {
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 1024);
 
         // Invalid addresses.
         expect(
           () => cs.writeByteAt(-1, 9),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
         expect(
           () => cs.writeByteAt(256 * 1024, 6),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
 
         // Unmapped address.
         expect(
           () => cs.writeByteAt(2048, 56),
-          throwsA(const TypeMatcher<ChipSelectError>()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
       });
 
       test('should write successfully', () {
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 1024);
         cs.writeByteAt(256, 64);
@@ -131,7 +131,7 @@ void main() {
       });
 
       test('should call write observers', () {
-        final ChipSelect cs = ChipSelect();
+        final ChipSelectDecoder cs = ChipSelectDecoder();
         final MockWriteObserver observer1 = MockWriteObserver();
         final MockWriteObserver observer2 = MockWriteObserver();
 

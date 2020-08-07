@@ -5,12 +5,12 @@ import 'package:equatable/equatable.dart';
 import 'memory.dart';
 import 'memory_chip.dart';
 
-enum ChipSelectErrorId { ramFit, romFit, read, write, overlap, address, config }
+enum ChipSelectDecoderErrorId { ramFit, romFit, read, write, overlap, address, config }
 
-class ChipSelectError extends Error {
-  ChipSelectError(this.id, [this.message = '']);
+class ChipSelectDecoderError extends Error {
+  ChipSelectDecoderError(this.id, [this.message = '']);
 
-  final ChipSelectErrorId id;
+  final ChipSelectDecoderErrorId id;
   final String message;
 
   @override
@@ -21,8 +21,8 @@ const int kBankLengthMax = 0x10000; // 64 KB
 
 enum MemoryBank { me0, me1 }
 
-class ChipSelect extends Equatable {
-  ChipSelect();
+class ChipSelectDecoder extends Equatable {
+  ChipSelectDecoder();
 
   final Map<MemoryBank, List<MemoryChip>> memoryBanks = <MemoryBank, List<MemoryChip>>{
     MemoryBank.me0: <MemoryChip>[],
@@ -66,8 +66,8 @@ class ChipSelect extends Equatable {
 
     final int end = start + length - 1;
     if (end >= kBankLengthMax) {
-      throw ChipSelectError(
-        ChipSelectErrorId.ramFit,
+      throw ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.ramFit,
         'RAM does not fit within a 64KB address space',
       );
     }
@@ -90,8 +90,8 @@ class ChipSelect extends Equatable {
   ]) {
     final int end = start + content.length - 1;
     if (end >= kBankLengthMax) {
-      throw ChipSelectError(
-        ChipSelectErrorId.romFit,
+      throw ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.romFit,
         'ROM does not fit within a 64KB address space',
       );
     }
@@ -113,8 +113,8 @@ class ChipSelect extends Equatable {
       }
     }
 
-    throw ChipSelectError(
-      ChipSelectErrorId.read,
+    throw ChipSelectDecoderError(
+      ChipSelectDecoderErrorId.read,
       'readByteAt: ME$bank: could not read from unmapped memory address ${_meHex16(address)}',
     );
   }
@@ -130,8 +130,8 @@ class ChipSelect extends Equatable {
       }
     }
 
-    throw ChipSelectError(
-      ChipSelectErrorId.write,
+    throw ChipSelectDecoderError(
+      ChipSelectDecoderErrorId.write,
       'writeByteAt: could not write to unmapped memory address ${_meHex16(address)}',
     );
   }
@@ -139,8 +139,8 @@ class ChipSelect extends Equatable {
   void _checkMemoryOverlap(int start, int end, List<MemoryChip> memoryBank) {
     for (final MemoryChip mc in memoryBank) {
       if ((start >= mc.start && start <= mc.end) || (end >= mc.start && end <= mc.end)) {
-        throw ChipSelectError(
-          ChipSelectErrorId.overlap,
+        throw ChipSelectDecoderError(
+          ChipSelectDecoderErrorId.overlap,
           'overlapping memory chips [${_meHex16(start)}..${_meHex16(end)}] and [${_meHex16(mc.start)}..${_meHex16(mc.end)}]',
         );
       }
@@ -156,8 +156,8 @@ class ChipSelect extends Equatable {
       return result.first;
     }
 
-    throw ChipSelectError(
-      ChipSelectErrorId.config,
+    throw ChipSelectDecoderError(
+      ChipSelectDecoderErrorId.config,
       'State saved corresponds to another hardware configuration',
     );
   }
@@ -169,8 +169,8 @@ class ChipSelect extends Equatable {
     if (kBankLengthMax <= address && address < 2 * kBankLengthMax) {
       return MemoryBank.me1;
     }
-    throw ChipSelectError(
-      ChipSelectErrorId.address,
+    throw ChipSelectDecoderError(
+      ChipSelectDecoderErrorId.address,
       'invalid address ${_meHex16(address)}',
     );
   }
