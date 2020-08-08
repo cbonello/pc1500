@@ -29,7 +29,8 @@ abstract class DeviceType with _$DeviceType {
 
 class System {
   System(this.device, ByteData rom)
-      : _csd = ChipSelectDecoder(),
+      : assert(rom.buffer.lengthInBytes == 16 * 1024),
+        _csd = ChipSelectDecoder(),
         _connector40Pins = ExtensionModule() {
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
     _csd.appendROM(MemoryBank.me0, 0xC000, rom.buffer.asUint8List());
