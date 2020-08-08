@@ -4,6 +4,8 @@ import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:lh5801/lh5801.dart';
 
+import 'extension_module.dart';
+
 part 'system.freezed.dart';
 
 class SystemError extends Error {
@@ -23,32 +25,6 @@ abstract class DeviceType with _$DeviceType {
   const factory DeviceType.pc2() = PC2;
   // Sharp PC-1500A
   const factory DeviceType.pc1500A() = _PC1500A;
-}
-
-class ExtensionModule {
-  ExtensionModule() : _used = true;
-
-  bool _used;
-
-  // Module name
-  String name;
-
-  // Capacity in bytes
-  int capacity;
-
-  bool get isUsed => _used;
-
-  void addModule(String name, int capacity) {
-    this.name = name;
-    this.capacity = capacity;
-    _used = true;
-  }
-
-  void removeModule() {
-    name = null;
-    capacity = null;
-    _used = false;
-  }
 }
 
 class System {
