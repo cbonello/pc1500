@@ -14,6 +14,9 @@ class ExtensionModule {
   bool get isUsed => _used;
 
   void addModule(String name, int capacity) {
+    assert(name != null && name.isNotEmpty);
+    assert(capacity >= 2 * 1024 && capacity <= 16 * 1024);
+
     this.name = name;
     this.capacity = capacity;
     _used = true;
