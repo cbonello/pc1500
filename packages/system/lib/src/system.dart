@@ -4,6 +4,7 @@ import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:lh5801/lh5801.dart';
 
+import 'clock.dart';
 import 'extension_module.dart';
 
 part 'system.freezed.dart';
@@ -32,6 +33,8 @@ class System {
       : assert(rom.buffer.lengthInBytes == 16 * 1024),
         _csd = ChipSelectDecoder(),
         _connector40Pins = ExtensionModule() {
+    _clock = Clock(freq: 1300000, fps: 50);
+
     // Standard users system RAM (1.5KB).
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
     _csd.appendROM(MemoryBank.me0, 0xC000, rom.buffer.asUint8List());
@@ -58,6 +61,7 @@ class System {
   }
 
   final DeviceType device;
+  Clock _clock;
   LH5801Emulator _emulator;
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
