@@ -32,17 +32,23 @@ class System {
       : assert(rom.buffer.lengthInBytes == 16 * 1024),
         _csd = ChipSelectDecoder(),
         _connector40Pins = ExtensionModule() {
+    // Standard users system RAM (1.5KB).
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
     _csd.appendROM(MemoryBank.me0, 0xC000, rom.buffer.asUint8List());
 
+    // Standard users RAM.
     device.maybeWhen<void>(
       pc1500A: () {
+        // 6KB.
         _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800);
       },
       orElse: () {
+        // 2KB.
         _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800);
       },
     );
+
+    // _updateROMStatusInformation();
 
     _emulator = LH5801Emulator(
       clockFrequency: 1300000,
@@ -61,6 +67,7 @@ class System {
   }
 
   void addCE151() {
+    // 4KB RAM card.
     if (_connector40Pins.isUsed) {
       throw SystemError('40-pin connector used by ${_connector40Pins.name} module');
     }
@@ -73,6 +80,7 @@ class System {
   }
 
   void addCE155() {
+    // 8KB RAM card.
     if (_connector40Pins.isUsed) {
       throw SystemError('40-pin connector used by ${_connector40Pins.name} module');
     }
@@ -87,11 +95,26 @@ class System {
   }
 
   void addCE159() {
+    // 8KB RAM card (lithium battery saved).
     if (_connector40Pins.isUsed) {
       throw SystemError('40-pin connector used by ${_connector40Pins.name} module');
     }
 
     _csd.appendRAM(MemoryBank.me0, 0x02000, 0x02000);
     _connector40Pins.addModule('CE159', 0x2000);
+  }
+
+  void _updateROMStatusInformation() {
+    _csd.writeByteAt(0x4000, 0x55);
+    // High order one byte of the ROM top address.
+    _csd.writeByteAt(0x4001, 0x55);
+    // High order one byte of the top address of the BASIC program.
+    _csd.writeByteAt(0x4002, 0x55);
+    // Low order one byte of the top address of the BASIC program.
+    _csd.writeByteAt(0x4003, 0x55);
+    // 16KB ROM
+    _csd.writeByteAt(0x4004, 0x40);
+    // Non-confidential program.
+    _csd.writeByteAt(0x4007, 0xFF);
   }
 }
