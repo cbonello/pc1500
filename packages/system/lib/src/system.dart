@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:lh5801/lh5801.dart';
+import 'package:roms/roms.dart';
 
 import 'clock.dart';
 import 'extension_module.dart';
@@ -29,25 +30,25 @@ abstract class DeviceType with _$DeviceType {
 }
 
 class System {
-  System(this.device, ByteData rom)
-      : assert(rom.buffer.lengthInBytes == 16 * 1024),
-        _csd = ChipSelectDecoder(),
+  System(this.device)
+      : _csd = ChipSelectDecoder(),
         _connector40Pins = ExtensionModule() {
     _clock = Clock(freq: 1300000, fps: 50);
 
     // Standard users system RAM (1.5KB).
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
-    _csd.appendROM(MemoryBank.me0, 0xC000, rom.buffer.asUint8List());
 
     // Standard users RAM.
     device.maybeWhen<void>(
       pc1500A: () {
         // 6KB.
         _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800);
+        _csd.appendROM(MemoryBank.me0, 0xC000, Roms.pc1500);
       },
       orElse: () {
         // 2KB.
         _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800);
+        _csd.appendROM(MemoryBank.me0, 0xC000, Roms.pc1500a);
       },
     );
 
