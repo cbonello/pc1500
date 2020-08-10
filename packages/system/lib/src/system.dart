@@ -55,7 +55,9 @@ class System {
       clockFrequency: 1300000,
       memRead: _csd.readByteAt,
       memWrite: _csd.writeByteAt,
-    );
+    )..reset();
+
+    _emulator.resetPin = true;
   }
 
   final DeviceType device;
