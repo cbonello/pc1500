@@ -1,7 +1,8 @@
-A library for Dart developers.
+Dump of the Sharp PC-1500 ROMs.
 
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+This software is made available for documentation purpose only since the PC-1500 is
+now an obsolete computer. If you own a copyright on part of this code and do not want
+it to be available from here, please inform me.
 
 ## Usage
 
@@ -11,7 +12,7 @@ A simple usage example:
 import 'package:roms/roms.dart';
 
 main() {
-  var awesome = new Awesome();
+  final Uint8List bytes = Roms.pc1500;
 }
 ```
 
