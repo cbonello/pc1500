@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:lh5801/lh5801.dart';
@@ -37,18 +35,17 @@ class System {
 
     // Standard users system RAM (1.5KB).
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
+    _csd.appendROM(MemoryBank.me0, 0xC000, Roms.pc1500);
 
     // Standard users RAM.
     device.maybeWhen<void>(
       pc1500A: () {
         // 6KB.
         _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800);
-        _csd.appendROM(MemoryBank.me0, 0xC000, Roms.pc1500);
       },
       orElse: () {
         // 2KB.
         _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800);
-        _csd.appendROM(MemoryBank.me0, 0xC000, Roms.pc1500a);
       },
     );
 
