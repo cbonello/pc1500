@@ -51,7 +51,7 @@ class System {
 
     // _updateROMStatusInformation();
 
-    _emulator = LH5801Emulator(
+    _emulator = LH5801(
       clockFrequency: 1300000,
       memRead: _csd.readByteAt,
       memWrite: _csd.writeByteAt,
@@ -62,7 +62,7 @@ class System {
 
   final DeviceType device;
   Clock _clock;
-  LH5801Emulator _emulator;
+  LH5801 _emulator;
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
 
@@ -73,7 +73,8 @@ class System {
   void addCE151() {
     // 4KB RAM card.
     if (_connector40Pins.isUsed) {
-      throw SystemError('40-pin connector used by ${_connector40Pins.name} module');
+      throw SystemError(
+          '40-pin connector used by ${_connector40Pins.name} module');
     }
 
     // Come standard with the PC-1500A.
@@ -86,7 +87,8 @@ class System {
   void addCE155() {
     // 8KB RAM card.
     if (_connector40Pins.isUsed) {
-      throw SystemError('40-pin connector used by ${_connector40Pins.name} module');
+      throw SystemError(
+          '40-pin connector used by ${_connector40Pins.name} module');
     }
 
     _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
@@ -101,7 +103,8 @@ class System {
   void addCE159() {
     // 8KB RAM card (lithium battery saved).
     if (_connector40Pins.isUsed) {
-      throw SystemError('40-pin connector used by ${_connector40Pins.name} module');
+      throw SystemError(
+          '40-pin connector used by ${_connector40Pins.name} module');
     }
 
     _csd.appendRAM(MemoryBank.me0, 0x02000, 0x02000);
