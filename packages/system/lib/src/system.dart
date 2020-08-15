@@ -27,8 +27,8 @@ abstract class DeviceType with _$DeviceType {
   const factory DeviceType.pc1500A() = _PC1500A;
 }
 
-class System {
-  System(this.device)
+class PC1500 {
+  PC1500(this.device, [LH5801DebugEvents debugCallback])
       : _csd = ChipSelectDecoder(),
         _connector40Pins = ExtensionModule() {
     _clock = Clock(freq: 1300000, fps: 50);
@@ -51,30 +51,35 @@ class System {
 
     // _updateROMStatusInformation();
 
-    _emulator = LH5801(
+    _cpu = LH5801(
       clockFrequency: 1300000,
       memRead: _csd.readByteAt,
       memWrite: _csd.writeByteAt,
+      debugCallback: debugCallback,
     )..reset();
 
-    _emulator.resetPin = true;
+    _cpu.resetPin = true;
+
+    _dasm = LH5801DASM(memRead: _csd.readByteAt);
   }
 
   final DeviceType device;
   Clock _clock;
-  LH5801 _emulator;
+  LH5801 _cpu;
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
+  LH5801DASM _dasm;
 
-  void step() {
-    _emulator.step();
-  }
+  int step() => _cpu.step();
+
+  Instruction dasm(int address) => _dasm.dump(address);
 
   void addCE151() {
     // 4KB RAM card.
     if (_connector40Pins.isUsed) {
       throw SystemError(
-          '40-pin connector used by ${_connector40Pins.name} module');
+        '40-pin connector used by ${_connector40Pins.name} module',
+      );
     }
 
     // Come standard with the PC-1500A.
@@ -88,7 +93,8 @@ class System {
     // 8KB RAM card.
     if (_connector40Pins.isUsed) {
       throw SystemError(
-          '40-pin connector used by ${_connector40Pins.name} module');
+        '40-pin connector used by ${_connector40Pins.name} module',
+      );
     }
 
     _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
@@ -104,7 +110,8 @@ class System {
     // 8KB RAM card (lithium battery saved).
     if (_connector40Pins.isUsed) {
       throw SystemError(
-          '40-pin connector used by ${_connector40Pins.name} module');
+        '40-pin connector used by ${_connector40Pins.name} module',
+      );
     }
 
     _csd.appendRAM(MemoryBank.me0, 0x02000, 0x02000);
@@ -124,4 +131,19 @@ class System {
     // Non-confidential program.
     _csd.writeByteAt(0x4007, 0xFF);
   }
+}
+
+class PC1500Traced extends PC1500 {
+  PC1500Traced(DeviceType device, [LH5801DebugEvents debugCallback])
+      : super(device, debugCallback) {
+    _cpu = LH5801Traced(
+      clockFrequency: 1300000,
+      memRead: _csd.readByteAt,
+      memWrite: _csd.writeByteAt,
+    )..reset();
+
+    _cpu.resetPin = true;
+  }
+
+  List<Trace> get traces => (_cpu as LH5801Traced).traces;
 }
