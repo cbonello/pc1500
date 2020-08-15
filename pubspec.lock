@@ -114,10 +114,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "86d0ad2e41f8a3c7a498c29bcbbd85c301a1fbd4"
+      resolved-ref: "27128d4d4b8eacfd4a97281abd68ccaf13b74c66"
       url: "https://github.com/cbonello/lh5801.git"
     source: git
-    version: "0.1.0"
+    version: "0.2.0"
   lh5811:
     dependency: "direct main"
     description:
