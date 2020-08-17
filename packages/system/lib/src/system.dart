@@ -1,4 +1,5 @@
 import 'package:chip_select_decoder/chip_select_decoder.dart';
+import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
 import 'package:roms/roms.dart';
 
@@ -23,7 +24,11 @@ class PC1500 {
     _clock = Clock(freq: 1300000, fps: 50);
 
     // Standard users system RAM (1.5KB).
-    _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
+    final MemoryChip stdUserRam = _csd.appendRAM(
+      MemoryBank.me0,
+      0x7600,
+      0x0600,
+    );
 
     // ROM (16KB).
     _csd.appendROM(MemoryBank.me0, 0xC000, ROM(const ROMType.a03()).bytes);
@@ -43,8 +48,10 @@ class PC1500 {
       memWrite: _csd.writeByteAt,
       debugCallback: debugCallback,
     )..reset();
-
     _cpu.resetPin = true;
+
+    _lcd = Lcd(memRead: _csd.readByteAt);
+    stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
 
     _dasm = LH5801DASM(memRead: _csd.readByteAt);
   }
@@ -52,6 +59,7 @@ class PC1500 {
   final DeviceType device;
   Clock _clock;
   LH5801 _cpu;
+  Lcd _lcd;
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
   LH5801DASM _dasm;

@@ -12,6 +12,8 @@ environment:
 dependencies:
   chip_select_decoder:
     path: ../chip_select_decoder
+  lcd:
+    path: ../lcd
   lh5801:
     git:
       url: https://github.com/cbonello/lh5801.git

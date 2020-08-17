@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-mixin MemoryBase {
+mixin MemoryOperations {
   bool get isReadonly => throw UnimplementedError;
   int readByteAt(int offsetInBytes) => throw UnimplementedError;
   void writeByteAt(int offsetInBytes, int value) => throw UnimplementedError;
@@ -23,7 +23,7 @@ mixin MemoryObserver {
       throw UnimplementedError;
 }
 
-class MemoryChip extends Equatable with MemoryBase, MemoryObservable {
+class MemoryChip extends Equatable with MemoryOperations, MemoryObservable {
   MemoryChip._({
     @required this.start,
     @required this.length,
