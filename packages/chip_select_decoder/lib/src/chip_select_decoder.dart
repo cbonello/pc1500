@@ -2,10 +2,17 @@ import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
 
-import 'memory.dart';
 import 'memory_chip.dart';
 
-enum ChipSelectDecoderErrorId { ramFit, romFit, read, write, overlap, address, config }
+enum ChipSelectDecoderErrorId {
+  ramFit,
+  romFit,
+  read,
+  write,
+  overlap,
+  address,
+  config
+}
 
 class ChipSelectDecoderError extends Error {
   ChipSelectDecoderError(this.id, [this.message = '']);
@@ -17,29 +24,32 @@ class ChipSelectDecoderError extends Error {
   String toString() => 'Chip-Select Error #$id: $message';
 }
 
-const int kBankLengthMax = 0x10000; // 64 KB
+const int bankSize = 0x10000; // 64 KB
 
 enum MemoryBank { me0, me1 }
 
 class ChipSelectDecoder extends Equatable {
   ChipSelectDecoder();
 
-  final Map<MemoryBank, List<MemoryChip>> memoryBanks = <MemoryBank, List<MemoryChip>>{
+  final Map<MemoryBank, List<MemoryChip>> memoryBanks =
+      <MemoryBank, List<MemoryChip>>{
     MemoryBank.me0: <MemoryChip>[],
     MemoryBank.me1: <MemoryChip>[],
   };
 
-  void restoreState(Map<String, dynamic> json) {
+  void restoreState(Map<String, dynamic> state) {
     for (final MemoryBank bank in MemoryBank.values) {
-      if (json.containsKey(bank.toString())) {
-        (json[bank.toString()].cast<Map<String, dynamic>>()).forEach((dynamic m) {
-          final MemoryChip mc = _findMemoryChip(
-            memoryBanks[bank],
-            m['start'] as int,
-            m['end'] as int,
-          );
-          mc.restoreState(m as Map<String, dynamic>);
-        });
+      if (state.containsKey(bank.toString())) {
+        (state[bank.toString()].cast<Map<String, dynamic>>()).forEach(
+          (dynamic m) {
+            final MemoryChip mc = _findMemoryChip(
+              memoryBanks[bank],
+              m['start'] as int,
+              m['length'] as int,
+            );
+            mc.restoreState(m as Map<String, dynamic>);
+          },
+        );
       }
     }
   }
@@ -48,59 +58,66 @@ class ChipSelectDecoder extends Equatable {
     List<MemoryChip> _filterRAM(List<MemoryChip> m) =>
         m.where((MemoryChip m) => m.isReadonly == false).toList();
 
-    return <String, dynamic>{
+    final Map<String, dynamic> state = <String, dynamic>{
       MemoryBank.me0.toString(): _filterRAM(memoryBanks[MemoryBank.me0])
           .map<Map<String, dynamic>>((MemoryChip m) => m.saveState()),
       MemoryBank.me1.toString(): _filterRAM(memoryBanks[MemoryBank.me1])
           .map<Map<String, dynamic>>((MemoryChip m) => m.saveState()),
     };
+    return state;
   }
 
-  void appendRAM(MemoryBank bank, int start, int length, [WriteObserver observer]) {
-    if (0 > start || start >= kBankLengthMax) {
+  MemoryChip appendRAM(MemoryBank bank, int start, int length) {
+    if (0 > start || start >= bankSize) {
       throw ArgumentError.value(start, 'start');
     }
     if (length < 1) {
-      throw ArgumentError.value(length, 'length', 'RAM size must be greater than zero');
+      throw ArgumentError.value(
+        length,
+        'length',
+        'RAM size must be greater than zero',
+      );
     }
-
     final int end = start + length - 1;
-    if (end >= kBankLengthMax) {
+    if (end >= bankSize) {
       throw ChipSelectDecoderError(
         ChipSelectDecoderErrorId.ramFit,
         'RAM does not fit within a 64KB address space',
       );
     }
-
     _checkMemoryOverlap(start, end, memoryBanks[bank]);
 
-    memoryBanks[bank].add(MemoryChip(
-      start: start,
-      end: end,
-      memory: Memory.ram(end - start + 1),
-      observer: observer,
-    ));
+    final MemoryChip memoryChip = MemoryChip.ram(start: start, length: length);
+    memoryBanks[bank].add(memoryChip);
+    return memoryChip;
   }
 
-  void appendROM(
-    MemoryBank bank,
-    int start,
-    Uint8List content, [
-    WriteObserver observer,
-  ]) {
+  MemoryChip appendROM(MemoryBank bank, int start, Uint8List content) {
+    if (0 > start || start >= bankSize) {
+      throw ArgumentError.value(start, 'start');
+    }
+    if (content.isEmpty) {
+      throw ArgumentError.value(
+        content.length,
+        'content',
+        'ROM size must be greater than zero',
+      );
+    }
     final int end = start + content.length - 1;
-    if (end >= kBankLengthMax) {
+    if (end >= bankSize) {
       throw ChipSelectDecoderError(
         ChipSelectDecoderErrorId.romFit,
         'ROM does not fit within a 64KB address space',
       );
     }
-
     _checkMemoryOverlap(start, end, memoryBanks[bank]);
 
-    memoryBanks[bank].add(
-      MemoryChip(start: start, end: end, memory: Memory.rom(content), observer: observer),
+    final MemoryChip memoryChip = MemoryChip.rom(
+      start: start,
+      content: content,
     );
+    memoryBanks[bank].add(memoryChip);
+    return memoryChip;
   }
 
   int readByteAt(int address) {
@@ -138,7 +155,8 @@ class ChipSelectDecoder extends Equatable {
 
   void _checkMemoryOverlap(int start, int end, List<MemoryChip> memoryBank) {
     for (final MemoryChip mc in memoryBank) {
-      if ((start >= mc.start && start <= mc.end) || (end >= mc.start && end <= mc.end)) {
+      if ((start >= mc.start && start <= mc.end) ||
+          (end >= mc.start && end <= mc.end)) {
         throw ChipSelectDecoderError(
           ChipSelectDecoderErrorId.overlap,
           'overlapping memory chips [${_meHex16(start)}..${_meHex16(end)}] and [${_meHex16(mc.start)}..${_meHex16(mc.end)}]',
@@ -147,9 +165,9 @@ class ChipSelectDecoder extends Equatable {
     }
   }
 
-  MemoryChip _findMemoryChip(List<MemoryChip> bank, int start, int end) {
+  MemoryChip _findMemoryChip(List<MemoryChip> bank, int start, int length) {
     final Iterable<MemoryChip> result = bank.where(
-      (MemoryChip mc) => start == mc.start && end == mc.end,
+      (MemoryChip mc) => start == mc.start && length == mc.length,
     );
 
     if (result.isNotEmpty) {
@@ -163,10 +181,10 @@ class ChipSelectDecoder extends Equatable {
   }
 
   MemoryBank _findMemoryBank(int address) {
-    if (0 <= address && address < kBankLengthMax) {
+    if (0 <= address && address < bankSize) {
       return MemoryBank.me0;
     }
-    if (kBankLengthMax <= address && address < 2 * kBankLengthMax) {
+    if (bankSize <= address && address < 2 * bankSize) {
       return MemoryBank.me1;
     }
     throw ChipSelectDecoderError(

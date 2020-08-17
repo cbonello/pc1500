@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-final List<int> data = <int>[
+final List<int> bytes = <int>[
   0x55,
   0xFD,
   0x2A,

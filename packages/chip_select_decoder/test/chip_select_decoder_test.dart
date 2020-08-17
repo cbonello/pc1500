@@ -4,11 +4,11 @@ import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-class MockWriteObserver extends Mock implements WriteObserver {}
+class MockWriteObserver extends Mock implements MemoryObserver {}
 
 void main() {
   group('ChipSelectDecoder', () {
-    group('appendRAM() / appendROM()', () {
+    group('appendRAM()', () {
       test('should raise an exception for invalid arguments', () {
         final ChipSelectDecoder cs = ChipSelectDecoder();
 
@@ -17,11 +17,48 @@ void main() {
           throwsA(const TypeMatcher<ArgumentError>()),
         );
         expect(
+          () => cs.appendRAM(MemoryBank.me0, 0x20000, 100),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
           () => cs.appendRAM(MemoryBank.me0, 10, 0),
           throwsA(const TypeMatcher<ArgumentError>()),
         );
         expect(
           () => cs.appendRAM(MemoryBank.me0, 10, 64 * 1024),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+
+      test('should detect memory overlaps', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        cs.appendRAM(MemoryBank.me0, 0, 100);
+        expect(
+          () => cs.appendRAM(MemoryBank.me0, 10, 100),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+    });
+
+    group('appendROM()', () {
+      test('should raise an exception for invalid arguments', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        expect(
+          () => cs.appendROM(MemoryBank.me1, -1, Uint8List(100)),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
+          () => cs.appendROM(MemoryBank.me0, 0x20000, Uint8List(100)),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
+          () => cs.appendROM(MemoryBank.me0, 10, Uint8List(0)),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
+          () => cs.appendROM(MemoryBank.me0, 10, Uint8List(64 * 1024 + 1)),
           throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
       });
@@ -36,19 +73,19 @@ void main() {
           throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
       });
+    });
 
-      test('should append RAMs and ROMs successfully', () {
-        final ChipSelectDecoder cs = ChipSelectDecoder();
-        final Uint8List data = Uint8List(0xFFFF - 0xC000 + 1);
+    test('should append RAMs and ROMs successfully', () {
+      final ChipSelectDecoder cs = ChipSelectDecoder();
+      final Uint8List data = Uint8List(0xFFFF - 0xC000 + 1);
 
-        cs.appendRAM(MemoryBank.me0, 0x4000, 0x5800 - 0x4000 + 1);
-        cs.appendRAM(MemoryBank.me0, 0x7600, 0x7C00 - 0x7600 + 1);
-        cs.appendROM(MemoryBank.me0, 0xC000, data);
+      cs.appendRAM(MemoryBank.me0, 0x4000, 0x5800 - 0x4000 + 1);
+      cs.appendRAM(MemoryBank.me0, 0x7600, 0x7C00 - 0x7600 + 1);
+      cs.appendROM(MemoryBank.me0, 0xC000, data);
 
-        cs.appendRAM(MemoryBank.me1, 0x8000, 0x8800 - 0x8000 + 1);
-        cs.appendRAM(MemoryBank.me1, 0xB000, 0xB00F - 0xB000 + 1);
-        cs.appendRAM(MemoryBank.me1, 0xF000, 0xF00F - 0xF000 + 1);
-      });
+      cs.appendRAM(MemoryBank.me1, 0x8000, 0x8800 - 0x8000 + 1);
+      cs.appendRAM(MemoryBank.me1, 0xB000, 0xB00F - 0xB000 + 1);
+      cs.appendRAM(MemoryBank.me1, 0xF000, 0xF00F - 0xF000 + 1);
     });
 
     test('content of RAMS should be saved/restored successfully', () {
@@ -128,23 +165,6 @@ void main() {
         cs.appendRAM(MemoryBank.me0, 0, 1024);
         cs.writeByteAt(256, 64);
         expect(cs.readByteAt(256), equals(64));
-      });
-
-      test('should call write observers', () {
-        final ChipSelectDecoder cs = ChipSelectDecoder();
-        final MockWriteObserver observer1 = MockWriteObserver();
-        final MockWriteObserver observer2 = MockWriteObserver();
-
-        cs.appendRAM(MemoryBank.me0, 0, 1024, observer1);
-        cs.appendRAM(MemoryBank.me0, 2048, 1024, observer2);
-
-        cs.writeByteAt(256, 64);
-        verify(observer1.checkWrite(any, any)).called(1);
-        verifyNever(observer2.checkWrite(any, any));
-
-        cs.writeByteAt(2059, 125);
-        verifyNever(observer1.checkWrite(any, any));
-        verify(observer2.checkWrite(any, any)).called(1);
       });
     });
   });

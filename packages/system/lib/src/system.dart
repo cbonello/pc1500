@@ -1,12 +1,9 @@
 import 'package:chip_select_decoder/chip_select_decoder.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:lh5801/lh5801.dart';
 import 'package:roms/roms.dart';
 
 import 'clock.dart';
 import 'extension_module.dart';
-
-part 'system.freezed.dart';
 
 class SystemError extends Error {
   SystemError(this.message);
@@ -17,15 +14,7 @@ class SystemError extends Error {
   String toString() => 'System: $message';
 }
 
-@freezed
-abstract class DeviceType with _$DeviceType {
-  // Sharp PC-1500.
-  const factory DeviceType.pc1500() = _PC1500;
-  // Tandy PC-2 (same as PC-1500).
-  const factory DeviceType.pc2() = PC2;
-  // Sharp PC-1500A
-  const factory DeviceType.pc1500A() = _PC1500A;
-}
+enum DeviceType { pc1500, pc2, pc1500A }
 
 class PC1500 {
   PC1500(this.device, [LH5801DebugEvents debugCallback])
@@ -35,19 +24,16 @@ class PC1500 {
 
     // Standard users system RAM (1.5KB).
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
-    _csd.appendROM(MemoryBank.me0, 0xC000, Roms.pc1500);
+    _csd.appendROM(MemoryBank.me0, 0xC000, ROM(const ROMType.a03()).bytes);
 
     // Standard users RAM.
-    device.maybeWhen<void>(
-      pc1500A: () {
-        // 6KB.
-        _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800);
-      },
-      orElse: () {
-        // 2KB.
-        _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800);
-      },
-    );
+    if (device == DeviceType.pc1500A) {
+      // 6KB.
+      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800);
+    } else {
+      // 2KB.
+      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800);
+    }
 
     // _updateROMStatusInformation();
 
@@ -83,7 +69,7 @@ class PC1500 {
     }
 
     // Come standard with the PC-1500A.
-    if (device != const DeviceType.pc1500A()) {
+    if (device != DeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
       _connector40Pins.addModule('CE151', 0x1000);
     }
@@ -100,7 +86,7 @@ class PC1500 {
     _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
 
     // Come standard with the PC-1500A.
-    if (device != const DeviceType.pc1500A()) {
+    if (device != DeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
       _connector40Pins.addModule('CE155', 0x2000);
     }

@@ -12,7 +12,6 @@ environment:
 dependencies:
   chip_select_decoder:
     path: ../chip_select_decoder
-  freezed_annotation: ^0.11.0
   lh5801:
     git:
       url: https://github.com/cbonello/lh5801.git
@@ -21,8 +20,6 @@ dependencies:
     path: ../roms
 
 dev_dependencies:
-  build_runner: ^1.10.0
-  freezed: ^0.11.0
   lint: ^1.2.0
   test: ^1.14.0
   test_coverage: ^0.4.0

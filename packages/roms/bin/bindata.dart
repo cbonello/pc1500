@@ -69,7 +69,7 @@ void main(List<String> arguments) {
     final File outputFile = File(outputFilename);
     sink = outputFile.openWrite();
     sink.writeln('// GENERATED CODE - DO NOT MODIFY BY HAND');
-    sink.writeln('final List<int> data = <int> [');
+    sink.writeln('final List<int> bytes = <int> [');
     for (int i = 0; i < binData.buffer.lengthInBytes; i++) {
       sink.writeln('0x${binData[i].toRadixString(16).toUpperCase().padLeft(2, '0')},');
     }

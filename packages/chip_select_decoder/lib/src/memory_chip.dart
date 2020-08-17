@@ -1,57 +1,133 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-import 'memory.dart';
-
-abstract class WriteObserver {
-  void checkWrite(int address, int value);
+mixin MemoryBase {
+  bool get isReadonly => throw UnimplementedError;
+  int readByteAt(int offsetInBytes) => throw UnimplementedError;
+  void writeByteAt(int offsetInBytes, int value) => throw UnimplementedError;
 }
 
-class MemoryChip extends Equatable with MemoryBase {
-  const MemoryChip({
+enum MemoryAccessType { read, write }
+
+mixin MemoryObservable {
+  bool registerObserver(MemoryAccessType type, MemoryObserver observer) =>
+      throw UnimplementedError;
+  void notifyObservers(MemoryAccessType type, int address, int value) =>
+      throw UnimplementedError;
+}
+
+mixin MemoryObserver {
+  void update(MemoryAccessType type, int address, int value) =>
+      throw UnimplementedError;
+}
+
+class MemoryChip extends Equatable with MemoryBase, MemoryObservable {
+  MemoryChip._({
     @required this.start,
-    @required this.end,
-    @required Memory memory,
-    WriteObserver observer,
-  })  : assert(memory != null),
-        _memory = memory,
-        _observer = observer;
+    @required this.length,
+    @required bool isReadonly,
+    @required Uint8ClampedList data,
+  })  : _isReadonly = isReadonly,
+        assert(data != null),
+        _data = data,
+        _observers = <MemoryAccessType, Set<MemoryObserver>>{
+          MemoryAccessType.read: <MemoryObserver>{},
+          MemoryAccessType.write: <MemoryObserver>{},
+        };
+
+  factory MemoryChip.ram({@required int start, @required int length}) =>
+      MemoryChip._(
+        start: start,
+        length: length,
+        isReadonly: false,
+        data: Uint8ClampedList(length),
+      );
+
+  factory MemoryChip.rom({@required int start, @required Uint8List content}) =>
+      MemoryChip._(
+        start: start,
+        length: content.length,
+        isReadonly: true,
+        data: Uint8ClampedList.fromList(content),
+      );
 
   final int start;
-  final int end;
-  final Memory _memory;
-  final WriteObserver _observer;
+  final int length;
+  final bool _isReadonly;
+  final Uint8ClampedList _data;
+  final Map<MemoryAccessType, Set<MemoryObserver>> _observers;
 
-  void restoreState(Map<String, dynamic> json) =>
-      _memory.restoreState(json['memory'] as Map<String, dynamic>);
+  int get end => start + length - 1;
 
-  Map<String, dynamic> saveState() => <String, dynamic>{
-        'start': start,
-        'end': end,
-        'memory': _memory.saveState(),
-      };
+  void restoreState(Map<String, dynamic> json) {
+    final int savedStart = json['start'] as int;
+    final int savedLength = json['length'] as int;
+    final bool savedReadOnly = json['readOnly'] as bool;
 
-  MemoryChip clone() => MemoryChip(
+    if (savedStart != start ||
+        savedLength != length ||
+        savedReadOnly != _isReadonly) {
+      throw Exception;
+    }
+
+    final List<int> data = json['data'] as List<int>;
+    _data.setRange(0, length, data);
+  }
+
+  Map<String, dynamic> saveState() {
+    assert(_isReadonly == false);
+
+    return <String, dynamic>{
+      'start': start,
+      'length': length,
+      'readOnly': _isReadonly,
+      'data': List<int>.from(_data),
+    };
+  }
+
+  MemoryChip clone() => MemoryChip._(
         start: start,
-        end: end,
-        memory: _memory.clone(),
-        observer: _observer,
+        length: length,
+        isReadonly: _isReadonly,
+        data: Uint8ClampedList.fromList(_data.toList()),
       );
 
   @override
-  bool get isReadonly => _memory.isReadonly;
+  bool get isReadonly => _isReadonly;
 
   @override
-  int readByteAt(int offsetInBytes) => _memory.readByteAt(offsetInBytes);
+  int readByteAt(int offsetInBytes) {
+    final int value = _data[offsetInBytes];
 
-  @override
-  void writeByteAt(int offsetInBytes, int value) {
-    _memory.writeByteAt(offsetInBytes, value);
-    _observer?.checkWrite(offsetInBytes, value);
+    notifyObservers(MemoryAccessType.read, start + offsetInBytes, value);
+    return value;
   }
 
   @override
-  List<Object> get props => <Object>[start, end, _memory, _observer];
+  void writeByteAt(int offsetInBytes, int value) {
+    _data[offsetInBytes] = value;
+    notifyObservers(MemoryAccessType.write, start + offsetInBytes, value);
+  }
+
+  @override
+  bool registerObserver(
+    MemoryAccessType type,
+    MemoryObserver observer,
+  ) =>
+      _observers[type].add(observer);
+
+  @override
+  void notifyObservers(MemoryAccessType type, int address, int value) {
+    for (final MemoryObserver observer in _observers[type]) {
+      observer.update(type, address, value);
+    }
+  }
+
+  @override
+  List<Object> get props =>
+      <Object>[start, length, _isReadonly, _data, _observers];
 
   @override
   bool get stringify => true;
