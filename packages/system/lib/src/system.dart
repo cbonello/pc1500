@@ -24,15 +24,15 @@ class PC1500 {
 
     // Standard users system RAM (1.5KB).
     _csd.appendRAM(MemoryBank.me0, 0x7600, 0x0600);
+
+    // ROM (16KB).
     _csd.appendROM(MemoryBank.me0, 0xC000, ROM(const ROMType.a03()).bytes);
 
     // Standard users RAM.
     if (device == DeviceType.pc1500A) {
-      // 6KB.
-      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800);
+      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800); // 6KB.
     } else {
-      // 2KB.
-      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800);
+      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
     }
 
     // _updateROMStatusInformation();
@@ -67,11 +67,12 @@ class PC1500 {
         '40-pin connector used by ${_connector40Pins.name} module',
       );
     }
+    _connector40Pins.addModule('CE151', 0x1000);
 
-    // Come standard with the PC-1500A.
-    if (device != DeviceType.pc1500A) {
+    if (device == DeviceType.pc1500A) {
+      _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1000);
+    } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
-      _connector40Pins.addModule('CE151', 0x1000);
     }
   }
 
@@ -82,26 +83,15 @@ class PC1500 {
         '40-pin connector used by ${_connector40Pins.name} module',
       );
     }
+    _connector40Pins.addModule('CE155', 0x2000);
 
     _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
 
-    // Come standard with the PC-1500A.
-    if (device != DeviceType.pc1500A) {
-      _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
-      _connector40Pins.addModule('CE155', 0x2000);
+    if (device == DeviceType.pc1500A) {
+      _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1800);
+    } else {
+      _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1800);
     }
-  }
-
-  void addCE159() {
-    // 8KB RAM card (lithium battery saved).
-    if (_connector40Pins.isUsed) {
-      throw SystemError(
-        '40-pin connector used by ${_connector40Pins.name} module',
-      );
-    }
-
-    _csd.appendRAM(MemoryBank.me0, 0x02000, 0x02000);
-    _connector40Pins.addModule('CE159', 0x2000);
   }
 
   void _updateROMStatusInformation() {
