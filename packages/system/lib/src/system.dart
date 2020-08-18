@@ -31,7 +31,7 @@ class PC1500 {
     );
 
     // ROM (16KB).
-    _csd.appendROM(MemoryBank.me0, 0xC000, ROM(const ROMType.a03()).bytes);
+    _csd.appendROM(MemoryBank.me0, 0xC000, PC1500Rom(PC1500RomType.a03).bytes);
 
     // Standard users RAM.
     if (device == DeviceType.pc1500A) {
@@ -39,6 +39,12 @@ class PC1500 {
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
     }
+
+    // I/O ports
+    final MemoryChip ce153IO = _csd.appendRAM(MemoryBank.me1, 0x8000, 0x10);
+    final MemoryChip ce150IO = _csd.appendRAM(MemoryBank.me1, 0xB000, 0x10);
+    final MemoryChip io1 = _csd.appendRAM(MemoryBank.me1, 0xD000, 0x400);
+    final MemoryChip pc1500IO = _csd.appendRAM(MemoryBank.me1, 0xF000, 0x10);
 
     // _updateROMStatusInformation();
 

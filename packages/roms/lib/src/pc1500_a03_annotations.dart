@@ -1,3 +1,4 @@
+const String json = '''
 {
     "A800": {
         "comment": "CE-150 ROM version: 44 = version 0, BE = version 1"
@@ -5,24 +6,23 @@
     "7894": {
         "comment": "String buffer pointer"
     },
-    "7A00": {
-        "end": "7A07",
+    "7A00-7A07": {
         "comment": "Arithmetic register"
     },
     "D925": {
         "comment": "System Subroutine: Combination of character"
     },
     "D9DC": {
-        "comment": "System Subroutine: CHR$"
+        "comment": "System Subroutine: CHR\$"
     },
     "D9CF": {
-        "comment": "System Subroutine: STR$"
+        "comment": "System Subroutine: STR\$"
     },
     "D9D7": {
         "comment": "System Subroutine: VAL"
     },
     "D9DD": {
-        "comment": "System Subroutine: RIGHT$, MID$, LEFT$"
+        "comment": "System Subroutine: RIGHT\$, MID\$, LEFT\$"
     },
     "EFB6": {
         "comment": "System Subroutine: Subtract"
@@ -127,7 +127,10 @@
         "comment": "System Subroutine: Cursor move after 'n' character display"
     },
     "D9F3": {
-        "comment": "System Subroutine: STR$"
+        "comment": "System Subroutine: STR\$"
+    },
+    "E000": {
+        "comment": "Reset Subroutine"
     },
     "E004": {
         "comment": "Disable timer"
@@ -147,8 +150,8 @@
     "E012": {
         "comment": "LCD off"
     },
-    "E014": {
-        "end": "E01C",
-        "comment": "Wait for 11,496 CPU cycles (about 9ms)"
+    "E014-E01C": {
+        "comment": "Wait for 11,496 CPU cycles (about 9 ms)"
     }
 }
+''';
