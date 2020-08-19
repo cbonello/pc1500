@@ -3,9 +3,10 @@ import 'package:meta/meta.dart';
 
 @immutable
 class AddressRange extends Equatable {
-  const AddressRange._({@required this.start, @required this.end});
+  const AddressRange._({@required this.start, @required this.end})
+      : assert(start <= end);
 
-  factory AddressRange.fromTag({@required String tag}) {
+  factory AddressRange.fromTag(String tag) {
     assert(tag != null && tag.isNotEmpty && <int>[4, 9].contains(tag.length));
 
     int start, end;
@@ -25,7 +26,7 @@ class AddressRange extends Equatable {
 
   static int _parse(String str) {
     final int value = int.tryParse(str, radix: 16);
-    assert(str != null);
+    assert(value != null);
     return value;
   }
 

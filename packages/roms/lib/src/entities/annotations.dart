@@ -16,7 +16,7 @@ class Annotations {
         <AddressRange, Annotation>{};
 
     for (final String tag in json.keys) {
-      final AddressRange range = AddressRange.fromTag(tag: tag);
+      final AddressRange range = AddressRange.fromTag(tag);
       final Annotation annotation = Annotation.fromJson(
         json[tag] as Map<String, dynamic>,
       );
