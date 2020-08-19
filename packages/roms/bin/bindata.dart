@@ -35,14 +35,16 @@ void main(List<String> arguments) {
 
   if (argResults[helpFlag] as bool) {
     stdout.write('Usage: [options] [input-file]\n\n');
-    stdout.write('Converts input-file into manageable Dart source code\n\n');
+    stdout.write('Converts ROM dump into manageable Dart source code\n\n');
     stdout.write('Options:\n');
     stdout.write(parser.usage);
     exit(kSuccess);
   }
 
   if (argResults.rest.isEmpty) {
-    stderr.write('error: Please specifiy the location of the binary file to convert');
+    stderr.write(
+      'error: Please specifiy the location of the binary file to convert',
+    );
     exit(kErrors);
   }
 
@@ -71,7 +73,9 @@ void main(List<String> arguments) {
     sink.writeln('// GENERATED CODE - DO NOT MODIFY BY HAND');
     sink.writeln('final List<int> bytes = <int> [');
     for (int i = 0; i < binData.buffer.lengthInBytes; i++) {
-      sink.writeln('0x${binData[i].toRadixString(16).toUpperCase().padLeft(2, '0')},');
+      sink.writeln(
+        '0x${binData[i].toRadixString(16).toUpperCase().padLeft(2, '0')},',
+      );
     }
     sink.writeln('];');
   } catch (e) {
