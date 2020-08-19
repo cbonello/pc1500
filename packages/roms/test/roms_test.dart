@@ -5,7 +5,7 @@ import 'package:roms/roms.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Roms', () {
+  group('PC1500Rom', () {
     test('Should fail for unavailable ROMs', () {
       expect(() => PC1500Rom(PC1500RomType.a01), throwsException);
       expect(() => PC1500Rom(PC1500RomType.a04), throwsException);
