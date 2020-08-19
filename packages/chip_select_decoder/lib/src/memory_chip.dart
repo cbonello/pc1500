@@ -54,20 +54,7 @@ abstract class MemoryChipBase extends Equatable with MemoryObservable {
 
   void writeByteAt(int offsetInBytes, int value);
 
-  void restoreState(Map<String, dynamic> json) {
-    final int savedStart = json['start'] as int;
-    final int savedLength = json['length'] as int;
-    final bool savedReadOnly = json['readOnly'] as bool;
-
-    if (savedStart != start ||
-        savedLength != length ||
-        savedReadOnly != isReadonly) {
-      throw Exception;
-    }
-
-    final List<int> data = json['data'] as List<int>;
-    _data.setRange(0, length, data);
-  }
+  void restoreState(Map<String, dynamic> json);
 
   Map<String, dynamic> saveState();
 
