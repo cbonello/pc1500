@@ -4,31 +4,31 @@ const String json = '''
         "comment": "CE-150 ROM version: 44H = version 0, BEH = version 1"
     },
     "A519": {
-        "comment": "Printer: Color designation"
+        "comment": "Printer subroutine: Color designation"
     },
     "A781": {
-        "comment": "Printer: Print"
+        "comment": "Printer subroutine: Print"
     },
     "A9F1": {
-        "comment": "Printer: Linefeed"
+        "comment": "Printer subroutine: Linefeed"
     },
     "AA04": {
-        "comment": "Printer: Paper feed"
+        "comment": "Printer subroutine: Paper feed"
     },
     "ACBB": {
-        "comment": "Printer: Get TEXT mode ready"
+        "comment": "Printer subroutine: Get TEXT mode ready"
     },
     "AAE3": {
-        "comment": "Printer: Pen up/down"
+        "comment": "Printer subroutine: Pen up/down"
     },
     "A8DD": {
-        "comment": "Printer: Motor drive"
+        "comment": "Printer subroutine: Motor drive"
     },
     "A769": {
-        "comment": "Printer: Motor off"
+        "comment": "Printer subroutine: Motor off"
     },
     "ABEF": {
-        "comment": "Printer: Get GRAPHIC mode ready"
+        "comment": "Printer subroutine: Get GRAPHIC mode ready"
     },
     "BF11": {
         "comment": "Cassette tape: Remote on"

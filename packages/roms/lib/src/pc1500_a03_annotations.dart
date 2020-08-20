@@ -1,8 +1,5 @@
 const String json = '''
 {
-    "A800": {
-        "comment": "CE-150 ROM version: 44 = version 0, BE = version 1"
-    },
     "7894": {
         "comment": "String buffer pointer"
     },
@@ -10,124 +7,124 @@ const String json = '''
         "comment": "Arithmetic register"
     },
     "D925": {
-        "comment": "System Subroutine: Combination of character"
+        "comment": "System subroutine: Combination of character"
     },
     "D9DC": {
-        "comment": "System Subroutine: CHR\$"
+        "comment": "System subroutine: CHR\$"
     },
     "D9CF": {
-        "comment": "System Subroutine: STR\$"
+        "comment": "System subroutine: STR\$"
     },
     "D9D7": {
-        "comment": "System Subroutine: VAL"
+        "comment": "System subroutine: VAL"
     },
     "D9DD": {
-        "comment": "System Subroutine: RIGHT\$, MID\$, LEFT\$"
+        "comment": "System subroutine: RIGHT\$, MID\$, LEFT\$"
     },
     "EFB6": {
-        "comment": "System Subroutine: Subtract"
+        "comment": "System subroutine: Subtract"
     },
     "EFBA": {
-        "comment": "System Subroutine: Add"
+        "comment": "System subroutine: Add"
     },
     "F01A": {
-        "comment": "System Subroutine: Multiply"
+        "comment": "System subroutine: Multiply"
     },
     "F084": {
-        "comment": "System Subroutine: Divide"
+        "comment": "System subroutine: Divide"
     },
     "F161": {
-        "comment": "System Subroutine: LN"
+        "comment": "System subroutine: LN"
     },
     "F165": {
-        "comment": "System Subroutine: LOG"
+        "comment": "System subroutine: LOG"
     },
     "F1CB": {
-        "comment": "System Subroutine: EXP"
+        "comment": "System subroutine: EXP"
     },
     "F1D4": {
-        "comment": "System Subroutine: 10^n"
+        "comment": "System subroutine: 10^n"
     },
     "F391": {
-        "comment": "System Subroutine: COS"
+        "comment": "System subroutine: COS"
     },
     "F39E": {
-        "comment": "System Subroutine: TAN"
+        "comment": "System subroutine: TAN"
     },
     "F3A2": {
-        "comment": "System Subroutine: SIN"
+        "comment": "System subroutine: SIN"
     },
     "F492": {
-        "comment": "System Subroutine: ACS"
+        "comment": "System subroutine: ACS"
     },
     "F496": {
-        "comment": "System Subroutine: ATN"
+        "comment": "System subroutine: ATN"
     },
     "F49A": {
-        "comment": "System Subroutine: ASN"
+        "comment": "System subroutine: ASN"
     },
     "F531": {
-        "comment": "System Subroutine: DEG"
+        "comment": "System subroutine: DEG"
     },
     "F564": {
-        "comment": "System Subroutine: DMS"
+        "comment": "System subroutine: DMS"
     },
     "F597": {
-        "comment": "System Subroutine: ABS"
+        "comment": "System subroutine: ABS"
     },
     "F59D": {
-        "comment": "System Subroutine: SGN"
+        "comment": "System subroutine: SGN"
     },
     "F5BE": {
-        "comment": "System Subroutine: INT"
+        "comment": "System subroutine: INT"
     },
     "F89C": {
-        "comment": "System Subroutine: Power raise"
+        "comment": "System subroutine: Power raise"
     },
     "D0D2": {
-        "comment": "System Subroutine: Numerical comparison"
+        "comment": "System subroutine: Numerical comparison"
     },
     "D0F9": {
-        "comment": "System Subroutine: Character string comparison"
+        "comment": "System subroutine: Character string comparison"
     },
     "D2EA": {
-        "comment": "System Subroutine: Line number search"
+        "comment": "System subroutine: Line number search"
     },
     "E42C": {
-        "comment": "System Subroutine: KEY scan (I)"
+        "comment": "System subroutine: KEY scan (I)"
     },
     "D461": {
-        "comment": "System Subroutine: Variable search"
+        "comment": "System subroutine: Variable search"
     },
     "E243": {
-        "comment": "System Subroutine: KEY scan (II)"
+        "comment": "System subroutine: KEY scan (II)"
     },
     "E33F": {
-        "comment": "System Subroutine: Auto-power-off"
+        "comment": "System subroutine: Auto-power-off"
     },
     "E8CA": {
-        "comment": "System Subroutine: Program display"
+        "comment": "System subroutine: Program display"
     },
     "EDEF": {
-        "comment": "System Subroutine: Graphic display"
+        "comment": "System subroutine: Graphic display"
     },
     "ED95": {
-        "comment": "System Subroutine: Hexadecimal display (2 bytes - 1 byte)"
+        "comment": "System subroutine: Hexadecimal display (2 bytes - 1 byte)"
     },
     "ED57": {
-        "comment": "System Subroutine: One character display"
+        "comment": "System subroutine: One character display"
     },
     "ED3B": {
-        "comment": "System Subroutine: 'n' character display"
+        "comment": "System subroutine: 'n' character display"
     },
     "ED4D": {
-        "comment": "System Subroutine: Cursor move after one character display"
+        "comment": "System subroutine: Cursor move after one character display"
     },
     "ED00": {
-        "comment": "System Subroutine: Cursor move after 'n' character display"
+        "comment": "System subroutine: Cursor move after 'n' character display"
     },
     "D9F3": {
-        "comment": "System Subroutine: STR\$"
+        "comment": "System subroutine: STR\$"
     },
     "E000": {
         "comment": "Reset Subroutine"
