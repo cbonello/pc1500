@@ -48,11 +48,16 @@ class AddressSpace extends Equatable {
 
   bool containsAddress(int address) => start <= address && address <= end;
 
-  bool containsAddressSpace(AddressSpace range) =>
-      start <= range.start &&
-      range.start <= end &&
-      start <= range.end &&
-      range.end <= end;
+  bool contains(AddressSpace addressSpace) =>
+      start <= addressSpace.start &&
+      addressSpace.start <= end &&
+      start <= addressSpace.end &&
+      addressSpace.end <= end;
+
+  bool intersect(AddressSpace addressSpace) =>
+      (start <= addressSpace.start && addressSpace.start <= end) ||
+      (start <= addressSpace.end && addressSpace.end <= end) ||
+      (addressSpace.start <= start && addressSpace.end >= end);
 
   static int _parse(String str) {
     final int value = int.tryParse(str, radix: 16);
