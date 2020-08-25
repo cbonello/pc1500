@@ -18,8 +18,15 @@ class SystemError extends Error {
 enum DeviceType { pc1500, pc2, pc1500A }
 
 class PC1500 {
-  PC1500(this.device, [LH5801DebugEvents debugCallback])
-      : _csd = ChipSelectDecoder(),
+  PC1500(
+    this.device, [
+    this.ir0Enter,
+    this.ir1Enter,
+    this.ir2Enter,
+    this.irExit,
+    this.subroutineEnter,
+    this.subroutineExit,
+  ])  : _csd = ChipSelectDecoder(),
         _connector40Pins = ExtensionModule() {
     _clock = Clock(freq: 1300000, fps: 50);
 
@@ -66,7 +73,12 @@ class PC1500 {
       clockFrequency: 1300000,
       memRead: _csd.readByteAt,
       memWrite: _csd.writeByteAt,
-      debugCallback: debugCallback,
+      ir0Enter: ir0Enter,
+      ir1Enter: ir1Enter,
+      ir2Enter: ir2Enter,
+      irExit: irExit,
+      subroutineEnter: subroutineEnter,
+      subroutineExit: subroutineExit,
     )..reset();
     _cpu.resetPin = true;
 
@@ -83,6 +95,12 @@ class PC1500 {
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
   LH5801DASM _dasm;
+  final LH5801Command ir0Enter;
+  final LH5801Command ir1Enter;
+  final LH5801Command ir2Enter;
+  final LH5801Command irExit;
+  final LH5801Command subroutineEnter;
+  final LH5801Command subroutineExit;
 
   int step() => _cpu.step();
 
@@ -138,8 +156,23 @@ class PC1500 {
 }
 
 class PC1500Traced extends PC1500 {
-  PC1500Traced(DeviceType device, [LH5801DebugEvents debugCallback])
-      : super(device, debugCallback) {
+  PC1500Traced(
+    DeviceType device, [
+    LH5801Command ir0Enter,
+    LH5801Command ir1Enter,
+    LH5801Command ir2Enter,
+    LH5801Command irExit,
+    LH5801Command subroutineEnter,
+    LH5801Command subroutineExit,
+  ]) : super(
+          device,
+          ir0Enter,
+          ir1Enter,
+          ir2Enter,
+          irExit,
+          subroutineEnter,
+          subroutineExit,
+        ) {
     _cpu = LH5801Traced(
       clockFrequency: 1300000,
       memRead: _csd.readByteAt,
