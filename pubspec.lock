@@ -37,7 +37,7 @@ packages:
     source: hosted
     version: "1.1.3"
   chip_select_decoder:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "packages/chip_select_decoder"
       relative: true
@@ -57,6 +57,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.14.13"
+  convert:
+    dependency: transitive
+    description:
+      name: convert
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
+  crypto:
+    dependency: transitive
+    description:
+      name: crypto
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.5"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -103,14 +117,14 @@ packages:
     source: hosted
     version: "3.0.1"
   lcd:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "packages/lcd"
       relative: true
     source: path
-    version: "0.0.0"
+    version: "0.1.0"
   lh5801:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "."
       ref: HEAD
@@ -119,7 +133,7 @@ packages:
     source: git
     version: "0.2.0"
   lh5811:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "packages/lh5811"
       relative: true
@@ -154,12 +168,12 @@ packages:
     source: hosted
     version: "1.7.0"
   roms:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "packages/roms"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.2.0"
   sky_engine:
     dependency: transitive
     description: flutter
