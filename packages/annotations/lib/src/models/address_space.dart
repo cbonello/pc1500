@@ -1,8 +1,10 @@
+import 'dart:collection';
+
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 @immutable
-class AddressSpace extends Equatable {
+class AddressSpace extends Equatable with IterableMixin<int> {
   const AddressSpace._({
     @required this.tag,
     @required this.start,
@@ -32,7 +34,7 @@ class AddressSpace extends Equatable {
         end = 0x10000 | _parse(tag.substring(7, 11));
         break;
       default:
-        assert(false, 'Invalid address range');
+        assert(false, 'Invalid address-space [$tag]');
     }
 
     return AddressSpace._(tag: tag, start: start, end: end);
@@ -42,19 +44,23 @@ class AddressSpace extends Equatable {
   final int start;
   final int end;
 
+  @override
   int get length => end - start + 1;
+
+  @override
+  Iterator<int> get iterator => _AddressSpaceIterator(start: start, end: end);
 
   int get memoryBank => start < 0x10000 ? 0 : 1;
 
   bool containsAddress(int address) => start <= address && address <= end;
 
-  bool contains(AddressSpace addressSpace) =>
+  bool containsAddressSpace(AddressSpace addressSpace) =>
       start <= addressSpace.start &&
       addressSpace.start <= end &&
       start <= addressSpace.end &&
       addressSpace.end <= end;
 
-  bool intersect(AddressSpace addressSpace) =>
+  bool intersectWith(AddressSpace addressSpace) =>
       (start <= addressSpace.start && addressSpace.start <= end) ||
       (start <= addressSpace.end && addressSpace.end <= end) ||
       (addressSpace.start <= start && addressSpace.end >= end);
@@ -70,4 +76,26 @@ class AddressSpace extends Equatable {
 
   @override
   String toString() => '[$tag]';
+}
+
+class _AddressSpaceIterator implements Iterator<int> {
+  _AddressSpaceIterator({@required this.start, @required this.end})
+      : assert(start <= end),
+        _current = start - 1;
+
+  final int start;
+  final int end;
+  int _current;
+
+  @override
+  int get current => _current;
+
+  @override
+  bool moveNext() {
+    if (_current < end) {
+      _current++;
+      return true;
+    }
+    return false;
+  }
 }

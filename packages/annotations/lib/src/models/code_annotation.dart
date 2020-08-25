@@ -38,4 +38,22 @@ class CodeAnnotation extends AnnotationBase {
   final AnnotatedArea area;
   final String label;
   final String comment;
+
+  @override
+  void mapAddress(Map<int, AnnotationBase> bank) {
+    final Iterator<int> iterator = addressSpace.iterator;
+
+    while (iterator.moveNext()) {
+      assert(bank.containsKey(iterator.current) == false);
+      bank[iterator.current] = this;
+    }
+  }
+
+  @override
+  void addSymbol(Map<String, AnnotationBase> symbolTable) {
+    if (label != null) {
+      assert(symbolTable.containsKey(label) == false);
+      symbolTable[label] = this;
+    }
+  }
 }

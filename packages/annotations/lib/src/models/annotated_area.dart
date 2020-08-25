@@ -107,7 +107,7 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
       for (int j = i + 1; j < annotations.length; j++) {
         assert(annotations[i]
                 .addressSpace
-                .intersect(annotations[j].addressSpace) ==
+                .intersectWith(annotations[j].addressSpace) ==
             false);
       }
     }
@@ -120,6 +120,32 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
   final List<AnnotatedArea> subAreas;
   final List<CodeAnnotation> codeAnnotations;
   final List<DataAnnotation> dataAnnotations;
+
+  @override
+  void mapAddress(Map<int, AnnotationBase> bank) {
+    for (final AnnotatedArea s in subAreas) {
+      s.mapAddress(bank);
+    }
+    for (final CodeAnnotation c in codeAnnotations) {
+      c.mapAddress(bank);
+    }
+    for (final DataAnnotation d in dataAnnotations) {
+      d.mapAddress(bank);
+    }
+  }
+
+  @override
+  void addSymbol(Map<String, AnnotationBase> symbolTable) {
+    for (final AnnotatedArea s in subAreas) {
+      s.addSymbol(symbolTable);
+    }
+    for (final CodeAnnotation c in codeAnnotations) {
+      c.addSymbol(symbolTable);
+    }
+    for (final DataAnnotation d in dataAnnotations) {
+      d.addSymbol(symbolTable);
+    }
+  }
 
   @override
   List<Object> get props => <Object>[
