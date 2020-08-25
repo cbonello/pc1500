@@ -532,37 +532,37 @@ const String json = '''
                 "name": "Arithmetic registers",
                 "data": {
                     "7A00-7A07": {
-                        "label": "VARIABLE_X",
+                        "label": "REGISTER_X",
                         "comment": "Arithmetic register X",
                         "type": "arith_reg"
                     },
                     "7A08-7A0F": {
-                        "label": "VARIABLE_Z",
+                        "label": "REGISTER_Z",
                         "comment": "Arithmetic register Z",
                         "type": "arith_reg"
                     },
                     "7A10-7A17": {
-                        "label": "VARIABLE_Y",
+                        "label": "REGISTER_Y",
                         "comment": "Arithmetic register Y",
                         "type": "arith_reg"
                     },
                     "7A18-7A1F": {
-                        "label": "VARIABLE_U",
+                        "label": "REGISTER_U",
                         "comment": "Arithmetic register U",
                         "type": "arith_reg"
                     },
                     "7A20-7A27": {
-                        "label": "VARIABLE_V",
+                        "label": "REGISTER_V",
                         "comment": "Arithmetic register V",
                         "type": "arith_reg"
                     },
                     "7A28-7A2F": {
-                        "label": "VARIABLE_W",
+                        "label": "REGISTER_W",
                         "comment": "Arithmetic register W",
                         "type": "arith_reg"
                     },
                     "7A30-7A37": {
-                        "label": "VARIABLE_S",
+                        "label": "REGISTER_S",
                         "comment": "Arithmetic register S",
                         "type": "arith_reg"
                     }
