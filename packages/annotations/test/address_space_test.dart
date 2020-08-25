@@ -1,4 +1,4 @@
-import 'package:annotations/src/entities/address_space.dart';
+import 'package:annotations/src/models/models.dart';
 import 'package:test/test.dart';
 
 void main() {
