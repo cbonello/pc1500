@@ -1,4 +1,4 @@
-import 'package:annotations/src/models/models.dart';
+import 'package:annotations/annotations.dart';
 import 'package:test/test.dart';
 
 import 'data/ce150_version_1_annotations.dart' as ce150;

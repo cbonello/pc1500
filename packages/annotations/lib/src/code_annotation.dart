@@ -1,6 +1,8 @@
 import 'package:meta/meta.dart';
 
-import 'models.dart';
+import 'address_space.dart';
+import 'annotated_area.dart';
+import 'base_annotation.dart';
 
 @immutable
 class CodeAnnotation extends AnnotationBase {

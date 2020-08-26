@@ -1,7 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-import 'models.dart';
+import 'address_space.dart';
+import 'base_annotation.dart';
+import 'code_annotation.dart';
+import 'data_annotation.dart';
 
 class AnnotatedArea extends AnnotationBase with EquatableMixin {
   const AnnotatedArea._({

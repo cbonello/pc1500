@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import 'models.dart';
+import 'address_space.dart';
 
 abstract class AnnotationBase {
   const AnnotationBase({@required this.addressSpace})

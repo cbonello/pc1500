@@ -1,4 +1,4 @@
-import 'package:annotations/src/models/models.dart';
+import 'package:annotations/annotations.dart';
 import 'package:test/test.dart';
 
 void main() {
