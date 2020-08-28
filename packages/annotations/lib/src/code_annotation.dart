@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'address_space.dart';
 import 'annotated_area.dart';
 import 'base_annotation.dart';
+import 'exception.dart';
 
 @immutable
 class CodeAnnotation extends AnnotationBase {
@@ -11,29 +12,40 @@ class CodeAnnotation extends AnnotationBase {
     @required AddressSpace addressSpace,
     this.label,
     this.comment,
-  })  : assert(area != null),
-        assert(addressSpace != null),
-        assert(label != null || comment != null),
-        super(addressSpace: addressSpace);
+  }) : super(addressSpace: addressSpace);
 
   factory CodeAnnotation.fromJson(
     AnnotatedArea area,
     AddressSpace addressSpace,
     Map<String, dynamic> json,
   ) {
-    assert(area != null && area is AnnotatedArea);
-    assert(
-      addressSpace != null &&
-          addressSpace is AddressSpace &&
-          addressSpace.length == 1,
-    );
-    assert(area.addressSpace.containsAddress(addressSpace.start));
+    if (area == null || area is! AnnotatedArea) {
+      throw AnnotationsError('CodeAnnotation: Invalid area');
+    }
+    if (addressSpace == null ||
+        addressSpace is! AddressSpace ||
+        addressSpace.length != 1) {
+      throw AnnotationsError('CodeAnnotation: Invalid address-space');
+    }
+    if (area.addressSpace.containsAddress(addressSpace.start) == false) {
+      throw AnnotationsError(
+        'CodeAnnotation: area ${area.addressSpace} does not include annotation $addressSpace',
+      );
+    }
+
+    final String label = json['label'] as String;
+    final String comment = json['comment'] as String;
+    if (label == null && comment == null) {
+      throw AnnotationsError(
+        'AddressSpace: area ${area.addressSpace} : Missing label or comment',
+      );
+    }
 
     return CodeAnnotation._(
       area: area,
       addressSpace: addressSpace,
-      label: json['label'] as String,
-      comment: json['comment'] as String,
+      label: label,
+      comment: comment,
     );
   }
 
@@ -46,7 +58,11 @@ class CodeAnnotation extends AnnotationBase {
     final Iterator<int> iterator = addressSpace.iterator;
 
     while (iterator.moveNext()) {
-      assert(bank.containsKey(iterator.current) == false);
+      if (bank.containsKey(iterator.current)) {
+        throw AnnotationsError(
+          'CodeAnnotation: Address ${iterator.current} is already annotated',
+        );
+      }
       bank[iterator.current] = this;
     }
   }
@@ -54,7 +70,11 @@ class CodeAnnotation extends AnnotationBase {
   @override
   void addSymbol(Map<String, AnnotationBase> symbolTable) {
     if (label != null) {
-      assert(symbolTable.containsKey(label) == false);
+      if (symbolTable.containsKey(label)) {
+        throw AnnotationsError(
+          'CodeAnnotation: Symbol $label is already defined',
+        );
+      }
       symbolTable[label] = this;
     }
   }

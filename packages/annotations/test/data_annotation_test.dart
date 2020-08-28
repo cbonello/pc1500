@@ -23,7 +23,7 @@ void main() {
           AddressSpace.fromTag('78C0-78FF'),
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Address-space must not be null.
       expect(
@@ -35,7 +35,7 @@ void main() {
           null,
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Address-space of a code annotation must be included in its parent
       // address-space.
@@ -48,7 +48,7 @@ void main() {
           AddressSpace.fromTag('7672-7673'),
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
 
       // A code annotation must include a comment.
@@ -65,7 +65,7 @@ void main() {
           AddressSpace.fromTag('78C0-78CF'),
           json1,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
 
       // Type is either 'data', 'fixed_char_var', 'fixed_num_var' or 'arith_reg'.
@@ -83,7 +83,7 @@ void main() {
           AddressSpace.fromTag('78C0-78CF'),
           jsonNoLabel,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
     });
 

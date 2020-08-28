@@ -6,41 +6,41 @@ void main() {
     test('should detect malformed tags', () {
       expect(
         () => AddressSpace.fromTag(null),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       expect(
         () => AddressSpace.fromTag(''),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Valid tag length: 4, 5, 9, and 11.
       expect(
         () => AddressSpace.fromTag('1'),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Hexadecimal digits only.
       expect(
         () => AddressSpace.fromTag('1xyz'),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // ME1 address: '#' followed by 4 hexadecimal digits.
       expect(
         () => AddressSpace.fromTag('99999'),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // ME0 address-space: two 4 hexadecimal digits separated by a '-'.
       expect(
         () => AddressSpace.fromTag('123456789'),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // ME1 address-space: two ME1 addresses separated by a '-'.
       expect(
         () => AddressSpace.fromTag('%1234-%6789'),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // end address must be greater than or equal to start address.
       expect(
         () => AddressSpace.fromTag('9999-1111'),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
     });
 

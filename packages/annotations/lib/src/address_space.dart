@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:annotations/annotations.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
@@ -9,10 +10,12 @@ class AddressSpace extends Equatable with IterableMixin<int> {
     @required this.tag,
     @required this.start,
     @required this.end,
-  }) : assert(start <= end);
+  });
 
   factory AddressSpace.fromTag(String tag) {
-    assert(tag != null && tag.isNotEmpty);
+    if (tag == null || tag.isEmpty) {
+      throw AnnotationsError('AddressSpace: Null or empty address-space');
+    }
 
     int start, end;
     switch (tag.length) {
@@ -20,23 +23,38 @@ class AddressSpace extends Equatable with IterableMixin<int> {
         start = end = _parse(tag.substring(0, 4));
         break;
       case 5:
-        assert(tag[0] == '#');
+        if (tag[0] != '#') {
+          throw AnnotationsError(
+            'AddressSpace: Malformed address-space [$tag], missing leading "#"',
+          );
+        }
         start = end = 0x10000 | _parse(tag.substring(1, 5));
         break;
       case 9:
-        assert(tag[4] == '-');
+        if (tag[4] != '-') {
+          throw AnnotationsError(
+            'AddressSpace: Malformed address-space [$tag], missing "-" separator',
+          );
+        }
         start = _parse(tag.substring(0, 4));
         end = _parse(tag.substring(5, 9));
         break;
       case 11:
-        assert(tag[0] == '#' && tag[5] == '-' && tag[6] == '#');
+        if (tag[0] != '#' || tag[5] != '-' || tag[6] != '#') {
+          throw AnnotationsError(
+            'AddressSpace: Malformed address-space [$tag], missing leading "#" or "-" separator',
+          );
+        }
         start = 0x10000 | _parse(tag.substring(1, 5));
         end = 0x10000 | _parse(tag.substring(7, 11));
         break;
       default:
-        assert(false, 'Invalid address-space [$tag]');
+        throw AnnotationsError('AddressSpace: Invalid address-space [$tag]');
     }
 
+    if (start > end) {
+      throw AnnotationsError('AddressSpace: Invalid address-space [$tag]');
+    }
     return AddressSpace._(tag: tag, start: start, end: end);
   }
 
@@ -67,7 +85,11 @@ class AddressSpace extends Equatable with IterableMixin<int> {
 
   static int _parse(String str) {
     final int value = int.tryParse(str, radix: 16);
-    assert(value != null);
+    if (value == null) {
+      throw AnnotationsError(
+        'AddressSpace: Invalid hexadecimal address [$str]',
+      );
+    }
     return value;
   }
 

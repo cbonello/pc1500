@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'address_space.dart';
 import 'annotated_area.dart';
 import 'base_annotation.dart';
+import 'exception.dart';
 
 enum DataAnnotationType {
   data,
@@ -19,19 +20,24 @@ class DataAnnotation extends AnnotationBase {
     this.label,
     @required this.comment,
     this.type,
-  })  : assert(area != null),
-        assert(addressSpace != null),
-        assert(comment != null),
-        super(addressSpace: addressSpace);
+  }) : super(addressSpace: addressSpace);
 
   factory DataAnnotation.fromJson(
     AnnotatedArea area,
     AddressSpace addressSpace,
     Map<String, dynamic> json,
   ) {
-    assert(area != null && area is AnnotatedArea);
-    assert(addressSpace != null && addressSpace is AddressSpace);
-    assert(area.addressSpace.containsAddressSpace(addressSpace));
+    if (area == null || area is! AnnotatedArea) {
+      throw AnnotationsError('DataAnnotation: Invalid area');
+    }
+    if (addressSpace == null || addressSpace is! AddressSpace) {
+      throw AnnotationsError('DataAnnotation: Invalid address-space');
+    }
+    if (area.addressSpace.containsAddress(addressSpace.start) == false) {
+      throw AnnotationsError(
+        'DataAnnotation: area ${area.addressSpace} does not include annotation $addressSpace',
+      );
+    }
 
     final String jsonType = json['type'] as String ?? 'data';
     DataAnnotationType type;
@@ -50,14 +56,24 @@ class DataAnnotation extends AnnotationBase {
         type = DataAnnotationType.arithmeticRegister;
         break;
       default:
-        assert(false, 'Invalid data annotation type "$jsonType"');
+        throw AnnotationsError(
+          'DataAnnotation: Invalid data annotation type "$jsonType"',
+        );
+    }
+
+    final String label = json['label'] as String;
+    final String comment = json['comment'] as String;
+    if (comment == null) {
+      throw AnnotationsError(
+        'AddressSpace: area ${area.addressSpace} : Missing comment',
+      );
     }
 
     return DataAnnotation._(
       area: area,
       addressSpace: addressSpace,
-      label: json['label'] as String,
-      comment: json['comment'] as String,
+      label: label,
+      comment: comment,
       type: type,
     );
   }
@@ -72,7 +88,11 @@ class DataAnnotation extends AnnotationBase {
     final Iterator<int> iterator = addressSpace.iterator;
 
     while (iterator.moveNext()) {
-      assert(bank.containsKey(iterator.current) == false);
+      if (bank.containsKey(iterator.current)) {
+        throw AnnotationsError(
+          'DataAnnotation: Address ${iterator.current} is already annotated',
+        );
+      }
       bank[iterator.current] = this;
     }
   }
@@ -80,7 +100,11 @@ class DataAnnotation extends AnnotationBase {
   @override
   void addSymbol(Map<String, AnnotationBase> symbolTable) {
     if (label != null) {
-      assert(symbolTable.containsKey(label) == false, label);
+      if (symbolTable.containsKey(label)) {
+        throw AnnotationsError(
+          'DataAnnotation: Symbol $label is already defined',
+        );
+      }
       symbolTable[label] = this;
     }
   }

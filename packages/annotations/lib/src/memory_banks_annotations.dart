@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'address_space.dart';
 import 'annotated_area.dart';
 import 'base_annotation.dart';
+import 'exception.dart';
 
 @immutable
 class MemoryBanksAnnotations {
@@ -22,7 +23,11 @@ class MemoryBanksAnnotations {
       final Map<String, dynamic> json = jsonDecode(str) as Map<String, dynamic>;
 
       for (final String tag in json.keys) {
-        assert(json[tag] != null);
+        if (json[tag] == null) {
+          throw AnnotationsError(
+            'MemoryBanksAnnotations: Invalid annotated area "$tag"',
+          );
+        }
 
         final AddressSpace addressSpace = AddressSpace.fromTag(tag);
         final AnnotatedArea area = AnnotatedArea.fromJson(

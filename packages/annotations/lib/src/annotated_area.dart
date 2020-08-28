@@ -5,6 +5,7 @@ import 'address_space.dart';
 import 'base_annotation.dart';
 import 'code_annotation.dart';
 import 'data_annotation.dart';
+import 'exception.dart';
 
 class AnnotatedArea extends AnnotationBase with EquatableMixin {
   const AnnotatedArea._({
@@ -26,8 +27,12 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
     @required AddressSpace addressSpace,
     @required String name,
   }) {
-    assert(addressSpace != null);
-    assert(name != null);
+    if (addressSpace == null) {
+      throw AnnotationsError('AnnotatedArea: Missing address-space');
+    }
+    if (name == null) {
+      throw AnnotationsError('AnnotatedArea: Missing name');
+    }
 
     return AnnotatedArea._(
       parent: parent,
@@ -47,7 +52,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
     assert(parent?.addressSpace?.containsAddress(addressSpace.start) ?? true);
 
     final String name = json['name'] as String;
-    assert(name != null, 'Missing area name @$addressSpace');
+    if (name == null) {
+      throw AnnotationsError(
+        'AnnotatedArea: $addressSpace: Missing area name',
+      );
+    }
 
     final AnnotatedArea area = AnnotatedArea.empty(
       parent: parent,
@@ -58,7 +67,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
     final Map<String, dynamic> areas = json['areas'] as Map<String, dynamic>;
     if (areas != null) {
       for (final String tag in areas.keys) {
-        assert(areas[tag] != null);
+        if (areas[tag] == null) {
+          throw AnnotationsError(
+            'AnnotatedArea: $addressSpace: Invalid area "$tag"',
+          );
+        }
 
         final AddressSpace addrspace = AddressSpace.fromTag(tag);
         final AnnotatedArea subArea = AnnotatedArea.fromJson(
@@ -73,7 +86,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
     final Map<String, dynamic> code = json['code'] as Map<String, dynamic>;
     if (code != null) {
       for (final String tag in code.keys) {
-        assert(code[tag] != null);
+        if (code[tag] == null) {
+          throw AnnotationsError(
+            'AnnotatedArea: $addressSpace: Invalid code area "$tag"',
+          );
+        }
 
         final AddressSpace addrspace = AddressSpace.fromTag(tag);
         final CodeAnnotation codeAnnotation = CodeAnnotation.fromJson(
@@ -88,7 +105,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
     final Map<String, dynamic> data = json['data'] as Map<String, dynamic>;
     if (data != null) {
       for (final String tag in data.keys) {
-        assert(data[tag] != null);
+        if (data[tag] == null) {
+          throw AnnotationsError(
+            'AnnotatedArea: $addressSpace: Invalid data area "$tag"',
+          );
+        }
 
         final AddressSpace addrspace = AddressSpace.fromTag(tag);
         final DataAnnotation dataAnnotation = DataAnnotation.fromJson(
@@ -108,10 +129,14 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
 
     for (int i = 0; i < annotations.length - 1; i++) {
       for (int j = i + 1; j < annotations.length; j++) {
-        assert(annotations[i]
+        if (annotations[i]
                 .addressSpace
                 .intersectWith(annotations[j].addressSpace) ==
-            false);
+            true) {
+          throw AnnotationsError(
+            'AnnotatedArea: ${annotations[i].addressSpace} and ${annotations[j].addressSpace} intersect',
+          );
+        }
       }
     }
 

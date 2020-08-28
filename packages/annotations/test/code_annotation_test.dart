@@ -22,7 +22,7 @@ void main() {
           AddressSpace.fromTag('C001'),
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Address-space must not be null.
       expect(
@@ -34,7 +34,7 @@ void main() {
           null,
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Address-space length of a code annotation must be 1.
       expect(
@@ -46,7 +46,7 @@ void main() {
           AddressSpace.fromTag('C001-C002'),
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
       // Address-space of a code annotation must be included in its parent
       // address-space.
@@ -59,7 +59,7 @@ void main() {
           AddressSpace.fromTag('A000'),
           json,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
 
       // A code annotation must include either a label or a comment, or both.
@@ -76,7 +76,7 @@ void main() {
           AddressSpace.fromTag('C001'),
           json1,
         ),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(const TypeMatcher<AnnotationsError>()),
       );
     });
 
