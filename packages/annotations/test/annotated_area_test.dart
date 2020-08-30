@@ -42,7 +42,45 @@ void main() {
       jsonDecode(jsonData) as Map<String, dynamic>;
 
   group('AnnotatedArea', () {
-    test('should raise an AssertionError for invalid arguments', () {});
+    group('AnnotatedArea.empty()', () {
+      test('should raise an AnnotationsError for invalid arguments', () {
+        expect(
+          () => AnnotatedArea.empty(
+            addressSpace: null,
+            name: 'test',
+          ),
+          throwsA(const TypeMatcher<AnnotationsError>()),
+        );
+        expect(
+          () => AnnotatedArea.empty(
+            addressSpace: AddressSpace.fromTag('1234'),
+            name: null,
+          ),
+          throwsA(const TypeMatcher<AnnotationsError>()),
+        );
+      });
+
+      test('should create an empty AnnotatedArea successfully', () {
+        AnnotatedArea annotatedArea;
+
+        expect(
+          annotatedArea = AnnotatedArea.empty(
+            addressSpace: AddressSpace.fromTag('1234'),
+            name: 'test',
+          ),
+          equals(const TypeMatcher<AnnotatedArea>()),
+        );
+        expect(annotatedArea.parent, isNull);
+        expect(
+          annotatedArea.addressSpace,
+          equals(AddressSpace.fromTag('1234')),
+        );
+        expect(annotatedArea.name, equals('test'));
+        expect(annotatedArea.subAreas, isEmpty);
+        expect(annotatedArea.codeAnnotations, isEmpty);
+        expect(annotatedArea.dataAnnotations, isEmpty);
+      });
+    });
 
     test('should create an instance of AnnotatedArea successfully', () {
       AnnotatedArea annotatedArea;
