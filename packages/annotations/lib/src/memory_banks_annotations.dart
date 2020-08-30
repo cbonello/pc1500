@@ -25,7 +25,7 @@ class MemoryBanksAnnotations {
       for (final String tag in json.keys) {
         if (json[tag] == null) {
           throw AnnotationsError(
-            'MemoryBanksAnnotations: Invalid annotated area "$tag"',
+            'MemoryBanksAnnotations: Null annotated area "$tag"',
           );
         }
 
@@ -52,13 +52,17 @@ class MemoryBanksAnnotations {
 
     if (areas.isNotEmpty) {
       for (int i = 1; i < areas.length; i++) {
-        assert(
-          areas[i - 1].addressSpace.memoryBank ==
-              areas[i].addressSpace.memoryBank,
-        );
-        assert(
-          !areas[i - 1].addressSpace.intersectWith(areas[i].addressSpace),
-        );
+        if (areas[i - 1].addressSpace.memoryBank !=
+            areas[i].addressSpace.memoryBank) {
+          throw AnnotationsError(
+            'MemoryBanksAnnotations: ${areas[i - 1].addressSpace}: ${areas[i].addressSpace}: Areas are located into different memory banks',
+          );
+        }
+        if (areas[i - 1].addressSpace.intersectWith(areas[i].addressSpace)) {
+          throw AnnotationsError(
+            'MemoryBanksAnnotations: ${areas[i - 1].addressSpace}: ${areas[i].addressSpace}: Areas interscet',
+          );
+        }
       }
 
       for (final AnnotationBase area in areas) {
