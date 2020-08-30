@@ -7,16 +7,23 @@ import 'annotated_area.dart';
 import 'base_annotation.dart';
 import 'exception.dart';
 
-@immutable
 class MemoryBanksAnnotations {
-  const MemoryBanksAnnotations._({
-    @required this.banks,
-    @required this.symbolTable,
-  });
+  factory MemoryBanksAnnotations() {
+    return MemoryBanksAnnotations._(
+      banks: <Map<int, AnnotationBase>>[
+        <int, AnnotationBase>{},
+        <int, AnnotationBase>{},
+      ],
+      symbolTable: <Map<String, AnnotationBase>>[
+        <String, AnnotationBase>{},
+        <String, AnnotationBase>{},
+      ],
+    );
+  }
 
-  factory MemoryBanksAnnotations.fromAnnotations(
-    List<String> annotations,
-  ) {
+  MemoryBanksAnnotations._({@required this.banks, @required this.symbolTable});
+
+  void merge(List<String> annotations) {
     final List<AnnotatedArea> areas = <AnnotatedArea>[];
 
     for (final String str in annotations) {
@@ -40,16 +47,6 @@ class MemoryBanksAnnotations {
       }
     }
 
-    final List<Map<int, AnnotationBase>> banks = <Map<int, AnnotationBase>>[
-      <int, AnnotationBase>{},
-      <int, AnnotationBase>{},
-    ];
-    final List<Map<String, AnnotationBase>> symbolTable =
-        <Map<String, AnnotationBase>>[
-      <String, AnnotationBase>{},
-      <String, AnnotationBase>{},
-    ];
-
     if (areas.isNotEmpty) {
       for (int i = 1; i < areas.length; i++) {
         if (areas[i - 1].addressSpace.memoryBank !=
@@ -72,8 +69,6 @@ class MemoryBanksAnnotations {
         area.addSymbol(symbolTable[memoryBank]);
       }
     }
-
-    return MemoryBanksAnnotations._(banks: banks, symbolTable: symbolTable);
   }
 
   final List<Map<int, AnnotationBase>> banks;

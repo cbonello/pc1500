@@ -15,7 +15,7 @@ void main() {
       jsonDecode(jsonData) as Map<String, dynamic>;
 
   group('DataAnnotation', () {
-    test('should raise an AssertionError for invalid arguments', () {
+    test('should raise an AnnotationsError for invalid arguments', () {
       // Parent must not be null.
       expect(
         () => DataAnnotation.fromJson(
