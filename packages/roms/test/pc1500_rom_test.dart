@@ -29,11 +29,6 @@ void main() {
 
       expect(rom.type, equals(PC1500RomType.a03));
       expect(rom.annotations.length, greaterThan(0));
-
-      final Annotation annotation = rom.annotations.find(0xE000);
-      expect(annotation, isNotNull);
-      expect(annotation.comment, equals('Reset Subroutine'));
-      expect(annotation.tag, isEmpty);
     });
 
     test('available getter should return the available ROM-types', () {

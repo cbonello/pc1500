@@ -28,14 +28,6 @@ void main() {
 
       expect(rom.type, equals(CE150RomType.version_1));
       expect(rom.annotations.length, greaterThan(0));
-
-      final Annotation annotation = rom.annotations.find(0xA800);
-      expect(annotation, isNotNull);
-      expect(
-        annotation.comment,
-        equals('CE-150 ROM version: 44H = version 0, BEH = version 1'),
-      );
-      expect(annotation.tag, isEmpty);
     });
 
     test('available getter should return the available ROM-types', () {

@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 
 import 'ce150_version_1.dart' as ce150_version_1;
 import 'ce150_version_1_annotations.dart' as ce150_version_1_annotations;
-import 'entities/entities.dart';
 import 'rom_base.dart';
 
 enum CE150RomType { version_0, version_1 }
@@ -28,17 +27,17 @@ class CE150Rom implements RomBase {
 
     if (_annotationsJson.containsKey(type)) {
       try {
-        final dynamic json = jsonDecode(_annotationsJson[type]);
-        annotations = Annotations.fromJson(json as Map<String, dynamic>);
+        annotations =
+            jsonDecode(_annotationsJson[type]) as Map<String, dynamic>;
       } catch (e) {
-        annotations = Annotations.empty();
+        annotations = <String, dynamic>{};
       }
     }
   }
 
   final CE150RomType type;
   Uint8List _bytes;
-  Annotations annotations;
+  Map<String, dynamic> annotations;
 
   @override
   Uint8List get bytes => Uint8List.view(_bytes.buffer);

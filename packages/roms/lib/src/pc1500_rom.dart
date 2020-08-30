@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
-import 'entities/entities.dart';
 import 'pc1500_a03.dart' as pc1500_a03;
 import 'pc1500_a03_annotations.dart' as pc1500_a03_annotations;
 import 'rom_base.dart';
@@ -28,17 +27,17 @@ class PC1500Rom implements RomBase {
 
     if (_annotationsJson.containsKey(type)) {
       try {
-        final dynamic json = jsonDecode(_annotationsJson[type]);
-        annotations = Annotations.fromJson(json as Map<String, dynamic>);
+        annotations =
+            jsonDecode(_annotationsJson[type]) as Map<String, dynamic>;
       } catch (e) {
-        annotations = Annotations.empty();
+        annotations = <String, dynamic>{};
       }
     }
   }
 
   final PC1500RomType type;
   Uint8List _bytes;
-  Annotations annotations;
+  Map<String, dynamic> annotations;
 
   @override
   Uint8List get bytes => Uint8List.view(_bytes.buffer);
