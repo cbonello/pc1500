@@ -31,14 +31,26 @@ void main() {
         },
       );
 
-      test('should merge annotations successfully', () {
-        final MemoryBanksAnnotations annotations = MemoryBanksAnnotations()
+      test('should merge annotations successfully (in any order)', () {
+        MemoryBanksAnnotations annotations = MemoryBanksAnnotations()
           ..merge(
             <String>[ce150.json, ram.json, rom.json],
           );
+        expect(annotations.banks[0].length, equals(838));
+        expect(annotations.banks[1].length, isZero);
 
-        expect(annotations.banks[0], isNotEmpty);
-        expect(annotations.banks[1], isEmpty);
+        annotations = MemoryBanksAnnotations()
+          ..merge(<String>[ce150.json])
+          ..merge(<String>[ram.json])
+          ..merge(<String>[rom.json]);
+        expect(annotations.banks[0].length, equals(838));
+        expect(annotations.banks[1].length, isZero);
+
+        annotations = MemoryBanksAnnotations()
+          ..merge(<String>[ce150.json])
+          ..merge(<String>[ram.json, rom.json]);
+        expect(annotations.banks[0].length, equals(838));
+        expect(annotations.banks[1].length, isZero);
       });
     });
 

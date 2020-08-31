@@ -10,6 +10,10 @@ import 'exception.dart';
 class MemoryBanksAnnotations {
   factory MemoryBanksAnnotations() {
     return MemoryBanksAnnotations._(
+      areasInBanks: <int, List<AnnotatedArea>>{
+        0: <AnnotatedArea>[],
+        1: <AnnotatedArea>[],
+      },
       banks: <Map<int, AnnotationBase>>[
         <int, AnnotationBase>{},
         <int, AnnotationBase>{},
@@ -21,7 +25,11 @@ class MemoryBanksAnnotations {
     );
   }
 
-  MemoryBanksAnnotations._({@required this.banks, @required this.symbolTable});
+  MemoryBanksAnnotations._({
+    @required Map<int, List<AnnotatedArea>> areasInBanks,
+    @required this.banks,
+    @required this.symbolTable,
+  }) : _areasInBanks = areasInBanks;
 
   void merge(List<String> annotations) {
     final List<AnnotatedArea> areas = <AnnotatedArea>[];
@@ -48,29 +56,33 @@ class MemoryBanksAnnotations {
     }
 
     if (areas.isNotEmpty) {
-      for (int i = 1; i < areas.length; i++) {
-        if (areas[i - 1].addressSpace.memoryBank !=
-            areas[i].addressSpace.memoryBank) {
-          throw AnnotationsError(
-            'MemoryBanksAnnotations: ${areas[i - 1].addressSpace}: ${areas[i].addressSpace}: Areas are located into different memory banks',
-          );
+      for (int i = 0; i < areas.length; i++) {
+        final int memoryBank = areas[i].addressSpace.memoryBank;
+
+        for (int j = 0; j < _areasInBanks[memoryBank].length; j++) {
+          if (areas[i]
+              .addressSpace
+              .intersectWith(_areasInBanks[memoryBank][j].addressSpace)) {
+            throw AnnotationsError(
+              'MemoryBanksAnnotations: ${areas[i].addressSpace}: ${_areasInBanks[memoryBank][j].addressSpace}: Areas intersect',
+            );
+          }
         }
-        if (areas[i - 1].addressSpace.intersectWith(areas[i].addressSpace)) {
-          throw AnnotationsError(
-            'MemoryBanksAnnotations: ${areas[i - 1].addressSpace}: ${areas[i].addressSpace}: Areas interscet',
-          );
-        }
+
+        _areasInBanks[memoryBank].add(areas[i]);
       }
 
-      for (final AnnotationBase area in areas) {
-        final int memoryBank = area.addressSpace.memoryBank;
-
-        area.mapAddress(banks[memoryBank]);
-        area.addSymbol(symbolTable[memoryBank]);
+      _clear();
+      for (final int memoryBank in <int>[0, 1]) {
+        for (final AnnotationBase area in _areasInBanks[memoryBank]) {
+          area.mapAddress(banks[memoryBank]);
+          area.addSymbol(symbolTable[memoryBank]);
+        }
       }
     }
   }
 
+  final Map<int, List<AnnotatedArea>> _areasInBanks;
   final List<Map<int, AnnotationBase>> banks;
   final List<Map<String, AnnotationBase>> symbolTable;
 
@@ -90,4 +102,11 @@ class MemoryBanksAnnotations {
           : null;
 
   int _memoryBank(int address) => address < 0x10000 ? 0 : 1;
+
+  void _clear() {
+    for (final int memoryBank in <int>[0, 1]) {
+      banks[memoryBank].clear();
+      symbolTable[memoryBank].clear();
+    }
+  }
 }
