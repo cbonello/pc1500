@@ -31,7 +31,7 @@ class MemoryBanksAnnotations {
     @required this.symbolTable,
   }) : _areasInBanks = areasInBanks;
 
-  void merge(List<String> annotations) {
+  void load(List<String> annotations) {
     final List<AnnotatedArea> areas = <AnnotatedArea>[];
 
     for (final String str in annotations) {
