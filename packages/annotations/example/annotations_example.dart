@@ -17,21 +17,6 @@ const String json = '''
                         "comment": "RUN, PRO, RESERVE, RAD, G and DE"
                     }
                 }
-            },
-            "7650-76FF": {
-                "name": "Fixed character variables #1",
-                "data": {
-                    "7650-765F": {
-                        "label": "VARIABLE_E\$",
-                        "comment": "Fixed character variable E\$",
-                        "type": "fixed_char_var"
-                    },
-                    "7660-766F": {
-                        "label": "VARIABLE_F\$",
-                        "comment": "Fixed character variable F\$",
-                        "type": "fixed_char_var"
-                    }
-                }
             }
         }
     }
@@ -44,6 +29,22 @@ void main() {
   annotations.load(<String>[json]);
 
   if (annotations.isAnnotated(0x764E)) {
-    print(annotations.getAnnotationFromAddress(0x764E).toString());
+    final AnnotationBase annotation =
+        annotations.getAnnotationFromAddress(0x764E);
+    if (annotation is CodeAnnotation) {
+      final String label =
+          annotation.label == null ? '' : '${annotation.label}: ';
+      final String comment =
+          annotation.comment == null ? '' : '; ${annotation.comment}';
+
+      print('${annotation.addressSpace} $label$comment');
+    } else if (annotation is DataAnnotation) {
+      final String label =
+          annotation.label == null ? '' : '${annotation.label}: ';
+      final String comment =
+          annotation.comment == null ? '' : '; ${annotation.comment}';
+
+      print('${annotation.addressSpace} $label$comment');
+    }
   }
 }
