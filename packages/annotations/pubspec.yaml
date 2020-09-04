@@ -1,6 +1,6 @@
 name: annotations
 version: 0.1.0
-description: ROM annotations manager.
+description: RAM/ROM annotations manager.
 author: Christophe Bonello
 homepage: https://github.com/cbonello/
 repository: https://github.com/cbonello/pc1500/tree/master/packages/annotations
