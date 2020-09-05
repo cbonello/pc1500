@@ -96,6 +96,41 @@ void main() {
       });
     });
 
+    group('appendROMPlaceholder()', () {
+      test('should raise an exception for invalid arguments', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        expect(
+          () => cs.appendROMPlaceholder(MemoryBank.me0, -1, 100, 0x1A),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
+          () => cs.appendROMPlaceholder(MemoryBank.me0, 0x20000, 100, 0x1B),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
+          () => cs.appendROMPlaceholder(MemoryBank.me0, 10, 0, 0x1C),
+          throwsA(const TypeMatcher<ArgumentError>()),
+        );
+        expect(
+          () => cs.appendROMPlaceholder(MemoryBank.me0, 10, 64 * 1024, 0x1D),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+
+      test('should detect memory overlaps', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        cs.appendROMPlaceholder(MemoryBank.me0, 0, 100, 0x00);
+        expect(cs.memoryBanks[MemoryBank.me0].length, equals(1));
+
+        expect(
+          () => cs.appendROMPlaceholder(MemoryBank.me0, 10, 100, 0xFF),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+    });
+
     test('should append RAMs and ROMs successfully', () {
       final ChipSelectDecoder cs = ChipSelectDecoder();
       final MockRom rom = createMockRom(16 * 1024);
