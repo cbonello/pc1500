@@ -1,22 +1,11 @@
-A library for Dart developers.
-
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+A Dart library that implements the chip-select decoder of a Sharp PC-1500 pocket computer.
 
 ## Usage
 
-A simple usage example:
-
-```dart
-import 'package:chip_select/chip_select.dart';
-
-main() {
-  var awesome = new Awesome();
-}
-```
+See `example/` folder.
 
 ## Features and bugs
 
 Please file feature requests and bugs at the [issue tracker][tracker].
 
-[tracker]: http://example.com/issues/replaceme
+[tracker]: https://github.com/cbonello/pc1500/issues
