@@ -169,111 +169,113 @@ void main() {
       });
     });
 
-    group('MemoryChipIOPorts', () {
+    group('MemoryChipRomPlaceholder', () {
       test('should create a I/O ports area successfully', () {
-        MemoryChipIOPorts ioArea;
+        MemoryChipRomPlaceholder rpArea;
 
         expect(
-          ioArea = MemoryChipIOPorts(start: 0, length: 10, value: 16),
-          equals(const TypeMatcher<MemoryChipIOPorts>()),
+          rpArea = MemoryChipRomPlaceholder(start: 0, length: 10, value: 16),
+          equals(const TypeMatcher<MemoryChipRomPlaceholder>()),
         );
 
-        for (int i = 0; i < ioArea.length; i++) {
-          expect(ioArea.readByteAt(1), equals(16));
+        for (int i = 0; i < rpArea.length; i++) {
+          expect(rpArea.readByteAt(1), equals(16));
         }
       });
 
       test('isReadonly getter should return false', () {
-        final MemoryChipIOPorts ioArea = MemoryChipIOPorts(
+        final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
           start: 0,
           length: 100,
           value: 16,
         );
-        expect(ioArea.isReadonly, isFalse);
+        expect(rpArea.isReadonly, isFalse);
       });
 
       test('end getter should return the expected value', () {
-        final MemoryChipIOPorts ioArea = MemoryChipIOPorts(
+        final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
           start: 0,
           length: 100,
           value: 16,
         );
-        expect(ioArea.end, 99);
+        expect(rpArea.end, 99);
       });
 
       group('readByteAt()', () {
         test('should read successfully', () {
-          final MemoryChipIOPorts ioArea = MemoryChipIOPorts(
+          final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
             start: 0,
             length: 100,
             value: 16,
           );
-          expect(ioArea.readByteAt(0), equals(16));
+          expect(rpArea.readByteAt(0), equals(16));
         });
 
         test('should call the registered observers after each read', () {
           final MockMemoryObserver observer = MockMemoryObserver();
-          final MemoryChipIOPorts ioArea = MemoryChipIOPorts(
+          final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
             start: 0,
             length: 128,
             value: 16,
           );
-          ioArea.registerObserver(MemoryAccessType.read, observer);
+          rpArea.registerObserver(MemoryAccessType.read, observer);
 
-          ioArea.readByteAt(3);
+          rpArea.readByteAt(3);
           verify(observer.update(MemoryAccessType.read, any, any)).called(1);
-          ioArea.readByteAt(2);
+          rpArea.readByteAt(2);
           verify(observer.update(MemoryAccessType.read, any, any)).called(1);
         });
       });
 
       group('writeByteAt()', () {
         test('should write successfully', () {
-          final MemoryChipIOPorts ioArea = MemoryChipIOPorts(
+          final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
             start: 0,
             length: 100,
             value: 16,
           );
-          ioArea.writeByteAt(10, 89);
-          expect(ioArea.readByteAt(10), equals(16));
+          rpArea.writeByteAt(10, 89);
+          expect(rpArea.readByteAt(10), equals(16));
         });
 
         test('should call the registered observers after each write', () {
           final MockMemoryObserver observer = MockMemoryObserver();
-          final MemoryChipIOPorts ioArea = MemoryChipIOPorts(
+          final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
             start: 0,
             length: 128,
             value: 16,
           );
-          ioArea.registerObserver(MemoryAccessType.write, observer);
+          rpArea.registerObserver(MemoryAccessType.write, observer);
 
-          ioArea.writeByteAt(10, 89);
+          rpArea.writeByteAt(10, 89);
           verify(observer.update(MemoryAccessType.write, any, any)).called(1);
-          ioArea.writeByteAt(99, 12);
+          rpArea.writeByteAt(99, 12);
           verify(observer.update(MemoryAccessType.write, any, any)).called(1);
         });
       });
 
       test('clone() should clone a RAM successfully', () {
-        final MemoryChipIOPorts ioArea1 = MemoryChipIOPorts(
+        final MemoryChipRomPlaceholder ioArea1 = MemoryChipRomPlaceholder(
           start: 0,
           length: 128,
           value: 16,
         )
           ..writeByteAt(10, 10)
           ..writeByteAt(15, 15);
-        final MemoryChipIOPorts ioAre2 = ioArea1.clone() as MemoryChipIOPorts;
+        final MemoryChipRomPlaceholder ioAre2 =
+            ioArea1.clone() as MemoryChipRomPlaceholder;
 
         expect(ioArea1, equals(ioAre2));
       });
 
       test('content of RAMs should be saved/restored successfully', () {
-        final MemoryChipIOPorts ioArea1 = MemoryChipIOPorts(
+        final MemoryChipRomPlaceholder ioArea1 = MemoryChipRomPlaceholder(
           start: 0,
           length: 128,
           value: 16,
         );
-        final MemoryChipIOPorts ioArea2 = ioArea1.clone() as MemoryChipIOPorts;
+        final MemoryChipRomPlaceholder ioArea2 =
+            ioArea1.clone() as MemoryChipRomPlaceholder;
 
         ioArea1.writeByteAt(100, 43);
 

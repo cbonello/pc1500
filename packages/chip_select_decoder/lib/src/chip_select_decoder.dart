@@ -123,7 +123,7 @@ class ChipSelectDecoder extends Equatable {
     return memoryChip;
   }
 
-  MemoryChipBase appendIOPorts(
+  MemoryChipBase appendROMPlaceholder(
     MemoryBank bank,
     int start,
     int length,
@@ -148,7 +148,7 @@ class ChipSelectDecoder extends Equatable {
     }
     _checkMemoryOverlap(start, end, memoryBanks[bank]);
 
-    final MemoryChipIOPorts memoryChip = MemoryChipIOPorts(
+    final MemoryChipRomPlaceholder memoryChip = MemoryChipRomPlaceholder(
       start: start,
       length: length,
       value: value,

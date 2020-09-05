@@ -48,13 +48,13 @@ class PC1500 {
     }
 
     // I/O ports
-    final MemoryChipBase ce153IO = _csd.appendIOPorts(
+    final MemoryChipBase ce153IO = _csd.appendROMPlaceholder(
       MemoryBank.me1,
       0x8000,
       0x10,
       0xFF,
     );
-    final MemoryChipBase ce150IO = _csd.appendIOPorts(
+    final MemoryChipBase ce150IO = _csd.appendROMPlaceholder(
       MemoryBank.me1,
       0xB000,
       0x10,

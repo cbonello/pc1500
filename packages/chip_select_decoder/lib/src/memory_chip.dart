@@ -221,8 +221,8 @@ class MemoryChipRom extends MemoryChipBase with MemoryOperations {
   }
 }
 
-class MemoryChipIOPorts extends MemoryChipBase {
-  MemoryChipIOPorts({
+class MemoryChipRomPlaceholder extends MemoryChipBase {
+  MemoryChipRomPlaceholder({
     @required int start,
     @required int length,
     @required int value,
@@ -270,7 +270,7 @@ class MemoryChipIOPorts extends MemoryChipBase {
 
   @override
   MemoryChipBase clone() {
-    final MemoryChipIOPorts io = MemoryChipIOPorts(
+    final MemoryChipRomPlaceholder io = MemoryChipRomPlaceholder(
       start: start,
       length: length,
       value: _value,

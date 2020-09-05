@@ -96,7 +96,7 @@ void main() {
       });
     });
 
-    test('should append RAMs, ROMs and I/O ports areas successfully', () {
+    test('should append RAMs and ROMs successfully', () {
       final ChipSelectDecoder cs = ChipSelectDecoder();
       final MockRom rom = createMockRom(16 * 1024);
 
@@ -105,13 +105,13 @@ void main() {
       cs.appendROM(MemoryBank.me0, 0xC000, rom);
       expect(cs.memoryBanks[MemoryBank.me0].length, equals(3));
 
-      cs.appendIOPorts(MemoryBank.me1, 0x8000, 0x10, 0xFF);
-      cs.appendIOPorts(MemoryBank.me1, 0xB000, 0x10, 0xFF);
+      cs.appendROMPlaceholder(MemoryBank.me1, 0x8000, 0x10, 0xFF);
+      cs.appendROMPlaceholder(MemoryBank.me1, 0xB000, 0x10, 0xFF);
       cs.appendRAM(MemoryBank.me1, 0xF000, 0xF00F - 0xF000 + 1);
       expect(cs.memoryBanks[MemoryBank.me1].length, equals(3));
     });
 
-    test('content of RAMS should be saved/restored successfully', () {
+    test('content of RAMs should be saved/restored successfully', () {
       final ChipSelectDecoder cs1 = ChipSelectDecoder();
 
       cs1.appendRAM(MemoryBank.me0, 0, 5);
@@ -156,7 +156,7 @@ void main() {
 
         cs.appendRAM(MemoryBank.me0, 0, 512);
         cs.appendROM(MemoryBank.me0, 1000, rom);
-        cs.appendIOPorts(MemoryBank.me0, 0x8000, 0x10, 0xFF);
+        cs.appendROMPlaceholder(MemoryBank.me0, 0x8000, 0x10, 0xFF);
         expect(cs.readByteAt(256), equals(0));
         expect(cs.readByteAt(1012), equals(12));
         expect(cs.readByteAt(0x8002), equals(0xFF));
@@ -201,7 +201,7 @@ void main() {
         final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 512);
-        cs.appendIOPorts(MemoryBank.me0, 0x8000, 0x10, 0xFF);
+        cs.appendROMPlaceholder(MemoryBank.me0, 0x8000, 0x10, 0xFF);
         cs.writeByteAt(256, 89);
         expect(cs.readByteAt(256), equals(89));
         cs.writeByteAt(0x8002, 1);
