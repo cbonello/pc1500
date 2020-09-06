@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:lh5801/lh5801.dart';
 import 'package:system/system.dart';
 
