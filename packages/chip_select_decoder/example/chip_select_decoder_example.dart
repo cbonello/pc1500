@@ -1,8 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 
 void main() {
   final ChipSelectDecoder csd = ChipSelectDecoder();
-  final MemoryChipBase ram = csd.appendRAM(
+  csd.appendRAM(
     MemoryBank.me0,
     0x7600,
     0x0600,
