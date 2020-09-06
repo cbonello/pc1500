@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:annotations/annotations.dart';
 
 const String json = '''
