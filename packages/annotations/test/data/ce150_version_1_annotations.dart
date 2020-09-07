@@ -1,4 +1,4 @@
-const String json = '''
+const String str = '''
 {
     "A000-BFFF": {
         "name": "CE-150 SYSTEM PROGRAM (ROM), 8KB",

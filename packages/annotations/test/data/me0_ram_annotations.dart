@@ -1,4 +1,4 @@
-const String json = '''
+const String str = '''
 {
     "7600-7BFF": {
         "name": "STANDARD USER SYSTEM MEMORY (RAM), 1.5KB",

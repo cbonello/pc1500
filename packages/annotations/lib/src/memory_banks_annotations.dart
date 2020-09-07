@@ -31,28 +31,24 @@ class MemoryBanksAnnotations {
     @required this.symbolTable,
   }) : _areasInBanks = areasInBanks;
 
-  void load(List<String> annotations) {
+  void load(Map<String, dynamic> json) {
     final List<AnnotatedArea> areas = <AnnotatedArea>[];
 
-    for (final String str in annotations) {
-      final Map<String, dynamic> json = jsonDecode(str) as Map<String, dynamic>;
-
-      for (final String tag in json.keys) {
-        if (json[tag] == null) {
-          throw AnnotationsError(
-            'MemoryBanksAnnotations: Null annotated area "$tag"',
-          );
-        }
-
-        final AddressSpace addressSpace = AddressSpace.fromTag(tag);
-        final AnnotatedArea area = AnnotatedArea.fromJson(
-          null,
-          addressSpace,
-          json[tag] as Map<String, dynamic>,
+    for (final String tag in json.keys) {
+      if (json[tag] == null) {
+        throw AnnotationsError(
+          'MemoryBanksAnnotations: Null annotated area "$tag"',
         );
-
-        areas.add(area);
       }
+
+      final AddressSpace addressSpace = AddressSpace.fromTag(tag);
+      final AnnotatedArea area = AnnotatedArea.fromJson(
+        null,
+        addressSpace,
+        json[tag] as Map<String, dynamic>,
+      );
+
+      areas.add(area);
     }
 
     if (areas.isNotEmpty) {
