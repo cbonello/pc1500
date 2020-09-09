@@ -10,10 +10,18 @@ class SocketServer {
   final int _port;
   bool started;
 
-  Future<void> start(SocketServerCallback onData) async {
+  Future<void> start(
+    SocketServerCallback onData, {
+    Function onError,
+    void Function() onDone,
+  }) async {
     try {
       final HttpServer server = await HttpServer.bind('localhost', _port);
-      server.transform(WebSocketTransformer()).listen(onData);
+      server.transform(WebSocketTransformer()).listen(
+            onData,
+            onError: onError,
+            onDone: onDone,
+          );
     } catch (e) {
       throw Exception('Cannot start webserver on port $_port');
     }
