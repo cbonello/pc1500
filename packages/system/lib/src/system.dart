@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:annotations/annotations.dart';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
@@ -5,6 +8,7 @@ import 'package:roms/roms.dart';
 
 import 'clock.dart';
 import 'extension_module.dart';
+import 'me0_ram_annotations.dart' as std_users_ram;
 
 class SystemError extends Error {
   SystemError(this.message);
@@ -27,7 +31,8 @@ class PC1500 {
     this.subroutineEnter,
     this.subroutineExit,
   ])  : _csd = ChipSelectDecoder(),
-        _connector40Pins = ExtensionModule() {
+        _connector40Pins = ExtensionModule(),
+        _annotations = MemoryBanksAnnotations() {
     _clock = Clock(freq: 1300000, fps: 50);
 
     // Standard users system RAM (1.5KB).
@@ -38,7 +43,9 @@ class PC1500 {
     );
 
     // ROM (16KB).
-    _csd.appendROM(MemoryBank.me0, 0xC000, PC1500Rom(PC1500RomType.a03));
+    final PC1500Rom pc1500Rom = PC1500Rom(PC1500RomType.a03);
+    _csd.appendROM(MemoryBank.me0, 0xC000, pc1500Rom);
+    _annotations.load(pc1500Rom.annotations);
 
     // Standard users RAM.
     if (device == DeviceType.pc1500A) {
@@ -47,25 +54,17 @@ class PC1500 {
       _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
     }
 
+    try {
+      final Map<String, dynamic> json =
+          jsonDecode(std_users_ram.json) as Map<String, dynamic>;
+      _annotations.load(json);
+    } catch (_) {}
+
     // I/O ports
-    final MemoryChipBase ce153IO = _csd.appendROMPlaceholder(
-      MemoryBank.me1,
-      0x8000,
-      0x10,
-      0xFF,
-    );
-    final MemoryChipBase ce150IO = _csd.appendROMPlaceholder(
-      MemoryBank.me1,
-      0xB000,
-      0x10,
-      0xFF,
-    );
-    final MemoryChipBase io1 = _csd.appendRAM(MemoryBank.me1, 0xD000, 0x400);
-    final MemoryChipBase pc1500IO = _csd.appendRAM(
-      MemoryBank.me1,
-      0xF000,
-      0x10,
-    );
+    _csd.appendRAM(MemoryBank.me1, 0x8000, 0x10);
+    _csd.appendRAM(MemoryBank.me1, 0xB000, 0x10);
+    _csd.appendRAM(MemoryBank.me1, 0xD000, 0x400);
+    _csd.appendRAM(MemoryBank.me1, 0xF000, 0x10);
 
     // _updateROMStatusInformation();
 
@@ -95,6 +94,7 @@ class PC1500 {
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
   LH5801DASM _dasm;
+  final MemoryBanksAnnotations _annotations;
   final LH5801Command ir0Enter;
   final LH5801Command ir1Enter;
   final LH5801Command ir2Enter;
@@ -140,19 +140,19 @@ class PC1500 {
     }
   }
 
-  void _updateROMStatusInformation() {
-    _csd.writeByteAt(0x4000, 0x55);
-    // High order one byte of the ROM top address.
-    _csd.writeByteAt(0x4001, 0x55);
-    // High order one byte of the top address of the BASIC program.
-    _csd.writeByteAt(0x4002, 0x55);
-    // Low order one byte of the top address of the BASIC program.
-    _csd.writeByteAt(0x4003, 0x55);
-    // 16KB ROM
-    _csd.writeByteAt(0x4004, 0x40);
-    // Non-confidential program.
-    _csd.writeByteAt(0x4007, 0xFF);
-  }
+  // void _updateROMStatusInformation() {
+  //   _csd.writeByteAt(0x4000, 0x55);
+  //   // High order one byte of the ROM top address.
+  //   _csd.writeByteAt(0x4001, 0x55);
+  //   // High order one byte of the top address of the BASIC program.
+  //   _csd.writeByteAt(0x4002, 0x55);
+  //   // Low order one byte of the top address of the BASIC program.
+  //   _csd.writeByteAt(0x4003, 0x55);
+  //   // 16KB ROM
+  //   _csd.writeByteAt(0x4004, 0x40);
+  //   // Non-confidential program.
+  //   _csd.writeByteAt(0x4007, 0xFF);
+  // }
 }
 
 class PC1500Traced extends PC1500 {
