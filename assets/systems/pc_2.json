@@ -1,0 +1,483 @@
+{
+    "colors": {
+        "lightGray": {
+            "background": "FF7D8085"
+        },
+        "darkGray": {
+            "background": "FF303032",
+            "border": "FF7D8085",
+            "color": "FFB5C3CC"
+        },
+        "red": {
+            "background": "FF7C1511",
+            "border": "FF996C67",
+            "color": "FFB5C3CC"
+        }
+    },
+    "lcd": {
+        "top": 79,
+        "left": 356
+    },
+    "btnOff": {
+        "font-size": 16,
+        "top": 256,
+        "left": 92,
+        "width": 54,
+        "height": 26
+    },
+    "btnOn": {
+        "font-size": 16,
+        "top": 256,
+        "left": 218,
+        "width": 54,
+        "height": 26
+    },
+    "btnDef": {
+        "font-size": 16,
+        "top": 256,
+        "left": 349,
+        "width": 54,
+        "height": 26
+    },
+    "btnF1": {
+        "font-size": 16,
+        "top": 256,
+        "left": 477,
+        "width": 54,
+        "height": 26
+    },
+    "btnF2": {
+        "font-size": 16,
+        "top": 256,
+        "left": 605,
+        "width": 54,
+        "height": 26
+    },
+    "btnF3": {
+        "font-size": 16,
+        "top": 256,
+        "left": 733,
+        "width": 54,
+        "height": 26
+    },
+    "btnF4": {
+        "font-size": 16,
+        "top": 256,
+        "left": 861,
+        "width": 54,
+        "height": 26
+    },
+    "btnF5": {
+        "font-size": 16,
+        "top": 256,
+        "left": 988,
+        "width": 54,
+        "height": 26
+    },
+    "btnF6": {
+        "font-size": 16,
+        "top": 256,
+        "left": 1115,
+        "width": 54,
+        "height": 26
+    },
+    "btnShift": {
+        "font-size": 16,
+        "top": 256,
+        "left": 1393,
+        "width": 53,
+        "height": 26
+    },
+    "btnQ": {
+        "font-size": 24,
+        "top": 340,
+        "left": 59,
+        "width": 55,
+        "height": 36
+    },
+    "btnW": {
+        "font-size": 24,
+        "top": 340,
+        "left": 154,
+        "width": 55,
+        "height": 36
+    },
+    "btnE": {
+        "font-size": 24,
+        "top": 340,
+        "left": 248,
+        "width": 55,
+        "height": 36
+    },
+    "btnR": {
+        "font-size": 24,
+        "top": 340,
+        "left": 344,
+        "width": 55,
+        "height": 36
+    },
+    "btnT": {
+        "font-size": 24,
+        "top": 340,
+        "left": 439,
+        "width": 55,
+        "height": 36
+    },
+    "btnY": {
+        "font-size": 24,
+        "top": 340,
+        "left": 535,
+        "width": 55,
+        "height": 36
+    },
+    "btnU": {
+        "font-size": 24,
+        "top": 340,
+        "left": 631,
+        "width": 55,
+        "height": 36
+    },
+    "btnI": {
+        "font-size": 24,
+        "top": 340,
+        "left": 728,
+        "width": 55,
+        "height": 36
+    },
+    "btnO": {
+        "font-size": 24,
+        "top": 340,
+        "left": 824,
+        "width": 55,
+        "height": 36
+    },
+    "btnP": {
+        "font-size": 24,
+        "top": 340,
+        "left": 920,
+        "width": 55,
+        "height": 36
+    },
+    "btn7": {
+        "font-size": 24,
+        "top": 340,
+        "left": 1017,
+        "width": 55,
+        "height": 36
+    },
+    "btn8": {
+        "font-size": 24,
+        "top": 340,
+        "left": 1112,
+        "width": 55,
+        "height": 36
+    },
+    "btn9": {
+        "font-size": 24,
+        "top": 340,
+        "left": 1207,
+        "width": 55,
+        "height": 36
+    },
+    "btnSlash": {
+        "font-size": 24,
+        "top": 340,
+        "left": 1301,
+        "width": 55,
+        "height": 36
+    },
+    "btnClear": {
+        "font-size": 20,
+        "top": 340,
+        "left": 1395,
+        "width": 55,
+        "height": 36
+    },
+    "btnA": {
+        "font-size": 24,
+        "top": 417,
+        "left": 59,
+        "width": 55,
+        "height": 36
+    },
+    "btnS": {
+        "font-size": 24,
+        "top": 417,
+        "left": 154,
+        "width": 55,
+        "height": 36
+    },
+    "btnD": {
+        "font-size": 24,
+        "top": 417,
+        "left": 248,
+        "width": 55,
+        "height": 36
+    },
+    "btnF": {
+        "font-size": 24,
+        "top": 417,
+        "left": 344,
+        "width": 55,
+        "height": 36
+    },
+    "btnG": {
+        "font-size": 24,
+        "top": 417,
+        "left": 439,
+        "width": 55,
+        "height": 36
+    },
+    "btnH": {
+        "font-size": 24,
+        "top": 417,
+        "left": 535,
+        "width": 55,
+        "height": 36
+    },
+    "btnJ": {
+        "font-size": 24,
+        "top": 417,
+        "left": 631,
+        "width": 55,
+        "height": 36
+    },
+    "btnK": {
+        "font-size": 24,
+        "top": 417,
+        "left": 728,
+        "width": 55,
+        "height": 36
+    },
+    "btnL": {
+        "font-size": 24,
+        "top": 417,
+        "left": 824,
+        "width": 55,
+        "height": 36
+    },
+    "btnEqual": {
+        "font-size": 24,
+        "top": 417,
+        "left": 920,
+        "width": 55,
+        "height": 36
+    },
+    "btn4": {
+        "font-size": 24,
+        "top": 417,
+        "left": 1017,
+        "width": 55,
+        "height": 36
+    },
+    "btn5": {
+        "font-size": 24,
+        "top": 417,
+        "left": 1112,
+        "width": 55,
+        "height": 36
+    },
+    "btn6": {
+        "font-size": 24,
+        "top": 417,
+        "left": 1207,
+        "width": 55,
+        "height": 36
+    },
+    "btnStar": {
+        "font-size": 36,
+        "top": 417,
+        "left": 1301,
+        "width": 55,
+        "height": 36
+    },
+    "btnMode": {
+        "font-size": 16,
+        "top": 417,
+        "left": 1394,
+        "width": 55,
+        "height": 36
+    },
+    "btnZ": {
+        "font-size": 24,
+        "top": 494,
+        "left": 59,
+        "width": 55,
+        "height": 36
+    },
+    "btnX": {
+        "font-size": 24,
+        "top": 494,
+        "left": 154,
+        "width": 55,
+        "height": 36
+    },
+    "btnC": {
+        "font-size": 24,
+        "top": 494,
+        "left": 248,
+        "width": 55,
+        "height": 36
+    },
+    "btnV": {
+        "font-size": 24,
+        "top": 494,
+        "left": 344,
+        "width": 55,
+        "height": 36
+    },
+    "btnB": {
+        "font-size": 24,
+        "top": 494,
+        "left": 439,
+        "width": 55,
+        "height": 36
+    },
+    "btnN": {
+        "font-size": 24,
+        "top": 494,
+        "left": 535,
+        "width": 55,
+        "height": 36
+    },
+    "btnM": {
+        "font-size": 24,
+        "top": 494,
+        "left": 631,
+        "width": 55,
+        "height": 36
+    },
+    "btnLparen": {
+        "font-size": 22,
+        "top": 494,
+        "left": 728,
+        "width": 55,
+        "height": 36
+    },
+    "btnRparen": {
+        "font-size": 22,
+        "top": 494,
+        "left": 824,
+        "width": 55,
+        "height": 36
+    },
+    "btnUp": {
+        "font-size": 24,
+        "top": 494,
+        "left": 920,
+        "width": 55,
+        "height": 36
+    },
+    "btn1": {
+        "font-size": 24,
+        "top": 494,
+        "left": 1017,
+        "width": 55,
+        "height": 36
+    },
+    "btn2": {
+        "font-size": 24,
+        "top": 494,
+        "left": 1112,
+        "width": 55,
+        "height": 36
+    },
+    "btn3": {
+        "font-size": 24,
+        "top": 494,
+        "left": 1207,
+        "width": 55,
+        "height": 36
+    },
+    "btnMinus": {
+        "font-size": 24,
+        "top": 494,
+        "left": 1301,
+        "width": 55,
+        "height": 36
+    },
+    "btnSmall": {
+        "font-size": 18,
+        "top": 571,
+        "left": 59,
+        "width": 55,
+        "height": 36
+    },
+    "btnUpDown": {
+        "font-size": 24,
+        "top": 571,
+        "left": 153,
+        "width": 55,
+        "height": 36
+    },
+    "btnRecall": {
+        "font-size": 18,
+        "top": 571,
+        "left": 248,
+        "width": 55,
+        "height": 36
+    },
+    "btnSpace": {
+        "font-size": 20,
+        "top": 571,
+        "left": 344,
+        "width": 150,
+        "height": 36
+    },
+    "btnEnter": {
+        "font-size": 20,
+        "top": 571,
+        "left": 535,
+        "width": 150,
+        "height": 36
+    },
+    "btnLeft": {
+        "font-size": 20,
+        "top": 571,
+        "left": 728,
+        "width": 55,
+        "height": 36
+    },
+    "btnRight": {
+        "font-size": 20,
+        "top": 571,
+        "left": 824,
+        "width": 55,
+        "height": 36
+    },
+    "btnDown": {
+        "font-size": 24,
+        "top": 571,
+        "left": 920,
+        "width": 55,
+        "height": 36
+    },
+    "btn0": {
+        "font-size": 24,
+        "top": 571,
+        "left": 1017,
+        "width": 55,
+        "height": 36
+    },
+    "btnDot": {
+        "font-size": 24,
+        "top": 571,
+        "left": 1112,
+        "width": 55,
+        "height": 36
+    },
+    "btnEnt": {
+        "font-size": 20,
+        "top": 571,
+        "left": 1207,
+        "width": 55,
+        "height": 36
+    },
+    "btnPlus": {
+        "font-size": 24,
+        "top": 571,
+        "left": 1301,
+        "width": 55,
+        "height": 36
+    }
+}
