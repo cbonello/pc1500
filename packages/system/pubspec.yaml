@@ -21,7 +21,7 @@ dependencies:
       url: https://github.com/cbonello/lh5801.git
   lh5811:
     path: ../lh5811
-  meta: ^1.2.0
+  meta: any
   roms:
     path: ../roms
 

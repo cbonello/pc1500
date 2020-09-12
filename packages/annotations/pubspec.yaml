@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   equatable: ^1.2.0
-  meta: ^1.2.0
+  meta: any
 
 dev_dependencies:
   lint: ^1.2.0
