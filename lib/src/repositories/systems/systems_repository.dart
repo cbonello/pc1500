@@ -12,12 +12,6 @@ class SystemsRepository {
   })  : assert(skins != null),
         _skins = skins;
 
-  final Map<DeviceType, SkinModel> _skins;
-
-  SkinModel getSkin(DeviceType type) => _skins[type];
-
-  bool skinExistsForDevice(DeviceType type) => _skins.containsKey(type);
-
   static SystemsRepository _instance;
   static Future<SystemsRepository> getInstance() async {
     if (_instance == null) {
@@ -29,6 +23,12 @@ class SystemsRepository {
 
     return _instance;
   }
+
+  final Map<DeviceType, SkinModel> _skins;
+
+  SkinModel getSkin(DeviceType type) => _skins[type];
+
+  bool skinExistsForDevice(DeviceType type) => _skins.containsKey(type);
 
   static Future<SkinModel> _readSkin(String asset) async {
     final String jsonStr = await rootBundle.loadString(asset);
