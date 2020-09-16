@@ -29,6 +29,8 @@ class SocketServer {
     }
   }
 
+  bool get isRunning => _started;
+
   Future<void> close() async {
     if (_started) {
       await _server.close();
