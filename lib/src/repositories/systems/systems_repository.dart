@@ -19,7 +19,7 @@ class SystemsRepository {
   static SystemsRepository _instance;
   static Future<SystemsRepository> getInstance() async {
     if (_instance == null) {
-      Map<DeviceType, SkinModel> skins;
+      final Map<DeviceType, SkinModel> skins = <DeviceType, SkinModel>{};
       skins[DeviceType.pc2] = await _readSkin('assets/systems/pc2.json');
 
       _instance = SystemsRepository._(skins: skins);
