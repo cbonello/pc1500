@@ -6,8 +6,8 @@ import 'package:system/system.dart';
 
 import 'models/models.dart';
 
-class SystemRepository {
-  SystemRepository._({
+class SystemsRepository {
+  SystemsRepository._({
     @required Map<DeviceType, SkinModel> skins,
   })  : assert(skins != null),
         _skins = skins;
@@ -16,13 +16,13 @@ class SystemRepository {
 
   SkinModel getSkin(DeviceType type) => _skins[type];
 
-  static SystemRepository _instance;
-  static Future<SystemRepository> getInstance() async {
+  static SystemsRepository _instance;
+  static Future<SystemsRepository> getInstance() async {
     if (_instance == null) {
       Map<DeviceType, SkinModel> skins;
       skins[DeviceType.pc2] = await _readSkin('assets/systems/pc2.json');
 
-      _instance = SystemRepository._(skins: skins);
+      _instance = SystemsRepository._(skins: skins);
     }
 
     return _instance;
