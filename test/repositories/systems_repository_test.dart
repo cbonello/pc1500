@@ -6,12 +6,18 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('SystemsRepository', () {
-    test('Parses pc2.json successfully', () async {
+    test('is created successfully', () async {
       final SystemsRepository systemsRepository =
           await SystemsRepository.getInstance();
       expect(systemsRepository.getSkin(DeviceType.pc1500), isNull);
+      expect(systemsRepository.skinExistsForDevice(DeviceType.pc1500), isFalse);
       expect(systemsRepository.getSkin(DeviceType.pc1500A), isNull);
+      expect(
+        systemsRepository.skinExistsForDevice(DeviceType.pc1500A),
+        isFalse,
+      );
       expect(systemsRepository.getSkin(DeviceType.pc2), isNotNull);
+      expect(systemsRepository.skinExistsForDevice(DeviceType.pc2), isTrue);
     });
   });
 }
