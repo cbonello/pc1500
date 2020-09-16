@@ -16,6 +16,8 @@ class SystemsRepository {
 
   SkinModel getSkin(DeviceType type) => _skins[type];
 
+  bool skinExistsForDevice(DeviceType type) => _skins.containsKey(type);
+
   static SystemsRepository _instance;
   static Future<SystemsRepository> getInstance() async {
     if (_instance == null) {
