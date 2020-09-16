@@ -25,7 +25,7 @@ class SocketServer {
           );
       _started = true;
     } catch (_) {
-      throw Exception('Cannot start webserver on port $_port');
+      throw Exception('Cannot start debug server on port $_port');
     }
   }
 
@@ -33,6 +33,8 @@ class SocketServer {
     if (_started) {
       await _server.close();
       _started = false;
+    } else {
+      throw Exception('Debug server is not online');
     }
   }
 }
