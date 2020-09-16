@@ -5,10 +5,11 @@ typedef SocketServerCallback = void Function(WebSocket socket);
 class SocketServer {
   SocketServer({int port})
       : _port = port ?? 5600,
-        started = false;
+        _started = false;
 
   final int _port;
-  bool started;
+  bool _started;
+  HttpServer _server;
 
   Future<void> start(
     SocketServerCallback onData, {
@@ -16,14 +17,22 @@ class SocketServer {
     void Function() onDone,
   }) async {
     try {
-      final HttpServer server = await HttpServer.bind('localhost', _port);
-      server.transform(WebSocketTransformer()).listen(
+      _server = await HttpServer.bind('localhost', _port);
+      _server.transform(WebSocketTransformer()).listen(
             onData,
             onError: onError,
             onDone: onDone,
           );
-    } catch (e) {
+      _started = true;
+    } catch (_) {
       throw Exception('Cannot start webserver on port $_port');
+    }
+  }
+
+  Future<void> close() async {
+    if (_started) {
+      await _server.close();
+      _started = false;
     }
   }
 }
