@@ -35,9 +35,9 @@ void checkSkin(SkinModel skin) {
   expect(skin.lcd.width, greaterThan(0));
 
   expect(skin.keys, isNotNull);
-  expect(skin.keys.length, equals(AllowedKeys.length));
+  expect(skin.keys.length, equals(allowedKeys.length));
   for (final String key in skin.keys.keys) {
-    expect(AllowedKeys.contains(key), isTrue);
+    expect(allowedKeys.contains(key), isTrue);
     checkKey(skin.colors.keys, skin.keys[key]);
   }
 }
@@ -63,7 +63,7 @@ void checkKey(Iterable<String> colors, KeyModel key) {
   expect(key.width, greaterThan(0));
 }
 
-const Set<String> AllowedKeys = <String>{
+const Set<String> allowedKeys = <String>{
   'off',
   'on',
   'def',
