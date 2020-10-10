@@ -4,6 +4,7 @@ import 'package:annotations/annotations.dart';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
+import 'package:meta/meta.dart';
 import 'package:roms/roms.dart';
 
 import 'clock.dart';
@@ -17,6 +18,20 @@ class SystemError extends Error {
 
   @override
   String toString() => 'System: $message';
+}
+
+class DasmInstruction {
+  DasmInstruction({
+    this.label,
+    @required this.instruction,
+    this.comment,
+  }) : assert(instruction != null) {
+    ;
+  }
+
+  final String label;
+  final Instruction instruction;
+  final String comment;
 }
 
 enum DeviceType { pc1500, pc2, pc1500A }
@@ -104,7 +119,17 @@ class PC1500 {
 
   int step() => _cpu.step();
 
-  Instruction dasm(int address) => _dasm.dump(address);
+  DasmInstruction dasm(int address) {
+    final Instruction instruction = _dasm.dump(address);
+
+    if (_annotations.isAnnotated(address)) {
+      final AnnotationBase annotation = _annotations.getAnnotationFromAddress(
+        address,
+      );
+    }
+
+    return DasmInstruction(instruction: instruction);
+  }
 
   void addCE151() {
     // 4KB RAM card.
