@@ -17,10 +17,14 @@ class DataAnnotation extends AnnotationBase {
   const DataAnnotation._({
     @required this.area,
     @required AddressSpace addressSpace,
-    this.label,
-    @required this.comment,
+    String label,
+    @required String comment,
     this.type,
-  }) : super(addressSpace: addressSpace);
+  }) : super(
+          label: label,
+          addressSpace: addressSpace,
+          comment: comment,
+        );
 
   factory DataAnnotation.fromJson(
     AnnotatedArea area,
@@ -79,8 +83,6 @@ class DataAnnotation extends AnnotationBase {
   }
 
   final AnnotatedArea area;
-  final String label;
-  final String comment;
   final DataAnnotationType type;
 
   @override

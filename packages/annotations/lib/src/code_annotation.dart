@@ -10,9 +10,13 @@ class CodeAnnotation extends AnnotationBase {
   const CodeAnnotation._({
     @required this.area,
     @required AddressSpace addressSpace,
-    this.label,
-    this.comment,
-  }) : super(addressSpace: addressSpace);
+    String label,
+    String comment,
+  }) : super(
+          label: label,
+          addressSpace: addressSpace,
+          comment: comment,
+        );
 
   factory CodeAnnotation.fromJson(
     AnnotatedArea area,
@@ -50,8 +54,6 @@ class CodeAnnotation extends AnnotationBase {
   }
 
   final AnnotatedArea area;
-  final String label;
-  final String comment;
 
   @override
   void mapAddress(Map<int, AnnotationBase> bank) {
