@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 import 'package:roms/roms.dart';
 
 import 'clock.dart';
+import 'dasm.dart';
 import 'extension_module.dart';
 import 'me0_ram_annotations.dart' as std_users_ram;
 
@@ -18,20 +19,6 @@ class SystemError extends Error {
 
   @override
   String toString() => 'System: $message';
-}
-
-class DasmInstruction {
-  DasmInstruction({
-    this.label,
-    @required this.instruction,
-    this.comment,
-  }) : assert(instruction != null) {
-    ;
-  }
-
-  final String label;
-  final Instruction instruction;
-  final String comment;
 }
 
 enum DeviceType { pc1500, pc2, pc1500A }
@@ -119,16 +106,19 @@ class PC1500 {
 
   int step() => _cpu.step();
 
-  DasmInstruction dasm(int address) {
+  DasmDescriptor dasm(int address) {
     final Instruction instruction = _dasm.dump(address);
+    String label = '', comment = '';
 
     if (_annotations.isAnnotated(address)) {
       final AnnotationBase annotation = _annotations.getAnnotationFromAddress(
         address,
       );
+      label = annotation.label;
+      comment = annotation.comment;
     }
 
-    return DasmInstruction(instruction: instruction);
+    return DasmCode(label: label, instruction: instruction, comment: comment);
   }
 
   void addCE151() {
