@@ -4,7 +4,6 @@ import 'package:annotations/annotations.dart';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
-import 'package:meta/meta.dart';
 import 'package:roms/roms.dart';
 
 import 'clock.dart';
