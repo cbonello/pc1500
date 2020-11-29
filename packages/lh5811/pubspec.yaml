@@ -1,5 +1,6 @@
 name: lh5811
 description: A starting point for Dart libraries or applications.
+publish_to: none
 
 environment:
   sdk: '>=2.8.1 <3.0.0'
