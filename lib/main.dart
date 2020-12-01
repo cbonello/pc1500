@@ -1,5 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'src/application.dart';
 
@@ -12,7 +13,7 @@ bool get isInDebugMode {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const PC1500App());
+  runApp(const ProviderScope(child: PC1500App()));
 
   windows.doWhenWindowReady(() {
     final Size initialSize = Size(1506, windows.getTitleBarHeight() + 628 + 15);
