@@ -1,6 +1,8 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
 
+import 'skin.dart';
+
 const Color borderColor = Color(0xFF805306);
 
 class HomeView extends StatelessWidget {
@@ -25,40 +27,8 @@ class HomeView extends StatelessWidget {
                 ],
               ),
             ),
-            Center(
-              child: Stack(
-                children: <Widget>[
-                  Image.asset('assets/systems/pc2.png'),
-                  Positioned(
-                    left: 370.0,
-                    top: 81.0,
-                    child: Container(
-                      height: 90,
-                      width: 903,
-                      color: Colors.yellow[100],
-                    ),
-                  ),
-                  Positioned(
-                    left: 92.0,
-                    top: 256.0,
-                    child: Container(
-                      height: 26,
-                      width: 54,
-                      color: Colors.red,
-                      child: const Center(
-                        child: Text(
-                          'OFF',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ), //const Color(0xFF181319),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // TODO: get skin.
+            const Center(child: Skin(skin: null)),
           ],
         ),
       ),
