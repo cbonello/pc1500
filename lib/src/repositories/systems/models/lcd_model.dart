@@ -3,6 +3,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'lcd_model.g.dart';
 
+double _intToDouble(int value) => value.toDouble();
+
 @JsonSerializable(
   createFactory: true,
   createToJson: false,
@@ -19,15 +21,15 @@ class LCDModel {
   factory LCDModel.fromJson(Map<String, dynamic> json) =>
       _$LCDModelFromJson(json);
 
-  @JsonKey(required: true, nullable: false)
-  final int top;
+  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  final double top;
 
-  @JsonKey(required: true, nullable: false)
-  final int left;
+  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  final double left;
 
-  @JsonKey(required: true, nullable: false)
-  final int width;
+  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  final double width;
 
-  @JsonKey(required: true, nullable: false)
-  final int height;
+  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  final double height;
 }
