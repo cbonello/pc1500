@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../repositories/systems/models/models.dart';
+import 'lcd.dart';
 
 class Skin extends StatefulWidget {
   const Skin({Key key, @required this.skin}) : super(key: key);
@@ -54,15 +55,7 @@ class _SkinState extends State<Skin> {
       children: <Widget>[
         Image.asset('assets/systems/pc2.png'),
         ...keys.values,
-        Positioned(
-          left: 370.0,
-          top: 81.0,
-          child: Container(
-            height: 90,
-            width: 903,
-            color: Colors.yellow[100],
-          ),
-        ),
+        LCD(config: widget.skin.lcd),
       ],
     );
   }
