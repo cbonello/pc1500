@@ -18,12 +18,6 @@ void main() {
 
 void checkSkin(SkinModel skin) {
   expect(skin.colors.isNotEmpty, isTrue);
-  for (final ColorModel color in skin.colors.values) {
-    checkColor(color.background);
-    checkColor(color.border);
-    checkColor(color.color);
-  }
-
   expect(skin.lcd, isNotNull);
   expect(skin.lcd.top, isNotNull);
   expect(skin.lcd.top, greaterThan(0));
@@ -40,12 +34,6 @@ void checkSkin(SkinModel skin) {
     expect(allowedKeys.contains(key), isTrue);
     checkKey(skin.colors.keys, skin.keys[key]);
   }
-}
-
-void checkColor(String color) {
-  expect(color, isNotNull);
-  expect(color.length, equals(8));
-  expect(int.tryParse(color, radix: 16), isNotNull);
 }
 
 void checkKey(Iterable<String> colors, KeyModel key) {
