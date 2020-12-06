@@ -21,25 +21,17 @@ class _SkinState extends State<Skin> {
 
     for (final MapEntry<String, KeyModel> key in widget.skin.keys.entries) {
       keys[key.key] = Positioned(
-        // TODO: use doubles in model.
         left: key.value.left,
         top: key.value.top,
         child: Container(
           height: key.value.height,
           width: key.value.width,
-          // TODO: convert colors in model.
-          color: Color(
-            int.tryParse(widget.skin.colors[key.value.color].background,
-                radix: 16),
-          ),
+          color: Color(widget.skin.colors[key.value.color].background),
           child: Center(
             child: Text(
               key.key,
               style: TextStyle(
-                color: Color(
-                  int.tryParse(widget.skin.colors[key.value.color].color,
-                      radix: 16),
-                ),
+                color: Color(widget.skin.colors[key.value.color].color),
                 fontWeight: FontWeight.bold,
               ),
             ),
