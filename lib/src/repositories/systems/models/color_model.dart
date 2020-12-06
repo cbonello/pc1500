@@ -8,7 +8,6 @@ int _colorToInt(String value) => int.tryParse(value, radix: 16);
 @JsonSerializable(
   createFactory: true,
   createToJson: false,
-  explicitToJson: true,
 )
 class ColorModel {
   const ColorModel({

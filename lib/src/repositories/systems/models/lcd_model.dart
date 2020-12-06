@@ -8,7 +8,6 @@ double _intToDouble(int value) => value.toDouble();
 @JsonSerializable(
   createFactory: true,
   createToJson: false,
-  explicitToJson: true,
 )
 class LCDModel {
   const LCDModel({
