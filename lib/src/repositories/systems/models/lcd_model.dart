@@ -21,15 +21,15 @@ class LCDModel {
   factory LCDModel.fromJson(Map<String, dynamic> json) =>
       _$LCDModelFromJson(json);
 
-  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  @JsonKey(required: true, fromJson: _intToDouble)
   final double top;
 
-  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  @JsonKey(required: true, fromJson: _intToDouble)
   final double left;
 
-  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  @JsonKey(required: true, fromJson: _intToDouble)
   final double width;
 
-  @JsonKey(required: true, nullable: false, fromJson: _intToDouble)
+  @JsonKey(required: true, fromJson: _intToDouble)
   final double height;
 }
