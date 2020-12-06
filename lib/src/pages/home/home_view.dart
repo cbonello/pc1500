@@ -1,17 +1,23 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:system/system.dart';
 
+import '../../repositories/systems/systems_repository.dart';
 import 'skin.dart';
 
 const Color borderColor = Color(0xFF805306);
 
-class HomeView extends StatelessWidget {
+class HomeView extends ConsumerWidget {
   const HomeView({
     Key key,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ScopedReader watch) {
+    final AsyncValue<SystemsRepository> systemsRepository =
+        watch(systemsRepositoryProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFBABEC1),
       body: windows.WindowBorder(
@@ -27,8 +33,15 @@ class HomeView extends StatelessWidget {
                 ],
               ),
             ),
-            // TODO: get skin.
-            const Center(child: Skin(skin: null)),
+            Center(
+              child: systemsRepository.when<Widget>(
+                data: (SystemsRepository repository) {
+                  return Skin(skin: repository.getSkin(DeviceType.pc2));
+                },
+                loading: () => const CircularProgressIndicator(),
+                error: (Object err, StackTrace _) => Text('Error: $err'),
+              ),
+            ),
           ],
         ),
       ),
