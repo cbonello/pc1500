@@ -3,6 +3,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'color_model.g.dart';
 
+int _colorToInt(String value) => int.tryParse(value, radix: 16);
+
 @JsonSerializable(
   createFactory: true,
   createToJson: false,
@@ -18,12 +20,12 @@ class ColorModel {
   factory ColorModel.fromJson(Map<String, dynamic> json) =>
       _$ColorModelFromJson(json);
 
-  @JsonKey(required: true, nullable: false)
-  final String background;
+  @JsonKey(required: true, fromJson: _colorToInt)
+  final int background;
 
-  @JsonKey(required: true, nullable: false)
-  final String border;
+  @JsonKey(required: true, fromJson: _colorToInt)
+  final int border;
 
-  @JsonKey(required: true, nullable: false)
-  final String color;
+  @JsonKey(required: true, fromJson: _colorToInt)
+  final int color;
 }

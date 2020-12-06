@@ -9,8 +9,8 @@ part of 'color_model.dart';
 ColorModel _$ColorModelFromJson(Map<String, dynamic> json) {
   $checkKeys(json, requiredKeys: const ['background', 'border', 'color']);
   return ColorModel(
-    background: json['background'] as String,
-    border: json['border'] as String,
-    color: json['color'] as String,
+    background: _colorToInt(json['background'] as String),
+    border: _colorToInt(json['border'] as String),
+    color: _colorToInt(json['color'] as String),
   );
 }
