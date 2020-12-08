@@ -9,9 +9,7 @@ import 'skin.dart';
 const Color borderColor = Color(0xFF805306);
 
 class HomeView extends ConsumerWidget {
-  const HomeView({
-    Key key,
-  }) : super(key: key);
+  const HomeView({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
