@@ -26,7 +26,7 @@
         "off": {
             "label": "OFF",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 92,
             "width": 54,
@@ -35,7 +35,7 @@
         "on": {
             "label": "ON",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 218,
             "width": 54,
@@ -44,14 +44,14 @@
         "def": {
             "label": "DEF",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 349,
             "width": 54,
             "height": 26
         },
         "f1": {
-            "label": "F1",
+            "label": "F 1",
             "color": "light-gray",
             "font-size": 20,
             "top": 256,
@@ -60,45 +60,45 @@
             "height": 26
         },
         "f2": {
-            "label": "F2",
+            "label": "F 2",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 604,
             "width": 54,
             "height": 26
         },
         "f3": {
-            "label": "F3",
+            "label": "F 3",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 732,
             "width": 54,
             "height": 26
         },
         "f4": {
-            "label": "F4",
+            "label": "F 4",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 860,
             "width": 54,
             "height": 26
         },
         "f5": {
-            "label": "F5",
+            "label": "F 5",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 987,
             "width": 54,
             "height": 26
         },
         "f6": {
-            "label": "F6",
+            "label": "F 6",
             "color": "light-gray",
-            "font-size": 16,
+            "font-size": 20,
             "top": 256,
             "left": 1114,
             "width": 54,
@@ -116,7 +116,7 @@
         "q": {
             "label": "Q",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 59,
             "width": 55,
@@ -125,7 +125,7 @@
         "w": {
             "label": "W",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 154,
             "width": 55,
@@ -134,7 +134,7 @@
         "e": {
             "label": "E",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 248,
             "width": 55,
@@ -143,7 +143,7 @@
         "r": {
             "label": "R",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 344,
             "width": 55,
@@ -152,7 +152,7 @@
         "t": {
             "label": "T",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 439,
             "width": 55,
@@ -161,7 +161,7 @@
         "y": {
             "label": "Y",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 534,
             "width": 55,
@@ -170,7 +170,7 @@
         "u": {
             "label": "U",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 631,
             "width": 55,
@@ -179,7 +179,7 @@
         "i": {
             "label": "I",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 727,
             "width": 55,
@@ -188,7 +188,7 @@
         "o": {
             "label": "O",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 823,
             "width": 55,
@@ -197,7 +197,7 @@
         "p": {
             "label": "P",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 919,
             "width": 55,
@@ -206,7 +206,7 @@
         "7": {
             "label": "/",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 1016,
             "width": 55,
@@ -215,7 +215,7 @@
         "8": {
             "label": "8",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 1111,
             "width": 55,
@@ -224,7 +224,7 @@
         "9": {
             "label": "9",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 1206,
             "width": 55,
@@ -233,7 +233,7 @@
         "/": {
             "label": "/",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 340,
             "left": 1300,
             "width": 55,
@@ -242,7 +242,7 @@
         "clear": {
             "label": "CL",
             "color": "red",
-            "font-size": 20,
+            "font-size": 22,
             "top": 340,
             "left": 1393,
             "width": 55,
@@ -251,7 +251,7 @@
         "a": {
             "label": "A",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 59,
             "width": 55,
@@ -260,7 +260,7 @@
         "s": {
             "label": "S",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 154,
             "width": 55,
@@ -269,7 +269,7 @@
         "d": {
             "label": "D",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 248,
             "width": 55,
@@ -278,7 +278,7 @@
         "f": {
             "label": "F",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 344,
             "width": 55,
@@ -287,7 +287,7 @@
         "g": {
             "label": "G",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 439,
             "width": 55,
@@ -296,7 +296,7 @@
         "h": {
             "label": "H",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 534,
             "width": 55,
@@ -305,7 +305,7 @@
         "j": {
             "label": "J",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 631,
             "width": 55,
@@ -314,7 +314,7 @@
         "k": {
             "label": "K",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 727,
             "width": 55,
@@ -323,7 +323,7 @@
         "l": {
             "label": "L",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 823,
             "width": 55,
@@ -332,7 +332,7 @@
         "=": {
             "label": "=",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 919,
             "width": 55,
@@ -341,7 +341,7 @@
         "4": {
             "label": "4",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 1016,
             "width": 55,
@@ -350,7 +350,7 @@
         "5": {
             "label": "5",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 1111,
             "width": 55,
@@ -359,7 +359,7 @@
         "6": {
             "label": "6",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 417,
             "left": 1206,
             "width": 55,
@@ -377,7 +377,7 @@
         "mode": {
             "label": "MODE",
             "color": "dark-gray",
-            "font-size": 16,
+            "font-size": 15,
             "top": 417,
             "left": 1393,
             "width": 55,
@@ -386,7 +386,7 @@
         "z": {
             "label": "Z",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 59,
             "width": 55,
@@ -395,7 +395,7 @@
         "x": {
             "label": "X",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 154,
             "width": 55,
@@ -404,7 +404,7 @@
         "c": {
             "label": "C",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 248,
             "width": 55,
@@ -413,7 +413,7 @@
         "v": {
             "label": "V",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 344,
             "width": 55,
@@ -422,7 +422,7 @@
         "b": {
             "label": "B",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 439,
             "width": 55,
@@ -431,7 +431,7 @@
         "n": {
             "label": "N",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 534,
             "width": 55,
@@ -440,7 +440,7 @@
         "m": {
             "label": "M",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 631,
             "width": 55,
@@ -467,7 +467,7 @@
         "up": {
             "label": "UP",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 919,
             "width": 55,
@@ -476,7 +476,7 @@
         "1": {
             "label": "1",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 1016,
             "width": 55,
@@ -485,7 +485,7 @@
         "2": {
             "label": "2",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 1111,
             "width": 55,
@@ -494,7 +494,7 @@
         "3": {
             "label": "3",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 1206,
             "width": 55,
@@ -503,7 +503,7 @@
         "-": {
             "label": "-",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 494,
             "left": 1300,
             "width": 55,
@@ -512,7 +512,7 @@
         "small": {
             "label": "SML",
             "color": "light-gray",
-            "font-size": 18,
+            "font-size": 21,
             "top": 571,
             "left": 59,
             "width": 55,
@@ -521,7 +521,7 @@
         "up-down": {
             "label": "UD",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 571,
             "left": 153,
             "width": 55,
@@ -530,7 +530,7 @@
         "recall": {
             "label": "RCL",
             "color": "light-gray",
-            "font-size": 18,
+            "font-size": 22,
             "top": 571,
             "left": 248,
             "width": 55,
@@ -539,7 +539,7 @@
         " ": {
             "label": "SPACE",
             "color": "light-gray",
-            "font-size": 20,
+            "font-size": 22,
             "top": 571,
             "left": 343,
             "width": 150,
@@ -548,14 +548,14 @@
         "enter": {
             "label": "ENTER",
             "color": "light-gray",
-            "font-size": 20,
+            "font-size": 22,
             "top": 571,
             "left": 534,
             "width": 150,
             "height": 36
         },
         "left": {
-            "label": "LEFT",
+            "label": "LFT",
             "color": "light-gray",
             "font-size": 20,
             "top": 571,
@@ -564,7 +564,7 @@
             "height": 36
         },
         "right": {
-            "label": "RIGHT",
+            "label": "RGT",
             "color": "light-gray",
             "font-size": 20,
             "top": 571,
@@ -575,7 +575,7 @@
         "down": {
             "label": "DOWN",
             "color": "light-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 571,
             "left": 919,
             "width": 55,
@@ -584,7 +584,7 @@
         "0": {
             "label": "0",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 571,
             "left": 1016,
             "width": 55,
@@ -593,7 +593,7 @@
         ".": {
             "label": ".",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 571,
             "left": 1111,
             "width": 55,
@@ -602,7 +602,7 @@
         "ent": {
             "label": "ENT",
             "color": "dark-gray",
-            "font-size": 20,
+            "font-size": 22,
             "top": 571,
             "left": 1206,
             "width": 55,
@@ -611,7 +611,7 @@
         "+": {
             "label": "+",
             "color": "dark-gray",
-            "font-size": 24,
+            "font-size": 28,
             "top": 571,
             "left": 1300,
             "width": 55,
