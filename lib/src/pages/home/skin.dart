@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../repositories/systems/models/models.dart';
 import 'lcd.dart';
@@ -26,13 +27,29 @@ class _SkinState extends State<Skin> {
         child: Container(
           height: key.value.height,
           width: key.value.width,
-          color: Color(widget.skin.colors[key.value.color].background),
-          child: Center(
+          decoration: BoxDecoration(
+            color: Color(widget.skin.colors[key.value.color].background),
+            border: Border(
+              right: BorderSide(
+                color: Color(widget.skin.colors[key.value.color].border),
+                width: 0.5,
+              ),
+              bottom: BorderSide(
+                color: Color(widget.skin.colors[key.value.color].border),
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: FittedBox(
             child: Text(
-              key.key,
-              style: TextStyle(
-                color: Color(widget.skin.colors[key.value.color].color),
-                fontWeight: FontWeight.bold,
+              key.value.label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.openSans(
+                textStyle: TextStyle(
+                  color: Color(widget.skin.colors[key.value.color].color),
+                  fontSize: key.value.fontSize,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
