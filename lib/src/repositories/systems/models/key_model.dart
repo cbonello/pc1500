@@ -11,6 +11,7 @@ double _intToDouble(int value) => value.toDouble();
 )
 class KeyModel {
   const KeyModel({
+    @required this.label,
     @required this.color,
     @required this.fontSize,
     @required this.top,
@@ -23,10 +24,13 @@ class KeyModel {
       _$KeyModelFromJson(json);
 
   @JsonKey(required: true, nullable: false)
+  final String label;
+
+  @JsonKey(required: true, nullable: false)
   final String color;
 
-  @JsonKey(name: 'font-size', required: true, nullable: false)
-  final int fontSize;
+  @JsonKey(name: 'font-size', required: true, fromJson: _intToDouble)
+  final double fontSize;
 
   @JsonKey(required: true, fromJson: _intToDouble)
   final double top;
