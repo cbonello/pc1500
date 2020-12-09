@@ -38,18 +38,22 @@ void checkSkin(SkinModel skin) {
 
 void checkKey(Iterable<String> colors, KeyModel key) {
   expect(key.label, isNotNull);
-  expect(key.label.type, isNotNull);
-  expect(<String>['text', 'icon'].contains(key.label.type), isTrue);
-  expect(key.label.value, isNotNull);
-  expect(key.label.value.isNotEmpty, isTrue);
-  if (key.label.type == 'icon') {
-    expect(
-      <String>['left', 'up', 'right', 'down', 'up-down'].contains(
-        key.label.value,
-      ),
-      isTrue,
-    );
-  }
+  key.label.when<void>(
+    text: (String value) {
+      expect(key.label.value, isNotNull);
+      expect(key.label.value.isNotEmpty, isTrue);
+    },
+    icon: (String value) {
+      expect(key.label.value, isNotNull);
+      expect(key.label.value.isNotEmpty, isTrue);
+      expect(
+        <String>['left', 'up', 'right', 'down', 'up-down'].contains(
+          key.label.value,
+        ),
+        isTrue,
+      );
+    },
+  );
   expect(colors.contains(key.color), isTrue);
   expect(key.fontSize, isNotNull);
   expect(key.fontSize, greaterThan(10));

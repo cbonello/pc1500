@@ -6,10 +6,26 @@ part of 'key_label_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-KeyLabelModel _$KeyLabelModelFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['type', 'value']);
-  return KeyLabelModel(
-    type: json['type'] as String,
-    value: json['value'] as String,
+_$KeyLabelModelText _$_$KeyLabelModelTextFromJson(Map<String, dynamic> json) {
+  return _$KeyLabelModelText(
+    json['value'] as String,
   );
 }
+
+Map<String, dynamic> _$_$KeyLabelModelTextToJson(
+        _$KeyLabelModelText instance) =>
+    <String, dynamic>{
+      'value': instance.value,
+    };
+
+_$KeyLabelModelIcon _$_$KeyLabelModelIconFromJson(Map<String, dynamic> json) {
+  return _$KeyLabelModelIcon(
+    json['value'] as String,
+  );
+}
+
+Map<String, dynamic> _$_$KeyLabelModelIconToJson(
+        _$KeyLabelModelIcon instance) =>
+    <String, dynamic>{
+      'value': instance.value,
+    };
