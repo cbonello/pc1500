@@ -1,3 +1,6 @@
+import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:fluttericon/mfg_labs_icons.dart';
+import 'package:fluttericon/modern_pictograms_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,21 +43,11 @@ class _SkinState extends State<Skin> {
               ),
             ),
           ),
-          child: TextButton(
+          child: _Button(
+            label: key.value.label,
+            color: Color(widget.skin.colors[key.value.color].color),
+            fontSize: key.value.fontSize,
             onPressed: () {},
-            child: FittedBox(
-              child: Text(
-                key.value.label.value,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.openSans(
-                  textStyle: TextStyle(
-                    color: Color(widget.skin.colors[key.value.color].color),
-                    fontSize: key.value.fontSize,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
           ),
         ),
       );
@@ -69,6 +62,73 @@ class _SkinState extends State<Skin> {
         ...keys.values,
         LCD(config: widget.skin.lcd),
       ],
+    );
+  }
+}
+
+class _Button extends StatelessWidget {
+  const _Button({
+    Key key,
+    @required this.label,
+    @required this.color,
+    @required this.fontSize,
+    @required this.onPressed,
+  })  : assert(label != null),
+        assert(color != null),
+        assert(fontSize != null),
+        assert(onPressed != null),
+        super(key: key);
+
+  final KeyLabelModel label;
+  final Color color;
+  final double fontSize;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget value = label.when<Widget>(
+      text: (String value) {
+        return Text(
+          value,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.openSans(
+            textStyle: TextStyle(
+              color: color,
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      },
+      icon: (String value) {
+        switch (value) {
+          case 'left':
+            return Icon(
+              ModernPictograms.left_dir,
+              size: fontSize,
+              color: color,
+            );
+          case 'up':
+            return Icon(MfgLabs.up_bold, size: fontSize, color: color);
+          case 'right':
+            return Icon(
+              ModernPictograms.right_dir,
+              size: fontSize,
+              color: color,
+            );
+          case 'down':
+            return Icon(MfgLabs.down_bold, size: fontSize, color: color);
+          case 'up-down':
+            return Icon(FontAwesome.sort, size: fontSize, color: color);
+          default:
+            throw Exception('Invalid icon type: $value');
+        }
+      },
+    );
+
+    return TextButton(
+      onPressed: () {},
+      child: FittedBox(child: value),
     );
   }
 }
