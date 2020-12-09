@@ -58,9 +58,9 @@ class _SkinState extends State<Skin> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
+        LCD(config: widget.skin.lcd),
         Image.asset('assets/systems/pc2.png'),
         ...keys.values,
-        LCD(config: widget.skin.lcd),
       ],
     );
   }
