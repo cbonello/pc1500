@@ -40,15 +40,18 @@ class _SkinState extends State<Skin> {
               ),
             ),
           ),
-          child: FittedBox(
-            child: Text(
-              key.value.label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(
-                textStyle: TextStyle(
-                  color: Color(widget.skin.colors[key.value.color].color),
-                  fontSize: key.value.fontSize,
-                  fontWeight: FontWeight.bold,
+          child: TextButton(
+            onPressed: () {},
+            child: FittedBox(
+              child: Text(
+                key.value.label.value,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.openSans(
+                  textStyle: TextStyle(
+                    color: Color(widget.skin.colors[key.value.color].color),
+                    fontSize: key.value.fontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
