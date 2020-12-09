@@ -42,6 +42,14 @@ void checkKey(Iterable<String> colors, KeyModel key) {
   expect(<String>['text', 'icon'].contains(key.label.type), isTrue);
   expect(key.label.value, isNotNull);
   expect(key.label.value.isNotEmpty, isTrue);
+  if (key.label.type == 'icon') {
+    expect(
+      <String>['left', 'up', 'right', 'down', 'up-down'].contains(
+        key.label.value,
+      ),
+      isTrue,
+    );
+  }
   expect(colors.contains(key.color), isTrue);
   expect(key.fontSize, isNotNull);
   expect(key.fontSize, greaterThan(10));
