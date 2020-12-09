@@ -617,7 +617,7 @@
                 "value": "up"
             },
             "color": "light-gray",
-            "font-size": 28,
+            "font-size": 22,
             "top": 494,
             "left": 919,
             "width": 55,
@@ -737,7 +737,7 @@
                 "value": "left"
             },
             "color": "light-gray",
-            "font-size": 20,
+            "font-size": 40,
             "top": 571,
             "left": 727,
             "width": 55,
@@ -749,7 +749,7 @@
                 "value": "right"
             },
             "color": "light-gray",
-            "font-size": 20,
+            "font-size": 40,
             "top": 571,
             "left": 823,
             "width": 55,
@@ -761,7 +761,7 @@
                 "value": "down"
             },
             "color": "light-gray",
-            "font-size": 28,
+            "font-size": 22,
             "top": 571,
             "left": 919,
             "width": 55,
