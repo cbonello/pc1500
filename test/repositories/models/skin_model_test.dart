@@ -10,14 +10,14 @@ void main() {
       final File file = File('assets/systems/pc2.json');
       final dynamic json = jsonDecode(await file.readAsString());
       final SkinModel skin = SkinModel.fromJson(json as Map<String, dynamic>);
-      expect(skin.colors.length, equals(3));
+      expect(skin.keyColors.length, equals(3));
       checkSkin(skin);
     });
   });
 }
 
 void checkSkin(SkinModel skin) {
-  expect(skin.colors.isNotEmpty, isTrue);
+  expect(skin.keyColors.isNotEmpty, isTrue);
   expect(skin.lcd, isNotNull);
   expect(skin.lcd.background, isNotNull);
   expect(skin.lcd.pixelOn, isNotNull);
@@ -36,7 +36,7 @@ void checkSkin(SkinModel skin) {
   expect(skin.keys.length, equals(allowedKeys.length));
   for (final String key in skin.keys.keys) {
     expect(allowedKeys.contains(key), isTrue);
-    checkKey(skin.colors.keys, skin.keys[key]);
+    checkKey(skin.keyColors.keys, skin.keys[key]);
   }
 }
 

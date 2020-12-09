@@ -7,9 +7,9 @@ part of 'skin_model.dart';
 // **************************************************************************
 
 SkinModel _$SkinModelFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const ['colors', 'lcd', 'keys']);
+  $checkKeys(json, requiredKeys: const ['key-colors', 'lcd', 'keys']);
   return SkinModel(
-    colors: (json['colors'] as Map<String, dynamic>).map(
+    keyColors: (json['key-colors'] as Map<String, dynamic>).map(
       (k, e) => MapEntry(k, ColorModel.fromJson(e as Map<String, dynamic>)),
     ),
     lcd: LCDModel.fromJson(json['lcd'] as Map<String, dynamic>),

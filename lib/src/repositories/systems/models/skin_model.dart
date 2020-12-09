@@ -12,7 +12,7 @@ part 'skin_model.g.dart';
 )
 class SkinModel {
   const SkinModel({
-    @required this.colors,
+    @required this.keyColors,
     @required this.lcd,
     @required this.keys,
   });
@@ -20,8 +20,8 @@ class SkinModel {
   factory SkinModel.fromJson(Map<String, dynamic> json) =>
       _$SkinModelFromJson(json);
 
-  @JsonKey(required: true, nullable: false)
-  final Map<String, ColorModel> colors;
+  @JsonKey(name: 'key-colors', required: true, nullable: false)
+  final Map<String, ColorModel> keyColors;
 
   @JsonKey(required: true, nullable: false)
   final LCDModel lcd;

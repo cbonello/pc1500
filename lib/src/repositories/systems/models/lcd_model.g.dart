@@ -9,8 +9,8 @@ part of 'lcd_model.dart';
 LCDModel _$LCDModelFromJson(Map<String, dynamic> json) {
   $checkKeys(json, requiredKeys: const [
     'background',
-    'pixel-Off',
     'pixel-On',
+    'pixel-Off',
     'symbol-On',
     'symbol-Off',
     'top',

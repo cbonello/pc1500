@@ -1,5 +1,16 @@
 {
-    "colors": {
+    "lcd": {
+        "background": "FF65675C",
+        "pixel-On": "FF2C2721",
+        "pixel-Off": "FF666052",
+        "symbol-On": "FF000000",
+        "symbol-Off": "FF65675C",
+        "top": 81,
+        "left": 367,
+        "width": 903,
+        "height": 90
+    },
+    "key-colors": {
         "light-gray": {
             "background": "FF7D8085",
             "border": "FFDBEBFA",
@@ -15,17 +26,6 @@
             "border": "FF996C67",
             "color": "FFB5C3CC"
         }
-    },
-    "lcd": {
-        "background": "FF65675C",
-        "pixel-On": "FF2C2721",
-        "pixel-Off": "FF666052",
-        "symbol-On": "FF000000",
-        "symbol-Off": "FF65675C",
-        "top": 81,
-        "left": 367,
-        "width": 903,
-        "height": 90
     },
     "keys": {
         "off": {

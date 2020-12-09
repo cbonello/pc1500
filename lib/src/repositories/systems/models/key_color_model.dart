@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'color_model.g.dart';
+part 'key_color_model.g.dart';
 
 int _colorToInt(String value) => int.tryParse(value, radix: 16);
 

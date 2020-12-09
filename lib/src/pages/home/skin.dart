@@ -31,21 +31,21 @@ class _SkinState extends State<Skin> {
           height: key.value.height,
           width: key.value.width,
           decoration: BoxDecoration(
-            color: Color(widget.skin.colors[key.value.color].background),
+            color: Color(widget.skin.keyColors[key.value.color].background),
             border: Border(
               right: BorderSide(
-                color: Color(widget.skin.colors[key.value.color].border),
+                color: Color(widget.skin.keyColors[key.value.color].border),
                 width: 0.5,
               ),
               bottom: BorderSide(
-                color: Color(widget.skin.colors[key.value.color].border),
+                color: Color(widget.skin.keyColors[key.value.color].border),
                 width: 0.5,
               ),
             ),
           ),
           child: _Button(
             label: key.value.label,
-            color: Color(widget.skin.colors[key.value.color].color),
+            color: Color(widget.skin.keyColors[key.value.color].color),
             fontSize: key.value.fontSize,
             onPressed: () {},
           ),

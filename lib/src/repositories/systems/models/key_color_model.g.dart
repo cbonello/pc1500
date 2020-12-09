@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'color_model.dart';
+part of 'key_color_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
