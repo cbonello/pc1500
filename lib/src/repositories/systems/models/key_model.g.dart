@@ -17,7 +17,7 @@ KeyModel _$KeyModelFromJson(Map<String, dynamic> json) {
     'height'
   ]);
   return KeyModel(
-    label: json['label'] as String,
+    label: KeyLabelModel.fromJson(json['label'] as Map<String, dynamic>),
     color: json['color'] as String,
     fontSize: _intToDouble(json['font-size'] as int),
     top: _intToDouble(json['top'] as int),

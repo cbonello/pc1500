@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'key_label_model.dart';
+
 part 'key_model.g.dart';
 
 double _intToDouble(int value) => value.toDouble();
@@ -24,7 +26,7 @@ class KeyModel {
       _$KeyModelFromJson(json);
 
   @JsonKey(required: true, nullable: false)
-  final String label;
+  final KeyLabelModel label;
 
   @JsonKey(required: true, nullable: false)
   final String color;
