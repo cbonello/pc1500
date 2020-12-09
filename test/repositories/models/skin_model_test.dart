@@ -38,6 +38,10 @@ void checkSkin(SkinModel skin) {
 
 void checkKey(Iterable<String> colors, KeyModel key) {
   expect(key.label, isNotNull);
+  expect(key.label.type, isNotNull);
+  expect(<String>['text', 'icon'].contains(key.label.type), isTrue);
+  expect(key.label.value, isNotNull);
+  expect(key.label.value.isNotEmpty, isTrue);
   expect(colors.contains(key.color), isTrue);
   expect(key.fontSize, isNotNull);
   expect(key.fontSize, greaterThan(10));
