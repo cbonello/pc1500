@@ -19,7 +19,11 @@ void main() {
 void checkSkin(SkinModel skin) {
   expect(skin.colors.isNotEmpty, isTrue);
   expect(skin.lcd, isNotNull);
-  expect(skin.lcd.top, isNotNull);
+  expect(skin.lcd.background, isNotNull);
+  expect(skin.lcd.pixelOn, isNotNull);
+  expect(skin.lcd.pixelOff, isNotNull);
+  expect(skin.lcd.symbolOn, isNotNull);
+  expect(skin.lcd.symbolOff, isNotNull);
   expect(skin.lcd.top, greaterThan(0));
   expect(skin.lcd.left, isNotNull);
   expect(skin.lcd.left, greaterThan(0));
