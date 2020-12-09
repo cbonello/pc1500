@@ -23,7 +23,7 @@ class _LCDState extends State<LCD> {
       child: Container(
         height: widget.config.height,
         width: widget.config.width,
-        color: Colors.yellow[100],
+        color: Color(widget.config.background),
       ),
     );
   }
