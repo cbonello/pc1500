@@ -20,7 +20,7 @@ class SystemError extends Error {
   String toString() => 'System: $message';
 }
 
-enum DeviceType { pc1500, pc2, pc1500A }
+enum DeviceType { pc1500A, pc2 }
 
 class PC1500 {
   PC1500(
