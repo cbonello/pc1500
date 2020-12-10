@@ -1,8 +1,8 @@
 include: package:lint/analysis_options_package.yaml
 
 analyzer:
-  enable-experiment:
-    - non-nullable
+  # enable-experiment:
+  #   - non-nullable
   exclude:
     - lib/**/*.g.dart
     - lib/**/*.freezed.dart
