@@ -1,4 +1,5 @@
 {
+    "image": "assets/systems/pc1500a.png",
     "lcd": {
         "background": "FF65675C",
         "pixel-On": "FF2C2721",

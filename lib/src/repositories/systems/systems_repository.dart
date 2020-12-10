@@ -13,9 +13,8 @@ final FutureProvider<SystemsRepository> systemsRepositoryProvider =
 );
 
 class SystemsRepository {
-  SystemsRepository._({
-    @required Map<DeviceType, SkinModel> skins,
-  })  : assert(skins != null),
+  SystemsRepository._({@required Map<DeviceType, SkinModel> skins})
+      : assert(skins != null),
         _skins = skins;
 
   static SystemsRepository _instance;

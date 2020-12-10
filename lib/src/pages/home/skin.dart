@@ -59,7 +59,7 @@ class _SkinState extends State<Skin> {
     return Stack(
       children: <Widget>[
         LCD(config: widget.skin.lcd),
-        Image.asset('assets/systems/pc2.png'),
+        Image.asset(widget.skin.image),
         ...keys.values,
       ],
     );

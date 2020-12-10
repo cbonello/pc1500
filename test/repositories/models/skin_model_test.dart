@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pc1500/src/repositories/systems/models/models.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Sharp PC-1500A Skin', () {
     test('Parses pc1500a.json successfully', () async {
       final File file = File('assets/systems/pc1500a.json');
@@ -20,9 +23,8 @@ void main() {
       final File file = File('assets/systems/pc2.json');
       final dynamic json = jsonDecode(await file.readAsString());
       final SkinModel skin = SkinModel.fromJson(json as Map<String, dynamic>);
-      expect(skin.keyColors.length, greaterThan(0));
-      skin.keyColors.values.forEach(checkColorModel);
-      checkSkin(skin);
+
+      await checkSkin(skin);
     });
   });
 }
@@ -36,8 +38,11 @@ void checkColor(int color) {
   expect(color, lessThanOrEqualTo(0xFFFFFFFF));
 }
 
-void checkSkin(SkinModel skin) {
-  expect(skin.keyColors.isNotEmpty, isTrue);
+Future<void> checkSkin(SkinModel skin) async {
+  expect(skin.image, isNotNull);
+  // Asset exists?
+  await expectLater(rootBundle.load(skin.image), completion(isNotNull));
+
   expect(skin.lcd, isNotNull);
   expect(skin.lcd.background, isNotNull);
   checkColor(skin.lcd.background);
@@ -56,6 +61,9 @@ void checkSkin(SkinModel skin) {
   expect(skin.lcd.height, greaterThan(0));
   expect(skin.lcd.width, isNotNull);
   expect(skin.lcd.width, greaterThan(0));
+
+  expect(skin.keyColors.length, greaterThan(0));
+  skin.keyColors.values.forEach(checkColorModel);
 
   expect(skin.keys, isNotNull);
   expect(skin.keys.length, equals(allowedKeys.length));
