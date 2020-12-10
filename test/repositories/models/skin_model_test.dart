@@ -5,25 +5,50 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pc1500/src/repositories/systems/models/models.dart';
 
 void main() {
-  group('SkinModel', () {
+  group('Sharp PC-1500A Skin', () {
+    test('Parses pc1500a.json successfully', () async {
+      final File file = File('assets/systems/pc1500a.json');
+      final dynamic json = jsonDecode(await file.readAsString());
+      final SkinModel skin = SkinModel.fromJson(json as Map<String, dynamic>);
+      expect(skin.keyColors.length, greaterThan(0));
+      checkSkin(skin);
+    });
+  });
+
+  group('Radio Shack TRS-80 PC-2 Skin', () {
     test('Parses pc2.json successfully', () async {
       final File file = File('assets/systems/pc2.json');
       final dynamic json = jsonDecode(await file.readAsString());
       final SkinModel skin = SkinModel.fromJson(json as Map<String, dynamic>);
-      expect(skin.keyColors.length, equals(3));
+      expect(skin.keyColors.length, greaterThan(0));
+      skin.keyColors.values.forEach(checkColorModel);
       checkSkin(skin);
     });
   });
+}
+
+void checkColorModel(ColorModel color) {
+  checkColor(color.background);
+}
+
+void checkColor(int color) {
+  expect(color, greaterThanOrEqualTo(0));
+  expect(color, lessThanOrEqualTo(0xFFFFFFFF));
 }
 
 void checkSkin(SkinModel skin) {
   expect(skin.keyColors.isNotEmpty, isTrue);
   expect(skin.lcd, isNotNull);
   expect(skin.lcd.background, isNotNull);
+  checkColor(skin.lcd.background);
   expect(skin.lcd.pixelOn, isNotNull);
+  checkColor(skin.lcd.pixelOn);
   expect(skin.lcd.pixelOff, isNotNull);
+  checkColor(skin.lcd.pixelOff);
   expect(skin.lcd.symbolOn, isNotNull);
+  checkColor(skin.lcd.symbolOn);
   expect(skin.lcd.symbolOff, isNotNull);
+  checkColor(skin.lcd.symbolOff);
   expect(skin.lcd.top, greaterThan(0));
   expect(skin.lcd.left, isNotNull);
   expect(skin.lcd.left, greaterThan(0));
