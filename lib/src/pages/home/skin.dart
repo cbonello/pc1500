@@ -7,55 +7,49 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../repositories/systems/models/models.dart';
 import 'lcd.dart';
 
-class Skin extends StatefulWidget {
+class Skin extends StatelessWidget {
   const Skin({Key key, @required this.skin}) : super(key: key);
 
   final SkinModel skin;
 
   @override
-  _SkinState createState() => _SkinState();
-}
-
-class _SkinState extends State<Skin> {
-  @override
   Widget build(BuildContext context) {
-    final Map<String, Widget> keys = <String, Widget>{};
-
-    for (final MapEntry<String, KeyModel> key in widget.skin.keys.entries) {
-      keys[key.key] = Positioned(
-        left: key.value.left,
-        top: key.value.top,
-        child: Container(
-          height: key.value.height,
-          width: key.value.width,
-          decoration: BoxDecoration(
-            color: Color(widget.skin.keyColors[key.value.color].background),
-            border: Border(
-              right: BorderSide(
-                color: Color(widget.skin.keyColors[key.value.color].border),
-                width: 0.5,
-              ),
-              bottom: BorderSide(
-                color: Color(widget.skin.keyColors[key.value.color].border),
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: _Button(
-            label: key.value.label,
-            color: Color(widget.skin.keyColors[key.value.color].color),
-            fontSize: key.value.fontSize,
-            onPressed: () {},
-          ),
-        ),
-      );
-    }
-
     return Stack(
       children: <Widget>[
-        LCD(config: widget.skin.lcd),
-        Image.asset(widget.skin.image),
-        ...keys.values,
+        LCD(config: skin.lcd),
+        Image.asset(skin.image),
+        // ...keys.values,
+        ...skin.keys.values.map<Widget>(
+          (KeyModel key) {
+            return Positioned(
+              left: key.left,
+              top: key.top,
+              child: Container(
+                height: key.height,
+                width: key.width,
+                decoration: BoxDecoration(
+                  color: Color(skin.keyColors[key.color].background),
+                  border: Border(
+                    right: BorderSide(
+                      color: Color(skin.keyColors[key.color].border),
+                      width: 0.5,
+                    ),
+                    bottom: BorderSide(
+                      color: Color(skin.keyColors[key.color].border),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                child: _Button(
+                  label: key.label,
+                  color: Color(skin.keyColors[key.color].color),
+                  fontSize: key.fontSize,
+                  onPressed: () {},
+                ),
+              ),
+            );
+          },
+        ).toList(),
       ],
     );
   }
