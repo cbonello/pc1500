@@ -1,6 +1,8 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pc1500/src/repositories/local_storage/local_storage_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/application.dart';
 
@@ -13,7 +15,17 @@ bool get isInDebugMode {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const ProviderScope(child: PC1500App()));
+  final SharedPreferences sharedPreferences =
+      await SharedPreferences.getInstance();
+
+  runApp(ProviderScope(
+    overrides: <Override>[
+      localStorageRepositoryProvider.overrideWithValue(
+        LocalStorageRepository(sharedPreferences: sharedPreferences),
+      ),
+    ],
+    child: const PC1500App(),
+  ));
 
   windows.doWhenWindowReady(() {
     final Size initialSize = Size(
