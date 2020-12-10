@@ -93,26 +93,61 @@ class _DeviceMenu extends ConsumerWidget {
     final DeviceTypeRepository deviceTypeRepository =
         watch(deviceTypeRepositoryProvider);
 
-    return PopupMenuButton<DeviceType>(
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<DeviceType>>[
-        PopupMenuItem<DeviceType>(
-          value: DeviceType.pc1500A,
-          child: deviceTypeRepository.deviceType == DeviceType.pc1500A
-              ? const Text('* Sharp PC-1500A')
-              : const Text('  Sharp PC-1500A'),
+    return Theme(
+      // Hide tooltip.
+      data: Theme.of(context).copyWith(
+        tooltipTheme: const TooltipThemeData(
+          decoration: BoxDecoration(color: Colors.transparent),
         ),
-        PopupMenuItem<DeviceType>(
-          value: DeviceType.pc2,
-          child: deviceTypeRepository.deviceType == DeviceType.pc2
-              ? const Text('* Radio Shack PC-2')
-              : const Text('  Radio Shack PC-2'),
+      ),
+      child: PopupMenuButton<DeviceType>(
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<DeviceType>>[
+          PopupMenuItem<DeviceType>(
+            value: DeviceType.pc1500A,
+            child: _CheckboxOption(
+              label: 'Sharp PC-1500A',
+              isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500A,
+            ),
+          ),
+          PopupMenuItem<DeviceType>(
+              value: DeviceType.pc2,
+              child: _CheckboxOption(
+                label: 'Radio Shack PC-2',
+                isSelected: deviceTypeRepository.deviceType == DeviceType.pc2,
+              )),
+        ],
+        onSelected: (DeviceType deviceType) {
+          deviceTypeRepository.deviceType = deviceType;
+        },
+        tooltip: '',
+        enableFeedback: true,
+        child: const Text('Device'),
+      ),
+    );
+  }
+}
+
+class _CheckboxOption extends StatelessWidget {
+  const _CheckboxOption({
+    Key key,
+    @required this.label,
+    this.isSelected = false,
+  })  : assert(label != null),
+        super(key: key);
+
+  final String label;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        SizedBox(
+          width: 25.0,
+          child: Text(isSelected ? '✓' : ''),
         ),
+        Text(label)
       ],
-      onSelected: (DeviceType deviceType) {
-        deviceTypeRepository.deviceType = deviceType;
-      },
-      enableFeedback: true,
-      child: const Text('Device'),
     );
   }
 }
