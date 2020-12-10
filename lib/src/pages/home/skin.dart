@@ -17,11 +17,9 @@ class Skin extends StatefulWidget {
 }
 
 class _SkinState extends State<Skin> {
-  final Map<String, Widget> keys = <String, Widget>{};
-
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    final Map<String, Widget> keys = <String, Widget>{};
 
     for (final MapEntry<String, KeyModel> key in widget.skin.keys.entries) {
       keys[key.key] = Positioned(
@@ -52,10 +50,7 @@ class _SkinState extends State<Skin> {
         ),
       );
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         LCD(config: widget.skin.lcd),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:system/system.dart';
 
+import '../../repositories/local_storage/local_storage_repository.dart';
 import '../../repositories/systems/systems_repository.dart';
 import 'skin.dart';
 
@@ -15,6 +16,8 @@ class HomeView extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final AsyncValue<SystemsRepository> systemsRepository =
         watch(systemsRepositoryProvider);
+    final DeviceTypeRepository deviceTypeRepository =
+        watch(deviceTypeRepositoryProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFBABEC1),
@@ -26,6 +29,8 @@ class HomeView extends ConsumerWidget {
             windows.WindowTitleBarBox(
               child: Row(
                 children: <Widget>[
+                  const SizedBox(width: 20.0),
+                  _DeviceMenu(),
                   Expanded(child: windows.MoveWindow()),
                   const WindowButtons()
                 ],
@@ -34,7 +39,11 @@ class HomeView extends ConsumerWidget {
             Center(
               child: systemsRepository.when<Widget>(
                 data: (SystemsRepository repository) {
-                  return Skin(skin: repository.getSkin(DeviceType.pc2));
+                  return Skin(
+                    skin: repository.getSkin(
+                      deviceTypeRepository.deviceType,
+                    ),
+                  );
                 },
                 loading: () => const CircularProgressIndicator(),
                 error: (Object err, StackTrace _) => Text('Error: $err'),
@@ -74,6 +83,36 @@ class WindowButtons extends StatelessWidget {
         windows.MaximizeWindowButton(colors: buttonColors),
         windows.CloseWindowButton(colors: closeButtonColors),
       ],
+    );
+  }
+}
+
+class _DeviceMenu extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, ScopedReader watch) {
+    final DeviceTypeRepository deviceTypeRepository =
+        watch(deviceTypeRepositoryProvider);
+
+    return PopupMenuButton<DeviceType>(
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<DeviceType>>[
+        PopupMenuItem<DeviceType>(
+          value: DeviceType.pc1500A,
+          child: deviceTypeRepository.deviceType == DeviceType.pc1500A
+              ? const Text('* Sharp PC-1500A')
+              : const Text('  Sharp PC-1500A'),
+        ),
+        PopupMenuItem<DeviceType>(
+          value: DeviceType.pc2,
+          child: deviceTypeRepository.deviceType == DeviceType.pc2
+              ? const Text('* Radio Shack PC-2')
+              : const Text('  Radio Shack PC-2'),
+        ),
+      ],
+      onSelected: (DeviceType deviceType) {
+        deviceTypeRepository.deviceType = deviceType;
+      },
+      enableFeedback: true,
+      child: const Text('Device'),
     );
   }
 }
