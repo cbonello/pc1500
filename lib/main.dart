@@ -16,7 +16,10 @@ Future<void> main() async {
   runApp(const ProviderScope(child: PC1500App()));
 
   windows.doWhenWindowReady(() {
-    final Size initialSize = Size(1506, windows.getTitleBarHeight() + 628 + 15);
+    final Size initialSize = Size(
+      1506,
+      windows.appWindow.titleBarHeight + 628 + 15,
+    );
     windows.appWindow.minSize = initialSize;
     windows.appWindow.maxSize = initialSize;
     windows.appWindow.size = initialSize;
