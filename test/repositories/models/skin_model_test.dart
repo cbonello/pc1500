@@ -44,16 +44,16 @@ Future<void> checkSkin(SkinModel skin) async {
   await expectLater(rootBundle.load(skin.image), completion(isNotNull));
 
   expect(skin.lcd, isNotNull);
-  expect(skin.lcd.background, isNotNull);
-  checkColor(skin.lcd.background);
-  expect(skin.lcd.pixelOn, isNotNull);
-  checkColor(skin.lcd.pixelOn);
-  expect(skin.lcd.pixelOff, isNotNull);
-  checkColor(skin.lcd.pixelOff);
-  expect(skin.lcd.symbolOn, isNotNull);
-  checkColor(skin.lcd.symbolOn);
-  expect(skin.lcd.symbolOff, isNotNull);
-  checkColor(skin.lcd.symbolOff);
+  expect(skin.lcd.colors.background, isNotNull);
+  checkColor(skin.lcd.colors.background);
+  expect(skin.lcd.colors.pixelOn, isNotNull);
+  checkColor(skin.lcd.colors.pixelOn);
+  expect(skin.lcd.colors.pixelOff, isNotNull);
+  checkColor(skin.lcd.colors.pixelOff);
+  expect(skin.lcd.colors.symbolOn, isNotNull);
+  checkColor(skin.lcd.colors.symbolOn);
+  expect(skin.lcd.colors.symbolOff, isNotNull);
+  checkColor(skin.lcd.colors.symbolOff);
   expect(skin.lcd.top, greaterThan(0));
   expect(skin.lcd.left, isNotNull);
   expect(skin.lcd.left, greaterThan(0));

@@ -7,23 +7,10 @@ part of 'lcd_model.dart';
 // **************************************************************************
 
 LcdModel _$LcdModelFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const [
-    'background',
-    'pixel-On',
-    'pixel-Off',
-    'symbol-On',
-    'symbol-Off',
-    'top',
-    'left',
-    'width',
-    'height'
-  ]);
+  $checkKeys(json,
+      requiredKeys: const ['colors', 'top', 'left', 'width', 'height']);
   return LcdModel(
-    background: _colorToInt(json['background'] as String),
-    pixelOff: _colorToInt(json['pixel-Off'] as String),
-    pixelOn: _colorToInt(json['pixel-On'] as String),
-    symbolOn: _colorToInt(json['symbol-On'] as String),
-    symbolOff: _colorToInt(json['symbol-Off'] as String),
+    colors: LcdColorsModel.fromJson(json['colors'] as Map<String, dynamic>),
     top: _intToDouble(json['top'] as int),
     left: _intToDouble(json['left'] as int),
     width: _intToDouble(json['width'] as int),
