@@ -82,7 +82,7 @@ class PC1500 {
     )..reset();
     _cpu.resetPin = true;
 
-    _lcd = Lcd(memRead: _csd.readByteAt);
+    _lcd = Lcd(memRead: _csd.readAt);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
 
     _dasm = LH5801DASM(memRead: _csd.readByteAt);
