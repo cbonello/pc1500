@@ -157,6 +157,35 @@ class ChipSelectDecoder extends Equatable {
     return memoryChip;
   }
 
+  Uint8ClampedList readAt(int address, int length) {
+    final MemoryBank bank = _findMemoryBank(address);
+    final int addressWithinBank = address & 0xFFFF;
+
+    if (length <= 0) {
+      throw ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.read,
+        'readAt: $length: length argument must be greater than zero',
+      );
+    }
+
+    for (final MemoryChipBase mc in memoryBanks[bank]) {
+      if (mc.start <= addressWithinBank && addressWithinBank <= mc.end) {
+        if (addressWithinBank + length > mc.end) {
+          throw ChipSelectDecoderError(
+            ChipSelectDecoderErrorId.read,
+            'readAt: ME$bank: could not read from unmapped memory address ${_meHex16(address)}',
+          );
+        }
+        return mc.readAt(addressWithinBank - mc.start, length);
+      }
+    }
+
+    throw ChipSelectDecoderError(
+      ChipSelectDecoderErrorId.read,
+      'readAt: ME$bank: could not read from unmapped memory address ${_meHex16(address)}',
+    );
+  }
+
   int readByteAt(int address) {
     final MemoryBank bank = _findMemoryBank(address);
     final int addressWithinBank = address & 0xFFFF;

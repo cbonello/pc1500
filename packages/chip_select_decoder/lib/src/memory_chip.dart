@@ -53,6 +53,10 @@ abstract class MemoryChipBase extends Equatable with MemoryObservable {
 
   int get end => start + length - 1;
 
+  // UI helper function; notifications not required.
+  Uint8ClampedList readAt(int offsetInBytes, int length) =>
+      _data.sublist(offsetInBytes, offsetInBytes + length);
+
   int readByteAt(int offsetInBytes);
 
   void writeByteAt(int offsetInBytes, int value);

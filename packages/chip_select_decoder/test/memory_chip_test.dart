@@ -45,6 +45,13 @@ void main() {
         expect(ram.end, 99);
       });
 
+      group('readAt()', () {
+        test('should read successfully', () {
+          final MemoryChipRam ram = MemoryChipRam(start: 0, length: 100);
+          expect(ram.readAt(0, 4), equals(<int>[0, 0, 0, 0]));
+        });
+      });
+
       group('readByteAt()', () {
         test('should read successfully', () {
           final MemoryChipRam ram = MemoryChipRam(start: 0, length: 100);
@@ -128,6 +135,14 @@ void main() {
         expect(rom.end, 255);
       });
 
+      group('readAt()', () {
+        test('should read successfully', () {
+          final MockRom mockRom = createMockRom(256);
+          final MemoryChipRom rom = MemoryChipRom(start: 100, rom: mockRom);
+          expect(rom.readAt(121, 3), equals(<int>[121, 122, 123]));
+        });
+      });
+
       group('readByteAt()', () {
         test('should read successfully', () {
           final MockRom mockRom = createMockRom(256);
@@ -205,6 +220,17 @@ void main() {
           value: 16,
         );
         expect(rpArea.end, 99);
+      });
+
+      group('readAt()', () {
+        test('should read successfully', () {
+          final MemoryChipRomPlaceholder rpArea = MemoryChipRomPlaceholder(
+            start: 0,
+            length: 100,
+            value: 16,
+          );
+          expect(rpArea.readAt(10, 4), equals(<int>[16, 16, 16, 16]));
+        });
       });
 
       group('readByteAt()', () {

@@ -162,6 +162,63 @@ void main() {
       expect(cs1, equals(cs2));
     });
 
+    group('readAt()', () {
+      test('should raise an exception for reads from invalid addresses', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        cs.appendRAM(MemoryBank.me0, 0, 1024);
+
+        // Invalid addresses.
+        expect(
+          () => cs.readAt(-1, 1),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+
+        // Unmapped address.
+        expect(
+          () => cs.readAt(2048, 1),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+
+      test('should raise an exception for reads for an invalid length', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        cs.appendRAM(MemoryBank.me0, 0, 128);
+
+        // Invalid length.
+        expect(
+          () => cs.readAt(0, -1),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+        expect(
+          () => cs.readAt(0, 0),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+
+        // Read past memory size.
+        expect(
+          () => cs.readAt(0, 129),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+
+      test('should read successfully', () {
+        final MockRom rom = createMockRom(128);
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        cs.appendRAM(MemoryBank.me0, 0, 128);
+        for (int i = 0; i < 128; i++) {
+          cs.writeByteAt(i, i);
+        }
+        cs.appendROM(MemoryBank.me0, 1000, rom);
+        cs.appendROMPlaceholder(MemoryBank.me0, 0x8000, 0x10, 0xFF);
+        expect(cs.readAt(64, 3).toList(), equals(<int>[64, 65, 66]));
+        expect(cs.readAt(1012, 2).toList(), equals(<int>[12, 13]));
+        expect(cs.readAt(0x8002, 3).toList(), equals(<int>[0xFF, 0xFF, 0xFF]));
+      });
+    });
+
     group('readByteAt()', () {
       test('should raise an exception for reads from invalid addresses', () {
         final ChipSelectDecoder cs = ChipSelectDecoder();
@@ -171,10 +228,6 @@ void main() {
         // Invalid addresses.
         expect(
           () => cs.readByteAt(-1),
-          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
-        );
-        expect(
-          () => cs.readByteAt(256 * 1024),
           throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
 
@@ -207,10 +260,6 @@ void main() {
         // Invalid addresses.
         expect(
           () => cs.writeByteAt(-1, 9),
-          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
-        );
-        expect(
-          () => cs.writeByteAt(256 * 1024, 6),
           throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
 
