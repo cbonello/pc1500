@@ -193,7 +193,7 @@
             "color": "light-gray",
             "font-size": 28,
             "top": 340,
-            "left": 344,
+            "left": 343,
             "width": 55,
             "height": 36
         },
@@ -373,7 +373,7 @@
             "color": "light-gray",
             "font-size": 28,
             "top": 417,
-            "left": 344,
+            "left": 343,
             "width": 55,
             "height": 36
         },
@@ -493,7 +493,7 @@
             "color": "dark-gray",
             "font-size": 36,
             "top": 417,
-            "left": 1300,
+            "left": 1299,
             "width": 55,
             "height": 36
         },
@@ -553,7 +553,7 @@
             "color": "light-gray",
             "font-size": 28,
             "top": 494,
-            "left": 344,
+            "left": 343,
             "width": 55,
             "height": 36
         },
@@ -637,7 +637,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 494,
-            "left": 1016,
+            "left": 1015,
             "width": 55,
             "height": 36
         },
@@ -649,7 +649,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 494,
-            "left": 1111,
+            "left": 1110,
             "width": 55,
             "height": 36
         },
@@ -661,7 +661,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 494,
-            "left": 1206,
+            "left": 1205,
             "width": 55,
             "height": 36
         },
@@ -673,7 +673,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 494,
-            "left": 1300,
+            "left": 1299,
             "width": 55,
             "height": 36
         },
@@ -781,7 +781,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 571,
-            "left": 1016,
+            "left": 1015,
             "width": 55,
             "height": 36
         },
@@ -793,7 +793,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 571,
-            "left": 1111,
+            "left": 1110,
             "width": 55,
             "height": 36
         },
@@ -805,7 +805,7 @@
             "color": "dark-gray",
             "font-size": 22,
             "top": 571,
-            "left": 1206,
+            "left": 1205,
             "width": 55,
             "height": 36
         },
@@ -817,7 +817,7 @@
             "color": "dark-gray",
             "font-size": 28,
             "top": 571,
-            "left": 1300,
+            "left": 1299,
             "width": 55,
             "height": 36
         }
