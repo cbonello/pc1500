@@ -17,8 +17,9 @@ mixin MemoryOperations {
 
 enum MemoryAccessType { read, write }
 
-typedef MemoryRead = int Function(int address);
-typedef MemoryWrite = void Function(int offsetInBytes, int value);
+typedef MemoryRead = Uint8ClampedList Function(int address, int length);
+typedef MemoryReadByte = int Function(int address);
+typedef MemoryWriteByte = void Function(int offsetInBytes, int value);
 
 mixin MemoryObservable {
   bool registerObserver(MemoryAccessType type, MemoryObserver observer) =>
