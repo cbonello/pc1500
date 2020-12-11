@@ -57,9 +57,11 @@ void main() {
           ram.registerObserver(MemoryAccessType.read, observer);
 
           ram.readByteAt(3);
-          verify(observer.update(MemoryAccessType.read, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
+              .called(1);
           ram.readByteAt(2);
-          verify(observer.update(MemoryAccessType.read, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
+              .called(1);
         });
       });
 
@@ -77,9 +79,11 @@ void main() {
           ram.registerObserver(MemoryAccessType.write, observer);
 
           ram.writeByteAt(10, 89);
-          verify(observer.update(MemoryAccessType.write, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
+              .called(1);
           ram.writeByteAt(99, 12);
-          verify(observer.update(MemoryAccessType.write, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
+              .called(1);
         });
       });
 
@@ -138,9 +142,11 @@ void main() {
           rom.registerObserver(MemoryAccessType.read, observer);
 
           rom.readByteAt(3);
-          verify(observer.update(MemoryAccessType.read, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
+              .called(1);
           rom.readByteAt(2);
-          verify(observer.update(MemoryAccessType.read, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
+              .called(1);
         });
       });
 
@@ -221,9 +227,11 @@ void main() {
           rpArea.registerObserver(MemoryAccessType.read, observer);
 
           rpArea.readByteAt(3);
-          verify(observer.update(MemoryAccessType.read, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
+              .called(1);
           rpArea.readByteAt(2);
-          verify(observer.update(MemoryAccessType.read, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
+              .called(1);
         });
       });
 
@@ -248,9 +256,11 @@ void main() {
           rpArea.registerObserver(MemoryAccessType.write, observer);
 
           rpArea.writeByteAt(10, 89);
-          verify(observer.update(MemoryAccessType.write, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
+              .called(1);
           rpArea.writeByteAt(99, 12);
-          verify(observer.update(MemoryAccessType.write, any, any)).called(1);
+          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
+              .called(1);
         });
       });
 

@@ -17,6 +17,9 @@ mixin MemoryOperations {
 
 enum MemoryAccessType { read, write }
 
+typedef MemoryRead = int Function(int address);
+typedef MemoryWrite = void Function(int offsetInBytes, int value);
+
 mixin MemoryObservable {
   bool registerObserver(MemoryAccessType type, MemoryObserver observer) =>
       throw UnimplementedError;
@@ -25,7 +28,7 @@ mixin MemoryObservable {
 }
 
 mixin MemoryObserver {
-  void update(MemoryAccessType type, int address, int value) =>
+  void memoryUpdated(MemoryAccessType type, int address, int value) =>
       throw UnimplementedError;
 }
 
@@ -70,7 +73,7 @@ abstract class MemoryChipBase extends Equatable with MemoryObservable {
   @override
   void notifyObservers(MemoryAccessType type, int address, int value) {
     for (final MemoryObserver observer in _observers[type]) {
-      observer.update(type, address, value);
+      observer.memoryUpdated(type, address, value);
     }
   }
 
