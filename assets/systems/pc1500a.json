@@ -66,7 +66,7 @@
             "color": "light-gray",
             "font-size": 20,
             "top": 260,
-            "left": 388,
+            "left": 387,
             "width": 55,
             "height": 28
         },
@@ -90,7 +90,7 @@
             "color": "light-gray",
             "font-size": 20,
             "top": 260,
-            "left": 639,
+            "left": 638,
             "width": 55,
             "height": 28
         },
@@ -102,7 +102,7 @@
             "color": "light-gray",
             "font-size": 20,
             "top": 260,
-            "left": 765,
+            "left": 764,
             "width": 55,
             "height": 28
         },
@@ -114,7 +114,7 @@
             "color": "light-gray",
             "font-size": 20,
             "top": 260,
-            "left": 890,
+            "left": 889,
             "width": 55,
             "height": 28
         },
@@ -150,7 +150,7 @@
             "color": "light-gray",
             "font-size": 20,
             "top": 260,
-            "left": 1385,
+            "left": 1384,
             "width": 55,
             "height": 28
         },
@@ -330,7 +330,7 @@
             "color": "red",
             "font-size": 22,
             "top": 343,
-            "left": 1385,
+            "left": 1384,
             "width": 56,
             "height": 37
         },
@@ -510,7 +510,7 @@
             "color": "brown",
             "font-size": 28,
             "top": 493,
-            "left": 138,
+            "left": 137,
             "width": 57,
             "height": 38
         },
@@ -522,7 +522,7 @@
             "color": "brown",
             "font-size": 28,
             "top": 493,
-            "left": 232,
+            "left": 231,
             "width": 57,
             "height": 38
         },
@@ -534,7 +534,7 @@
             "color": "brown",
             "font-size": 28,
             "top": 493,
-            "left": 326,
+            "left": 325,
             "width": 57,
             "height": 38
         },
@@ -558,7 +558,7 @@
             "color": "brown",
             "font-size": 28,
             "top": 493,
-            "left": 514,
+            "left": 513,
             "width": 57,
             "height": 38
         },
@@ -678,7 +678,7 @@
             "color": "light-gray",
             "font-size": 21,
             "top": 568,
-            "left": 138,
+            "left": 137,
             "width": 57,
             "height": 38
         },
@@ -690,7 +690,7 @@
             "color": "light-gray",
             "font-size": 28,
             "top": 568,
-            "left": 232,
+            "left": 231,
             "width": 57,
             "height": 38
         },
@@ -702,7 +702,7 @@
             "color": "light-gray",
             "font-size": 22,
             "top": 568,
-            "left": 326,
+            "left": 325,
             "width": 57,
             "height": 38
         },
