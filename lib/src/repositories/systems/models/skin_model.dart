@@ -25,7 +25,7 @@ class SkinModel {
   final String image;
 
   @JsonKey(required: true, nullable: false)
-  final LCDModel lcd;
+  final LcdModel lcd;
 
   @JsonKey(name: 'key-colors', required: true, nullable: false)
   final Map<String, ColorModel> keyColors;

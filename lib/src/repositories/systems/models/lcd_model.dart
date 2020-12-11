@@ -11,8 +11,8 @@ int _colorToInt(String value) => int.tryParse(value, radix: 16);
   createFactory: true,
   createToJson: false,
 )
-class LCDModel {
-  const LCDModel({
+class LcdModel {
+  const LcdModel({
     @required this.background,
     @required this.pixelOff,
     @required this.pixelOn,
@@ -24,8 +24,8 @@ class LCDModel {
     @required this.height,
   });
 
-  factory LCDModel.fromJson(Map<String, dynamic> json) =>
-      _$LCDModelFromJson(json);
+  factory LcdModel.fromJson(Map<String, dynamic> json) =>
+      _$LcdModelFromJson(json);
 
   @JsonKey(required: true, fromJson: _colorToInt)
   final int background;
