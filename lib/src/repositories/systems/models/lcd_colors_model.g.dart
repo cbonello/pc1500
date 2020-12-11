@@ -16,8 +16,8 @@ LcdColorsModel _$LcdColorsModelFromJson(Map<String, dynamic> json) {
   ]);
   return LcdColorsModel(
     background: _colorToInt(json['background'] as String),
-    pixelOff: _colorToInt(json['pixel-Off'] as String),
     pixelOn: _colorToInt(json['pixel-On'] as String),
+    pixelOff: _colorToInt(json['pixel-Off'] as String),
     symbolOn: _colorToInt(json['symbol-On'] as String),
     symbolOff: _colorToInt(json['symbol-Off'] as String),
   );

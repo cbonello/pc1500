@@ -12,8 +12,8 @@ int _colorToInt(String value) => int.tryParse(value, radix: 16);
 class LcdColorsModel {
   const LcdColorsModel({
     @required this.background,
-    @required this.pixelOff,
     @required this.pixelOn,
+    @required this.pixelOff,
     @required this.symbolOn,
     @required this.symbolOff,
   });

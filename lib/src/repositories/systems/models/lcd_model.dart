@@ -2,12 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'lcd_colors_model.dart';
+import 'lcd_offsets_model.dart';
 
 part 'lcd_model.g.dart';
 
 double _intToDouble(int value) => value.toDouble();
-
-int _colorToInt(String value) => int.tryParse(value, radix: 16);
 
 @JsonSerializable(
   createFactory: true,
@@ -16,6 +15,7 @@ int _colorToInt(String value) => int.tryParse(value, radix: 16);
 class LcdModel {
   const LcdModel({
     @required this.colors,
+    @required this.offsets,
     @required this.top,
     @required this.left,
     @required this.width,
@@ -27,6 +27,9 @@ class LcdModel {
 
   @JsonKey(required: true, nullable: false)
   final LcdColorsModel colors;
+
+  @JsonKey(required: true, nullable: false)
+  final LcdOffsetsModel offsets;
 
   @JsonKey(required: true, fromJson: _intToDouble)
   final double top;

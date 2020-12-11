@@ -44,6 +44,8 @@ Future<void> checkSkin(SkinModel skin) async {
   await expectLater(rootBundle.load(skin.image), completion(isNotNull));
 
   expect(skin.lcd, isNotNull);
+
+  expect(skin.lcd.colors, isNotNull);
   expect(skin.lcd.colors.background, isNotNull);
   checkColor(skin.lcd.colors.background);
   expect(skin.lcd.colors.pixelOn, isNotNull);
@@ -54,6 +56,8 @@ Future<void> checkSkin(SkinModel skin) async {
   checkColor(skin.lcd.colors.symbolOn);
   expect(skin.lcd.colors.symbolOff, isNotNull);
   checkColor(skin.lcd.colors.symbolOff);
+
+  expect(skin.lcd.top, isNotNull);
   expect(skin.lcd.top, greaterThan(0));
   expect(skin.lcd.left, isNotNull);
   expect(skin.lcd.left, greaterThan(0));
@@ -61,6 +65,14 @@ Future<void> checkSkin(SkinModel skin) async {
   expect(skin.lcd.height, greaterThan(0));
   expect(skin.lcd.width, isNotNull);
   expect(skin.lcd.width, greaterThan(0));
+
+  expect(skin.lcd.offsets, isNotNull);
+  expect(skin.lcd.offsets.horizontal, isNotNull);
+  expect(skin.lcd.offsets.horizontal, greaterThan(0));
+  expect(skin.lcd.offsets.horizontal, lessThan(skin.lcd.width / 2.0));
+  expect(skin.lcd.offsets.vertical, isNotNull);
+  expect(skin.lcd.offsets.vertical, greaterThan(0));
+  expect(skin.lcd.offsets.vertical, lessThan(skin.lcd.height / 2.0));
 
   expect(skin.keyColors.length, greaterThan(0));
   skin.keyColors.values.forEach(checkColorModel);
