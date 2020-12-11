@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:meta/meta.dart';
@@ -41,8 +43,8 @@ class LcdSymbols {
 @freezed
 abstract class LcdEventType with _$LcdEventType {
   const factory LcdEventType.displayBufferUpdated(
-    int address,
-    int value,
+    Uint8ClampedList displayBuffer1,
+    Uint8ClampedList displayBuffer2,
   ) = _DisplayBufferUpdated;
 
   const factory LcdEventType.symbolsUpdated(
@@ -83,44 +85,37 @@ class Lcd with LcdObservable, MemoryObserver {
   void memoryUpdated(MemoryAccessType type, int address, int value) {
     if ((address >= 0x07600 && address <= 0x0764D) ||
         (address >= 0x07700 && address <= 0x0774D)) {
-      notifyObservers(LcdEventType.displayBufferUpdated(address, value));
+      notifyObservers(LcdEventType.displayBufferUpdated(
+        getDisplayBuffer1(),
+        getDisplayBuffer2(),
+      ));
     } else if (address >= 0x0764E && address <= 0x0764f) {
       notifyObservers(LcdEventType.symbolsUpdated(getSymbols()));
     }
   }
 
-  List<int> getDisplayBuffer1() => _readMemoryArea(0x07600, 0x0764D);
+  Uint8ClampedList getDisplayBuffer1() => _memRead(0x07600, 0x4D);
 
-  List<int> getDisplayBuffer2() => _readMemoryArea(0x07700, 0x0774D);
+  Uint8ClampedList getDisplayBuffer2() => _memRead(0x07700, 0x4D);
 
   LcdSymbols getSymbols() {
-    final int addr764E = _memRead(0x0764E);
-    final int addr764F = _memRead(0x0764F);
+    final Uint8ClampedList addr = _memRead(0x0764E, 2);
 
     return LcdSymbols(
-      def: (addr764E & 0x80) != 0,
-      one: (addr764E & 0x40) != 0,
-      two: (addr764E & 0x20) != 0,
-      three: (addr764E & 0x10) != 0,
-      small: (addr764E & 0x08) != 0,
-      sml: (addr764E & 0x04) != 0,
-      shift: (addr764E & 0x02) != 0,
-      busy: (addr764E & 0x01) != 0,
-      run: (addr764F & 0x40) != 0,
-      pro: (addr764F & 0x20) != 0,
-      reserve: (addr764F & 0x10) != 0,
-      rad: (addr764F & 0x04) != 0,
-      g: (addr764F & 0x02) != 0,
-      de: (addr764F & 0x01) != 0,
+      def: (addr[0] & 0x80) != 0,
+      one: (addr[0] & 0x40) != 0,
+      two: (addr[0] & 0x20) != 0,
+      three: (addr[0] & 0x10) != 0,
+      small: (addr[0] & 0x08) != 0,
+      sml: (addr[0] & 0x04) != 0,
+      shift: (addr[0] & 0x02) != 0,
+      busy: (addr[0] & 0x01) != 0,
+      run: (addr[1] & 0x40) != 0,
+      pro: (addr[1] & 0x20) != 0,
+      reserve: (addr[1] & 0x10) != 0,
+      rad: (addr[1] & 0x04) != 0,
+      g: (addr[1] & 0x02) != 0,
+      de: (addr[1] & 0x01) != 0,
     );
-  }
-
-  List<int> _readMemoryArea(int startAddr, int endAddr) {
-    final List<int> buffer = List<int>(endAddr - startAddr + 1);
-
-    for (int address = startAddr, i = 0; address <= endAddr; address++, i++) {
-      buffer[i] = _memRead(address);
-    }
-    return buffer;
   }
 }

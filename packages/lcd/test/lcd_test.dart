@@ -8,7 +8,8 @@ final Uint8ClampedList me0 = Uint8ClampedList(64 * 1024);
 void memLoad(int address, List<int> data) =>
     me0.setRange(address, address + data.length, data);
 
-int memRead(int address) => me0[address];
+Uint8ClampedList memRead(int address, int length) =>
+    me0.sublist(address, address + length);
 
 void main() {
   group('Lcd', () {

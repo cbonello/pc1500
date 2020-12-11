@@ -14,10 +14,11 @@ class _$LcdEventTypeTearOff {
   const _$LcdEventTypeTearOff();
 
 // ignore: unused_element
-  _DisplayBufferUpdated displayBufferUpdated(int address, int value) {
+  _DisplayBufferUpdated displayBufferUpdated(
+      Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2) {
     return _DisplayBufferUpdated(
-      address,
-      value,
+      displayBuffer1,
+      displayBuffer2,
     );
   }
 
@@ -37,12 +38,15 @@ const $LcdEventType = _$LcdEventTypeTearOff();
 mixin _$LcdEventType {
   @optionalTypeArgs
   Result when<Result extends Object>({
-    @required Result displayBufferUpdated(int address, int value),
+    @required
+        Result displayBufferUpdated(
+            Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2),
     @required Result symbolsUpdated(LcdSymbols symbols),
   });
   @optionalTypeArgs
   Result maybeWhen<Result extends Object>({
-    Result displayBufferUpdated(int address, int value),
+    Result displayBufferUpdated(
+        Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2),
     Result symbolsUpdated(LcdSymbols symbols),
     @required Result orElse(),
   });
@@ -80,7 +84,7 @@ abstract class _$DisplayBufferUpdatedCopyWith<$Res> {
   factory _$DisplayBufferUpdatedCopyWith(_DisplayBufferUpdated value,
           $Res Function(_DisplayBufferUpdated) then) =
       __$DisplayBufferUpdatedCopyWithImpl<$Res>;
-  $Res call({int address, int value});
+  $Res call({Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2});
 }
 
 /// @nodoc
@@ -96,48 +100,53 @@ class __$DisplayBufferUpdatedCopyWithImpl<$Res>
 
   @override
   $Res call({
-    Object address = freezed,
-    Object value = freezed,
+    Object displayBuffer1 = freezed,
+    Object displayBuffer2 = freezed,
   }) {
     return _then(_DisplayBufferUpdated(
-      address == freezed ? _value.address : address as int,
-      value == freezed ? _value.value : value as int,
+      displayBuffer1 == freezed
+          ? _value.displayBuffer1
+          : displayBuffer1 as Uint8ClampedList,
+      displayBuffer2 == freezed
+          ? _value.displayBuffer2
+          : displayBuffer2 as Uint8ClampedList,
     ));
   }
 }
 
 /// @nodoc
 class _$_DisplayBufferUpdated implements _DisplayBufferUpdated {
-  const _$_DisplayBufferUpdated(this.address, this.value)
-      : assert(address != null),
-        assert(value != null);
+  const _$_DisplayBufferUpdated(this.displayBuffer1, this.displayBuffer2)
+      : assert(displayBuffer1 != null),
+        assert(displayBuffer2 != null);
 
   @override
-  final int address;
+  final Uint8ClampedList displayBuffer1;
   @override
-  final int value;
+  final Uint8ClampedList displayBuffer2;
 
   @override
   String toString() {
-    return 'LcdEventType.displayBufferUpdated(address: $address, value: $value)';
+    return 'LcdEventType.displayBufferUpdated(displayBuffer1: $displayBuffer1, displayBuffer2: $displayBuffer2)';
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other is _DisplayBufferUpdated &&
-            (identical(other.address, address) ||
+            (identical(other.displayBuffer1, displayBuffer1) ||
                 const DeepCollectionEquality()
-                    .equals(other.address, address)) &&
-            (identical(other.value, value) ||
-                const DeepCollectionEquality().equals(other.value, value)));
+                    .equals(other.displayBuffer1, displayBuffer1)) &&
+            (identical(other.displayBuffer2, displayBuffer2) ||
+                const DeepCollectionEquality()
+                    .equals(other.displayBuffer2, displayBuffer2)));
   }
 
   @override
   int get hashCode =>
       runtimeType.hashCode ^
-      const DeepCollectionEquality().hash(address) ^
-      const DeepCollectionEquality().hash(value);
+      const DeepCollectionEquality().hash(displayBuffer1) ^
+      const DeepCollectionEquality().hash(displayBuffer2);
 
   @override
   _$DisplayBufferUpdatedCopyWith<_DisplayBufferUpdated> get copyWith =>
@@ -147,24 +156,27 @@ class _$_DisplayBufferUpdated implements _DisplayBufferUpdated {
   @override
   @optionalTypeArgs
   Result when<Result extends Object>({
-    @required Result displayBufferUpdated(int address, int value),
+    @required
+        Result displayBufferUpdated(
+            Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2),
     @required Result symbolsUpdated(LcdSymbols symbols),
   }) {
     assert(displayBufferUpdated != null);
     assert(symbolsUpdated != null);
-    return displayBufferUpdated(address, value);
+    return displayBufferUpdated(displayBuffer1, displayBuffer2);
   }
 
   @override
   @optionalTypeArgs
   Result maybeWhen<Result extends Object>({
-    Result displayBufferUpdated(int address, int value),
+    Result displayBufferUpdated(
+        Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2),
     Result symbolsUpdated(LcdSymbols symbols),
     @required Result orElse(),
   }) {
     assert(orElse != null);
     if (displayBufferUpdated != null) {
-      return displayBufferUpdated(address, value);
+      return displayBufferUpdated(displayBuffer1, displayBuffer2);
     }
     return orElse();
   }
@@ -196,11 +208,12 @@ class _$_DisplayBufferUpdated implements _DisplayBufferUpdated {
 }
 
 abstract class _DisplayBufferUpdated implements LcdEventType {
-  const factory _DisplayBufferUpdated(int address, int value) =
+  const factory _DisplayBufferUpdated(
+          Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2) =
       _$_DisplayBufferUpdated;
 
-  int get address;
-  int get value;
+  Uint8ClampedList get displayBuffer1;
+  Uint8ClampedList get displayBuffer2;
   _$DisplayBufferUpdatedCopyWith<_DisplayBufferUpdated> get copyWith;
 }
 
@@ -264,7 +277,9 @@ class _$_SymbolUpdated implements _SymbolUpdated {
   @override
   @optionalTypeArgs
   Result when<Result extends Object>({
-    @required Result displayBufferUpdated(int address, int value),
+    @required
+        Result displayBufferUpdated(
+            Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2),
     @required Result symbolsUpdated(LcdSymbols symbols),
   }) {
     assert(displayBufferUpdated != null);
@@ -275,7 +290,8 @@ class _$_SymbolUpdated implements _SymbolUpdated {
   @override
   @optionalTypeArgs
   Result maybeWhen<Result extends Object>({
-    Result displayBufferUpdated(int address, int value),
+    Result displayBufferUpdated(
+        Uint8ClampedList displayBuffer1, Uint8ClampedList displayBuffer2),
     Result symbolsUpdated(LcdSymbols symbols),
     @required Result orElse(),
   }) {
