@@ -4,6 +4,7 @@ import 'package:annotations/annotations.dart';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
+import 'package:meta/meta.dart';
 import 'package:roms/roms.dart';
 
 import 'clock.dart';
@@ -104,6 +105,8 @@ class PC1500 {
   final LH5801Command subroutineExit;
 
   int step() => _cpu.step();
+
+  Lcd get lcdDriver => _lcd;
 
   DasmDescriptor dasm(int address) {
     final Instruction instruction = _dasm.dump(address);
