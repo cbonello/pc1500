@@ -12,8 +12,8 @@ import 'dasm.dart';
 import 'extension_module.dart';
 import 'me0_ram_annotations.dart' as std_users_ram;
 
-class SystemError extends Error {
-  SystemError(this.message);
+class DeviceError extends Error {
+  DeviceError(this.message);
 
   final String message;
 
@@ -126,7 +126,7 @@ class PC1500 {
   void addCE151() {
     // 4KB RAM card.
     if (_connector40Pins.isUsed) {
-      throw SystemError(
+      throw DeviceError(
         '40-pin connector used by ${_connector40Pins.name} module',
       );
     }
@@ -142,7 +142,7 @@ class PC1500 {
   void addCE155() {
     // 8KB RAM card.
     if (_connector40Pins.isUsed) {
-      throw SystemError(
+      throw DeviceError(
         '40-pin connector used by ${_connector40Pins.name} module',
       );
     }
