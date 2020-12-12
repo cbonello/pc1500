@@ -18,14 +18,14 @@ class DeviceError extends Error {
   final String message;
 
   @override
-  String toString() => 'System: $message';
+  String toString() => 'Device: $message';
 }
 
 enum DeviceType { pc1500A, pc2 }
 
-class PC1500 {
-  PC1500(
-    this.device, [
+class Device {
+  Device(
+    this.type, [
     this.ir0Enter,
     this.ir1Enter,
     this.ir2Enter,
@@ -50,7 +50,7 @@ class PC1500 {
     _annotations.load(pc1500Rom.annotations);
 
     // Standard users RAM.
-    if (device == DeviceType.pc1500A) {
+    if (type == DeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800); // 6KB.
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
@@ -89,7 +89,7 @@ class PC1500 {
     _dasm = LH5801DASM(memRead: _csd.readByteAt);
   }
 
-  final DeviceType device;
+  final DeviceType type;
   Clock _clock;
   LH5801 _cpu;
   LcdNotifier _lcd;
@@ -132,7 +132,7 @@ class PC1500 {
     }
     _connector40Pins.addModule('CE151', 0x1000);
 
-    if (device == DeviceType.pc1500A) {
+    if (type == DeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1000);
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
@@ -150,7 +150,7 @@ class PC1500 {
 
     _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
 
-    if (device == DeviceType.pc1500A) {
+    if (type == DeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1800);
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1800);
@@ -172,7 +172,7 @@ class PC1500 {
   // }
 }
 
-class PC1500Traced extends PC1500 {
+class PC1500Traced extends Device {
   PC1500Traced(
     DeviceType device, [
     LH5801Command ir0Enter,
