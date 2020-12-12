@@ -1,4 +1,4 @@
-import 'package:system/src/extension_module.dart';
+import 'package:device/device.dart';
 import 'package:test/test.dart';
 
 void main() {

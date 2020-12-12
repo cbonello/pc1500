@@ -1,9 +1,9 @@
-name: system
+name: device
 version: 0.1.0
 description: Sharp PC-1500 pocket-computer emulator.
 author: Christophe Bonello
 homepage: https://github.com/cbonello/
-repository: https://github.com/cbonello/pc1500/tree/master/packages/system
+repository: https://github.com/cbonello/pc1500/tree/master/packages/device
 issue_tracker: https://github.com/cbonello/pc1500/issues
 publish_to: none
 
@@ -23,6 +23,7 @@ dependencies:
   lh5811:
     path: ../lh5811
   meta: any
+  riverpod: ^0.12.0
   roms:
     path: ../roms
 

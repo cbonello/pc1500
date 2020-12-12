@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:device/device.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:system/system.dart';
 
 import 'models/models.dart';
 

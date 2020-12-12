@@ -4,6 +4,7 @@ import 'package:annotations/annotations.dart';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
+import 'package:riverpod/all.dart';
 import 'package:roms/roms.dart';
 
 import 'clock.dart';
@@ -82,7 +83,7 @@ class PC1500 {
     )..reset();
     _cpu.resetPin = true;
 
-    _lcd = Lcd(memRead: _csd.readAt);
+    _lcd = LcdNotifier(memRead: _csd.readAt);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
 
     _dasm = LH5801DASM(memRead: _csd.readByteAt);
@@ -91,7 +92,7 @@ class PC1500 {
   final DeviceType device;
   Clock _clock;
   LH5801 _cpu;
-  Lcd _lcd;
+  LcdNotifier _lcd;
   final ChipSelectDecoder _csd;
   final ExtensionModule _connector40Pins;
   LH5801DASM _dasm;
@@ -105,7 +106,7 @@ class PC1500 {
 
   int step() => _cpu.step();
 
-  Lcd get lcdDriver => _lcd;
+  MemoryRead get memoryReader => _csd.readAt;
 
   DasmDescriptor dasm(int address) {
     final Instruction instruction = _dasm.dump(address);
