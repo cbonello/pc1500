@@ -10,10 +10,10 @@
         },
         "offsets": {
             "horizontal": 30,
-            "vertical": 10
+            "vertical": 5
         },
-        "top": 81,
-        "left": 368,
+        "top": 72,
+        "left": 320,
         "width": 903,
         "height": 90
     },
@@ -42,10 +42,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 92,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 83,
+            "width": 49,
+            "height": 23
         },
         "on": {
             "label": {
@@ -54,10 +54,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 218,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 196,
+            "width": 49,
+            "height": 23
         },
         "def": {
             "label": {
@@ -66,10 +66,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 349,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 314,
+            "width": 49,
+            "height": 23
         },
         "f1": {
             "label": {
@@ -78,10 +78,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 476,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 428,
+            "width": 49,
+            "height": 23
         },
         "f2": {
             "label": {
@@ -90,10 +90,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 604,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 543,
+            "width": 49,
+            "height": 23
         },
         "f3": {
             "label": {
@@ -102,10 +102,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 732,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 658,
+            "width": 49,
+            "height": 23
         },
         "f4": {
             "label": {
@@ -114,10 +114,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 860,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 773,
+            "width": 49,
+            "height": 23
         },
         "f5": {
             "label": {
@@ -126,10 +126,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 987,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 888,
+            "width": 49,
+            "height": 23
         },
         "f6": {
             "label": {
@@ -138,10 +138,10 @@
             },
             "color": "light-gray",
             "font-size": 20,
-            "top": 256,
-            "left": 1114,
-            "width": 54,
-            "height": 26
+            "top": 230,
+            "left": 1002,
+            "width": 49,
+            "height": 23
         },
         "shift": {
             "label": {
@@ -150,10 +150,10 @@
             },
             "color": "light-gray",
             "font-size": 16,
-            "top": 256,
-            "left": 1392,
-            "width": 53,
-            "height": 26
+            "top": 230,
+            "left": 1251,
+            "width": 49,
+            "height": 23
         },
         "q": {
             "label": {
@@ -162,10 +162,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 59,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 53,
+            "width": 49,
+            "height": 32
         },
         "w": {
             "label": {
@@ -174,10 +174,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 154,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 138,
+            "width": 49,
+            "height": 32
         },
         "e": {
             "label": {
@@ -186,10 +186,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 248,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 223,
+            "width": 49,
+            "height": 32
         },
         "r": {
             "label": {
@@ -198,10 +198,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 343,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 309,
+            "width": 49,
+            "height": 32
         },
         "t": {
             "label": {
@@ -210,10 +210,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 439,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 395,
+            "width": 49,
+            "height": 32
         },
         "y": {
             "label": {
@@ -222,10 +222,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 534,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 481,
+            "width": 49,
+            "height": 32
         },
         "u": {
             "label": {
@@ -234,10 +234,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 631,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 568,
+            "width": 49,
+            "height": 32
         },
         "i": {
             "label": {
@@ -246,10 +246,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 727,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 654,
+            "width": 49,
+            "height": 32
         },
         "o": {
             "label": {
@@ -258,10 +258,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 823,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 741,
+            "width": 49,
+            "height": 32
         },
         "p": {
             "label": {
@@ -270,10 +270,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 919,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 827,
+            "width": 49,
+            "height": 32
         },
         "7": {
             "label": {
@@ -282,10 +282,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 1016,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 914,
+            "width": 49,
+            "height": 32
         },
         "8": {
             "label": {
@@ -294,10 +294,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 1111,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 1000,
+            "width": 49,
+            "height": 32
         },
         "9": {
             "label": {
@@ -306,10 +306,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 1206,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 1085,
+            "width": 49,
+            "height": 32
         },
         "/": {
             "label": {
@@ -318,10 +318,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 340,
-            "left": 1300,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 1170,
+            "width": 49,
+            "height": 32
         },
         "clear": {
             "label": {
@@ -330,10 +330,10 @@
             },
             "color": "red",
             "font-size": 22,
-            "top": 340,
-            "left": 1393,
-            "width": 55,
-            "height": 36
+            "top": 306,
+            "left": 1252,
+            "width": 49,
+            "height": 32
         },
         "a": {
             "label": {
@@ -342,10 +342,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 59,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 53,
+            "width": 49,
+            "height": 32
         },
         "s": {
             "label": {
@@ -354,10 +354,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 154,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 138,
+            "width": 49,
+            "height": 32
         },
         "d": {
             "label": {
@@ -366,10 +366,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 248,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 223,
+            "width": 49,
+            "height": 32
         },
         "f": {
             "label": {
@@ -378,10 +378,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 343,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 309,
+            "width": 49,
+            "height": 32
         },
         "g": {
             "label": {
@@ -390,10 +390,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 439,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 395,
+            "width": 49,
+            "height": 32
         },
         "h": {
             "label": {
@@ -402,10 +402,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 534,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 481,
+            "width": 49,
+            "height": 32
         },
         "j": {
             "label": {
@@ -414,10 +414,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 631,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 568,
+            "width": 49,
+            "height": 32
         },
         "k": {
             "label": {
@@ -426,10 +426,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 727,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 654,
+            "width": 49,
+            "height": 32
         },
         "l": {
             "label": {
@@ -438,10 +438,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 823,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 741,
+            "width": 49,
+            "height": 32
         },
         "=": {
             "label": {
@@ -450,10 +450,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 919,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 827,
+            "width": 49,
+            "height": 32
         },
         "4": {
             "label": {
@@ -462,10 +462,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 1016,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 914,
+            "width": 49,
+            "height": 32
         },
         "5": {
             "label": {
@@ -474,10 +474,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 1111,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 1000,
+            "width": 49,
+            "height": 32
         },
         "6": {
             "label": {
@@ -486,10 +486,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 417,
-            "left": 1206,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 1085,
+            "width": 49,
+            "height": 32
         },
         "*": {
             "label": {
@@ -498,10 +498,10 @@
             },
             "color": "dark-gray",
             "font-size": 36,
-            "top": 417,
-            "left": 1299,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 1169,
+            "width": 49,
+            "height": 32
         },
         "mode": {
             "label": {
@@ -510,10 +510,10 @@
             },
             "color": "dark-gray",
             "font-size": 15,
-            "top": 417,
-            "left": 1393,
-            "width": 55,
-            "height": 36
+            "top": 375,
+            "left": 1252,
+            "width": 49,
+            "height": 32
         },
         "z": {
             "label": {
@@ -522,10 +522,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 59,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 53,
+            "width": 49,
+            "height": 32
         },
         "x": {
             "label": {
@@ -534,10 +534,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 154,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 138,
+            "width": 49,
+            "height": 32
         },
         "c": {
             "label": {
@@ -546,10 +546,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 248,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 223,
+            "width": 49,
+            "height": 32
         },
         "v": {
             "label": {
@@ -558,10 +558,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 343,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 309,
+            "width": 49,
+            "height": 32
         },
         "b": {
             "label": {
@@ -570,10 +570,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 439,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 395,
+            "width": 49,
+            "height": 32
         },
         "n": {
             "label": {
@@ -582,10 +582,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 534,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 481,
+            "width": 49,
+            "height": 32
         },
         "m": {
             "label": {
@@ -594,10 +594,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 631,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 568,
+            "width": 49,
+            "height": 32
         },
         "(": {
             "label": {
@@ -606,10 +606,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 494,
-            "left": 727,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 654,
+            "width": 49,
+            "height": 32
         },
         ")": {
             "label": {
@@ -618,10 +618,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 494,
-            "left": 823,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 741,
+            "width": 49,
+            "height": 32
         },
         "up": {
             "label": {
@@ -630,10 +630,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 494,
-            "left": 919,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 827,
+            "width": 49,
+            "height": 32
         },
         "1": {
             "label": {
@@ -642,10 +642,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 1015,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 913,
+            "width": 49,
+            "height": 32
         },
         "2": {
             "label": {
@@ -654,10 +654,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 1110,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 999,
+            "width": 49,
+            "height": 32
         },
         "3": {
             "label": {
@@ -666,10 +666,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 1205,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 1084,
+            "width": 49,
+            "height": 32
         },
         "-": {
             "label": {
@@ -678,10 +678,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 494,
-            "left": 1299,
-            "width": 55,
-            "height": 36
+            "top": 445,
+            "left": 1168,
+            "width": 49,
+            "height": 32
         },
         "small": {
             "label": {
@@ -690,10 +690,10 @@
             },
             "color": "light-gray",
             "font-size": 21,
-            "top": 571,
-            "left": 59,
-            "width": 55,
-            "height": 36
+            "top": 513,
+            "left": 53,
+            "width": 49,
+            "height": 32
         },
         "up-down": {
             "label": {
@@ -702,10 +702,10 @@
             },
             "color": "light-gray",
             "font-size": 28,
-            "top": 571,
-            "left": 153,
-            "width": 55,
-            "height": 36
+            "top": 513,
+            "left": 138,
+            "width": 49,
+            "height": 32
         },
         "recall": {
             "label": {
@@ -714,10 +714,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 571,
-            "left": 248,
-            "width": 55,
-            "height": 36
+            "top": 513,
+            "left": 223,
+            "width": 49,
+            "height": 32
         },
         " ": {
             "label": {
@@ -726,10 +726,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 571,
-            "left": 343,
-            "width": 150,
-            "height": 36
+            "top": 514,
+            "left": 308,
+            "width": 135,
+            "height": 32
         },
         "enter": {
             "label": {
@@ -738,10 +738,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 571,
-            "left": 534,
-            "width": 150,
-            "height": 36
+            "top": 514,
+            "left": 481,
+            "width": 135,
+            "height": 32
         },
         "left": {
             "label": {
@@ -750,10 +750,10 @@
             },
             "color": "light-gray",
             "font-size": 40,
-            "top": 571,
-            "left": 727,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 654,
+            "width": 49,
+            "height": 32
         },
         "right": {
             "label": {
@@ -762,10 +762,10 @@
             },
             "color": "light-gray",
             "font-size": 40,
-            "top": 571,
-            "left": 823,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 741,
+            "width": 49,
+            "height": 32
         },
         "down": {
             "label": {
@@ -774,10 +774,10 @@
             },
             "color": "light-gray",
             "font-size": 22,
-            "top": 571,
-            "left": 919,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 827,
+            "width": 49,
+            "height": 32
         },
         "0": {
             "label": {
@@ -786,10 +786,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 571,
-            "left": 1015,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 913,
+            "width": 49,
+            "height": 32
         },
         ".": {
             "label": {
@@ -798,10 +798,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 571,
-            "left": 1110,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 999,
+            "width": 49,
+            "height": 32
         },
         "ent": {
             "label": {
@@ -810,10 +810,10 @@
             },
             "color": "dark-gray",
             "font-size": 22,
-            "top": 571,
-            "left": 1205,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 1084,
+            "width": 49,
+            "height": 32
         },
         "+": {
             "label": {
@@ -822,10 +822,10 @@
             },
             "color": "dark-gray",
             "font-size": 28,
-            "top": 571,
-            "left": 1299,
-            "width": 55,
-            "height": 36
+            "top": 514,
+            "left": 1168,
+            "width": 49,
+            "height": 32
         }
     }
 }
