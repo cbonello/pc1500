@@ -1,11 +1,17 @@
 {
     "image": "assets/systems/pc1500a.png",
     "lcd": {
-        "background": "FF65675C",
-        "pixel-On": "FF2C2721",
-        "pixel-Off": "FF666052",
-        "symbol-On": "FF000000",
-        "symbol-Off": "FF65675C",
+        "colors": {
+            "background": "FF65675C",
+            "pixel-On": "FF2C2721",
+            "pixel-Off": "FF666052",
+            "symbol-On": "FF000000",
+            "symbol-Off": "FF65675C"
+        },
+        "offsets": {
+            "horizontal": 30,
+            "vertical": 10
+        },
         "top": 90,
         "left": 180,
         "width": 890,
