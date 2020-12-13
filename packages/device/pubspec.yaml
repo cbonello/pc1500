@@ -23,7 +23,6 @@ dependencies:
   lh5811:
     path: ../lh5811
   meta: any
-  riverpod: ^0.12.0
   roms:
     path: ../roms
 

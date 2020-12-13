@@ -11,10 +11,12 @@ environment:
   sdk: '>=2.10.0 <3.0.0'
 
 dependencies:
+  device:
+    path: packages/device
   flutter:
     sdk: flutter
-  system:
-    path: packages/system
+  lcd:
+    path: packages/lcd
   bitsdojo_window: ^0.0.0
   cupertino_icons: ^1.0.0
   fluttericon: ^1.0.0
