@@ -1,10 +1,12 @@
+import 'package:device/device.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:system/system.dart';
 
 import '../../repositories/local_storage/local_storage_repository.dart';
+import '../../repositories/systems/models/models.dart';
 import '../../repositories/systems/systems_repository.dart';
+import 'lcd.dart';
 import 'skin.dart';
 
 const Color borderColor = Color(0xFF805306);
@@ -39,11 +41,16 @@ class HomeView extends ConsumerWidget {
             Center(
               child: systemsRepository.when<Widget>(
                 data: (SystemsRepository repository) {
-                  return Skin(
-                    skin: repository.getSkin(
-                      deviceTypeRepository.deviceType,
-                    ),
+                  final Device device = Device(deviceTypeRepository.deviceType);
+                  final SkinModel skin = repository.getSkin(
+                    deviceTypeRepository.deviceType,
                   );
+                  final LcdWidget lcd = LcdWidget(
+                    config: skin.lcd,
+                    lcdEvents: device.lcdEvents,
+                  );
+
+                  return Skin(skin: skin, lcd: lcd);
                 },
                 loading: () => const CircularProgressIndicator(),
                 error: (Object err, StackTrace _) => Text('Error: $err'),

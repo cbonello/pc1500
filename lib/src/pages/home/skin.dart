@@ -8,15 +8,19 @@ import '../../repositories/systems/models/models.dart';
 import 'lcd.dart';
 
 class Skin extends StatelessWidget {
-  const Skin({Key key, @required this.skin}) : super(key: key);
+  const Skin({Key key, @required this.skin, @required this.lcd})
+      : assert(skin != null),
+        assert(lcd != null),
+        super(key: key);
 
   final SkinModel skin;
+  final LcdWidget lcd;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        LCD(config: skin.lcd),
+        lcd,
         Image.asset(skin.image),
         // ...keys.values,
         ...skin.keys.values.map<Widget>(

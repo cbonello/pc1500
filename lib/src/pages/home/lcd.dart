@@ -1,6 +1,4 @@
-import 'package:device/device.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/all.dart';
 import 'package:lcd/lcd.dart';
 
 import '../../repositories/systems/models/models.dart';
@@ -9,21 +7,19 @@ class LcdWidget extends StatelessWidget {
   const LcdWidget({
     Key key,
     @required this.config,
-    @required this.system,
+    @required this.lcdEvents,
   })  : assert(config != null),
-        assert(system != null),
+        assert(lcdEvents != null),
         super(key: key);
 
   final LcdModel config;
-  final Device system;
+  final Stream<LcdEvent> lcdEvents;
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (BuildContext context, ScopedReader watch, Widget child) {
-        final StateNotifier<LcdEvent> lcdEvent =
-            watch(lcdNotifierFamily(system.memoryReader));
-
+    return StreamBuilder<LcdEvent>(
+      stream: lcdEvents,
+      builder: (BuildContext context, AsyncSnapshot<LcdEvent> snapshot) {
         return Positioned(
           left: config.left,
           top: config.top,
