@@ -30,7 +30,7 @@ Future<void> main() async {
   windows.doWhenWindowReady(() {
     final Size initialSize = Size(
       1355,
-      windows.appWindow.titleBarHeight + 590 + 15,
+      windows.appWindow.titleBarHeight + 590,
     );
     windows.appWindow.minSize = initialSize;
     windows.appWindow.maxSize = initialSize;
