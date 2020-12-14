@@ -8,9 +8,16 @@
             "symbol-On": "FF000000",
             "symbol-Off": "FF65675C"
         },
-        "offsets": {
-            "horizontal": 30,
-            "vertical": 10
+        "margin": {
+            "left": 30,
+            "top": 10,
+            "right": 30,
+            "bottom": 10
+        },
+        "pixels": {
+            "width": 3.8,
+            "height": 5.0,
+            "gap": 1.0
         },
         "top": 90,
         "left": 180,
