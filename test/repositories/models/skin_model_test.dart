@@ -66,13 +66,19 @@ Future<void> checkSkin(SkinModel skin) async {
   expect(skin.lcd.width, isNotNull);
   expect(skin.lcd.width, greaterThan(0));
 
-  expect(skin.lcd.offsets, isNotNull);
-  expect(skin.lcd.offsets.horizontal, isNotNull);
-  expect(skin.lcd.offsets.horizontal, greaterThan(0));
-  expect(skin.lcd.offsets.horizontal, lessThan(skin.lcd.width / 2.0));
-  expect(skin.lcd.offsets.vertical, isNotNull);
-  expect(skin.lcd.offsets.vertical, greaterThan(0));
-  expect(skin.lcd.offsets.vertical, lessThan(skin.lcd.height / 2.0));
+  expect(skin.lcd.margin, isNotNull);
+  expect(skin.lcd.margin.left, isNotNull);
+  expect(skin.lcd.margin.left, greaterThan(0));
+  expect(skin.lcd.margin.left, lessThan(skin.lcd.width / 2.0));
+  expect(skin.lcd.margin.top, isNotNull);
+  expect(skin.lcd.margin.top, greaterThan(0));
+  expect(skin.lcd.margin.top, lessThan(skin.lcd.height / 2.0));
+  expect(skin.lcd.margin.right, isNotNull);
+  expect(skin.lcd.margin.right, greaterThan(0));
+  expect(skin.lcd.margin.right, lessThan(skin.lcd.width / 2.0));
+  expect(skin.lcd.margin.bottom, isNotNull);
+  expect(skin.lcd.margin.bottom, greaterThan(0));
+  expect(skin.lcd.margin.bottom, lessThan(skin.lcd.height / 2.0));
 
   expect(skin.keyColors.length, greaterThan(0));
   skin.keyColors.values.forEach(checkColorModel);

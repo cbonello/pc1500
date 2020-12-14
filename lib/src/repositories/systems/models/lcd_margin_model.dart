@@ -1,10 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'lcd_colors_model.dart';
-import 'lcd_margin_model.dart';
-
-part 'lcd_model.g.dart';
+part 'lcd_margin_model.g.dart';
 
 double _intToDouble(int value) => value.toDouble();
 
@@ -12,24 +9,16 @@ double _intToDouble(int value) => value.toDouble();
   createFactory: true,
   createToJson: false,
 )
-class LcdModel {
-  const LcdModel({
-    @required this.colors,
-    @required this.margin,
+class LcdMarginModel {
+  const LcdMarginModel({
     @required this.left,
     @required this.top,
-    @required this.width,
-    @required this.height,
+    @required this.right,
+    @required this.bottom,
   });
 
-  factory LcdModel.fromJson(Map<String, dynamic> json) =>
-      _$LcdModelFromJson(json);
-
-  @JsonKey(required: true, nullable: false)
-  final LcdColorsModel colors;
-
-  @JsonKey(required: true, nullable: false)
-  final LcdMarginModel margin;
+  factory LcdMarginModel.fromJson(Map<String, dynamic> json) =>
+      _$LcdMarginModelFromJson(json);
 
   @JsonKey(required: true, fromJson: _intToDouble)
   final double left;
@@ -38,8 +27,8 @@ class LcdModel {
   final double top;
 
   @JsonKey(required: true, fromJson: _intToDouble)
-  final double width;
+  final double right;
 
   @JsonKey(required: true, fromJson: _intToDouble)
-  final double height;
+  final double bottom;
 }
