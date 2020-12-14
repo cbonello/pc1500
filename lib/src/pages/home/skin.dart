@@ -22,7 +22,6 @@ class Skin extends StatelessWidget {
       children: <Widget>[
         lcd,
         Image.asset(skin.image),
-        // ...keys.values,
         ...skin.keys.values.map<Widget>(
           (KeyModel key) {
             return Positioned(
