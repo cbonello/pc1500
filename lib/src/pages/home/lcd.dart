@@ -40,7 +40,7 @@ class LcdWidget extends StatelessWidget {
                       config.width - config.margin.left - config.margin.right,
                   height:
                       config.height - config.margin.top - config.margin.bottom,
-                  child: CustomPaint(painter: _Screen()),
+                  child: CustomPaint(painter: _Screen(config: config)),
                 ),
               ),
             ],
@@ -51,11 +51,11 @@ class LcdWidget extends StatelessWidget {
   }
 }
 
-const double pixelHeight = 5.0;
-const double pixelWidth = 3.8;
-const double pixelGap = 1.0;
-
 class _Screen extends CustomPainter {
+  const _Screen({@required this.config}) : assert(config != null);
+
+  final LcdModel config;
+
   @override
   void paint(Canvas canvas, Size size) {
     void _displaySymbol(String label, double left) {
@@ -77,7 +77,6 @@ class _Screen extends CustomPainter {
     _displaySymbol('BUSY', 2);
     _displaySymbol('SHIFT', 80.0);
     _displaySymbol('SMALL', 175.0);
-    // _displaySymbol('DEF', 53.0 * (pixelWidth + pixelGap));
     _displaySymbol('DEF', 620.0);
     _displaySymbol('I', 672.0);
     _displaySymbol('II', 678.0);
@@ -86,19 +85,19 @@ class _Screen extends CustomPainter {
     _displaySymbol('DE', 265.0);
     _displaySymbol('G', 283.0);
     _displaySymbol('RAD', 293.0);
-    _displaySymbol('RESERVE', 102.0 * (pixelWidth + pixelGap));
-    _displaySymbol('PRO', 90.0 * (pixelWidth + pixelGap));
-    _displaySymbol('RUN', 78.0 * (pixelWidth + pixelGap));
+    _displaySymbol('RUN', 390.0);
+    _displaySymbol('PRO', 450.0);
+    _displaySymbol('RESERVE', 510.0);
 
     final Paint p0 = Paint()..color = const Color(0xFF666052);
     for (int x = 0; x < 156; x++) {
       for (int y = 0; y < 7; y++) {
         canvas.drawRect(
           Rect.fromLTWH(
-            x * (pixelWidth + pixelGap),
-            y * (pixelHeight + pixelGap) + 26.0,
-            pixelWidth,
-            pixelHeight,
+            x * (config.pixels.width + config.pixels.gap),
+            y * (config.pixels.height + config.pixels.gap) + 26.0,
+            config.pixels.width,
+            config.pixels.height,
           ),
           p0,
         );
@@ -109,26 +108,26 @@ class _Screen extends CustomPainter {
     for (int i = 0; i < 7; i++) {
       canvas.drawRect(
         Rect.fromLTWH(
-          i * (pixelWidth + pixelGap),
-          i * (pixelHeight + pixelGap) + 26.0,
-          pixelWidth,
-          pixelHeight,
+          i * (config.pixels.width + config.pixels.gap),
+          i * (config.pixels.height + config.pixels.gap) + 26.0,
+          config.pixels.width,
+          config.pixels.height,
         ),
         p1,
       );
       canvas.drawRect(
         Rect.fromLTWH(
-          (i + 1) * (pixelWidth + pixelGap),
-          i * (pixelHeight + pixelGap) + 26.0,
-          pixelWidth,
-          pixelHeight,
+          (i + 1) * (config.pixels.width + config.pixels.gap),
+          i * (config.pixels.height + config.pixels.gap) + 26.0,
+          config.pixels.width,
+          config.pixels.height,
         ),
         p1,
       );
     }
 
     canvas.drawCircle(
-      const Offset(155.0 * (pixelWidth + pixelGap), 8.0),
+      Offset(155.0 * (config.pixels.width + config.pixels.gap), 8.0),
       3.0,
       p1,
     );
