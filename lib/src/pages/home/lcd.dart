@@ -73,14 +73,16 @@ class _Screen extends CustomPainter {
     // See PC-1500 Technical Reference Manual, page 98.
     final Paint pxOn = Paint()..color = Color(config.colors.pixelOn);
     final Paint pxOff = Paint()..color = Color(config.colors.pixelOff);
+    final Color symOn = Color(config.colors.symbolOn);
+    final Color symOff = Color(config.colors.symbolOff);
 
-    void _displaySymbol(String label, double left) {
+    void _displaySymbol(bool isOn, String label, double left) {
       final TextPainter textPainter = TextPainter(
         text: TextSpan(
           text: label,
           style: GoogleFonts.openSans(
-            textStyle: const TextStyle(
-              color: Color(0xFF000000),
+            textStyle: TextStyle(
+              color: isOn ? symOn : symOff,
               fontWeight: FontWeight.bold,
               fontSize: 17.0,
             ),
@@ -134,46 +136,20 @@ class _Screen extends CustomPainter {
     _displayBuffer(lcdEvent.displayBuffer1, 78, 0);
     _displayBuffer(lcdEvent.displayBuffer2, 117, 39);
 
-    if (lcdEvent.symbols.busy) {
-      _displaySymbol('BUSY', 2);
-    }
-    if (lcdEvent.symbols.shift) {
-      _displaySymbol('SHIFT', 80.0);
-    }
-    if (lcdEvent.symbols.small) {
-      _displaySymbol('SMALL', 175.0);
-    }
-    if (lcdEvent.symbols.def) {
-      _displaySymbol('DEF', 620.0);
-    }
-    if (lcdEvent.symbols.one) {
-      _displaySymbol('I', 672.0);
-    }
-    if (lcdEvent.symbols.two) {
-      _displaySymbol('II', 678.0);
-    }
-    if (lcdEvent.symbols.three) {
-      _displaySymbol('III', 689.0);
-    }
+    _displaySymbol(lcdEvent.symbols.busy, 'BUSY', 2);
+    _displaySymbol(lcdEvent.symbols.shift, 'SHIFT', 80.0);
+    _displaySymbol(lcdEvent.symbols.small, 'SMALL', 175.0);
+    _displaySymbol(lcdEvent.symbols.def, 'DEF', 620.0);
+    _displaySymbol(lcdEvent.symbols.one, 'I', 672.0);
+    _displaySymbol(lcdEvent.symbols.two, 'II', 678.0);
+    _displaySymbol(lcdEvent.symbols.three, 'III', 689.0);
 
-    if (lcdEvent.symbols.de) {
-      _displaySymbol('DE', 265.0);
-    }
-    if (lcdEvent.symbols.g) {
-      _displaySymbol('G', 283.0);
-    }
-    if (lcdEvent.symbols.rad) {
-      _displaySymbol('RAD', 293.0);
-    }
-    if (lcdEvent.symbols.run) {
-      _displaySymbol('RUN', 390.0);
-    }
-    if (lcdEvent.symbols.pro) {
-      _displaySymbol('PRO', 450.0);
-    }
-    if (lcdEvent.symbols.reserve) {
-      _displaySymbol('RESERVE', 510.0);
-    }
+    _displaySymbol(lcdEvent.symbols.de, 'DE', 265.0);
+    _displaySymbol(lcdEvent.symbols.g, 'G', 283.0);
+    _displaySymbol(lcdEvent.symbols.rad, 'RAD', 293.0);
+    _displaySymbol(lcdEvent.symbols.run, 'RUN', 390.0);
+    _displaySymbol(lcdEvent.symbols.pro, 'PRO', 450.0);
+    _displaySymbol(lcdEvent.symbols.reserve, 'RESERVE', 510.0);
 
     // Battery indicator.
     canvas.drawCircle(
