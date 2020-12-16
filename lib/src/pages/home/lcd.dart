@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lcd/lcd.dart';
 
 import '../../repositories/systems/models/models.dart';
@@ -79,10 +80,12 @@ class _Screen extends CustomPainter {
       final TextPainter textPainter = TextPainter(
         text: TextSpan(
           text: label,
-          style: const TextStyle(
-            color: Color(0xFF000000),
-            fontWeight: FontWeight.bold,
-            fontSize: 17.0,
+          style: GoogleFonts.openSans(
+            textStyle: const TextStyle(
+              color: Color(0xFF000000),
+              fontWeight: FontWeight.bold,
+              fontSize: 17.0,
+            ),
           ),
         ),
         textScaleFactor: 0.8,
@@ -95,7 +98,7 @@ class _Screen extends CustomPainter {
       canvas.drawRect(
         Rect.fromLTWH(
           x * (config.pixels.width + config.pixels.gap),
-          y * (config.pixels.height + config.pixels.gap) + 26.0,
+          y * (config.pixels.height + config.pixels.gap) + config.pixels.top,
           config.pixels.width,
           config.pixels.height,
         ),
