@@ -8,21 +8,18 @@ import 'package:lcd/lcd.dart';
 import '../../repositories/systems/models/models.dart';
 
 class LcdWidget extends StatelessWidget {
-  const LcdWidget({
-    Key key,
-    @required this.config,
-    @required this.lcdEvents,
-  })  : assert(config != null),
-        assert(lcdEvents != null),
+  const LcdWidget({Key key, @required this.config, @required this.eventsStream})
+      : assert(config != null),
+        assert(eventsStream != null),
         super(key: key);
 
   final LcdModel config;
-  final Stream<LcdEvent> lcdEvents;
+  final Stream<LcdEvent> eventsStream;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<LcdEvent>(
-      stream: lcdEvents,
+      stream: eventsStream,
       builder: (BuildContext context, AsyncSnapshot<LcdEvent> snapshot) {
         if (snapshot.hasData == false) {
           return Container();
@@ -63,16 +60,17 @@ class LcdWidget extends StatelessWidget {
 }
 
 class _Screen extends CustomPainter {
-  const _Screen({
-    @required this.config,
-    @required this.lcdEvent,
-  }) : assert(config != null);
+  const _Screen({@required this.config, @required this.lcdEvent})
+      : assert(config != null),
+        assert(lcdEvent != null),
+        assert(config != null);
 
   final LcdModel config;
   final LcdEvent lcdEvent;
 
   @override
   void paint(Canvas canvas, Size size) {
+    // See PC-1500 Technical Reference Manual, page 98.
     final Paint pxOn = Paint()..color = Color(config.colors.pixelOn);
     final Paint pxOff = Paint()..color = Color(config.colors.pixelOff);
 
@@ -106,11 +104,7 @@ class _Screen extends CustomPainter {
       );
     }
 
-    void _displayBuffer(
-      Uint8ClampedList buffer,
-      int xStart1,
-      int xStart2,
-    ) {
+    void _displayBuffer(Uint8ClampedList buffer, int xStart1, int xStart2) {
       int x1 = xStart1;
       int x2 = xStart2;
 

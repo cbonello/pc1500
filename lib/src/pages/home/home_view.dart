@@ -47,7 +47,7 @@ class HomeView extends ConsumerWidget {
                   );
                   final LcdWidget lcd = LcdWidget(
                     config: skin.lcd,
-                    lcdEvents: device.lcdEvents,
+                    eventsStream: device.lcdEvents,
                   );
 
                   return Skin(skin: skin, lcd: lcd);
