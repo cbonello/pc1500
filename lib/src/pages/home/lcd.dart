@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -87,42 +88,86 @@ class _Screen extends CustomPainter {
       textPainter.paint(canvas, Offset(left, 0.0));
     }
 
-    final Paint p0 = Paint()..color = const Color(0xFF666052);
-    for (int x = 0; x < 156; x++) {
-      for (int y = 0; y < 7; y++) {
-        canvas.drawRect(
-          Rect.fromLTWH(
-            x * (config.pixels.width + config.pixels.gap),
-            y * (config.pixels.height + config.pixels.gap) + 26.0,
-            config.pixels.width,
-            config.pixels.height,
-          ),
-          p0,
-        );
+    void _displayPixel(Paint p, int x, int y) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          x * (config.pixels.width + config.pixels.gap),
+          y * (config.pixels.height + config.pixels.gap) + 26.0,
+          config.pixels.width,
+          config.pixels.height,
+        ),
+        p,
+      );
+    }
+
+    void _displayBuffer(
+      Uint8ClampedList buffer,
+      Paint p,
+      int xStart1,
+      int xStart2,
+    ) {
+      int x1 = xStart1;
+      int x2 = xStart2;
+
+      for (int i = 0; i < buffer.length - 1; i += 2, x1++, x2++) {
+        final int low = buffer[i];
+        if (low & 0x10 == 0x10) {
+          _displayPixel(p, x1, 0);
+        }
+        if (low & 0x20 == 0x20) {
+          _displayPixel(p, x1, 1);
+        }
+        if (low & 0x40 == 0x40) {
+          _displayPixel(p, x1, 2);
+        }
+        if (low & 0x80 == 0x80) {
+          _displayPixel(p, x1, 3);
+        }
+        if (low & 0x01 == 0x01) {
+          _displayPixel(p, x2, 0);
+        }
+        if (low & 0x02 == 0x02) {
+          _displayPixel(p, x2, 1);
+        }
+        if (low & 0x04 == 0x04) {
+          _displayPixel(p, x2, 2);
+        }
+        if (low & 0x08 == 0x08) {
+          _displayPixel(p, x2, 3);
+        }
+
+        final int high = buffer[i + 1];
+        if (high & 0x10 == 0x10) {
+          _displayPixel(p, x1, 4);
+        }
+        if (high & 0x20 == 0x20) {
+          _displayPixel(p, x1, 5);
+        }
+        if (high & 0x40 == 0x40) {
+          _displayPixel(p, x1, 6);
+        }
+        if (high & 0x01 == 0x01) {
+          _displayPixel(p, x2, 4);
+        }
+        if (high & 0x02 == 0x02) {
+          _displayPixel(p, x2, 5);
+        }
+        if (high & 0x04 == 0x04) {
+          _displayPixel(p, x2, 6);
+        }
       }
     }
 
-    final Paint p1 = Paint()..color = const Color(0xFF2C2721);
-    for (int i = 0; i < 7; i++) {
-      canvas.drawRect(
-        Rect.fromLTWH(
-          i * (config.pixels.width + config.pixels.gap),
-          i * (config.pixels.height + config.pixels.gap) + 26.0,
-          config.pixels.width,
-          config.pixels.height,
-        ),
-        p1,
-      );
-      canvas.drawRect(
-        Rect.fromLTWH(
-          (i + 1) * (config.pixels.width + config.pixels.gap),
-          i * (config.pixels.height + config.pixels.gap) + 26.0,
-          config.pixels.width,
-          config.pixels.height,
-        ),
-        p1,
-      );
+    final Paint pxOff = Paint()..color = Color(config.colors.pixelOff);
+    for (int x = 0; x < 156; x++) {
+      for (int y = 0; y < 7; y++) {
+        _displayPixel(pxOff, x, y);
+      }
     }
+
+    final Paint pxOn = Paint()..color = Color(config.colors.pixelOn);
+    _displayBuffer(lcdEvent.displayBuffer1, pxOn, 78, 0);
+    _displayBuffer(lcdEvent.displayBuffer2, pxOn, 117, 39);
 
     if (lcdEvent.symbols.busy) {
       _displaySymbol('BUSY', 2);
@@ -169,16 +214,8 @@ class _Screen extends CustomPainter {
     canvas.drawCircle(
       Offset(155.0 * (config.pixels.width + config.pixels.gap), 8.0),
       3.0,
-      p1,
+      pxOn,
     );
-
-    //   canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 0.0, 6.0, 6.0), p1);
-    // canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 7.0, 6.0, 6.0), p1);
-    // canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 14.0, 6.0, 6.0), p1);
-    // canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 21.0, 6.0, 6.0), p1);
-    // canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 28.0, 6.0, 6.0), p1);
-    // canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 35.0, 6.0, 6.0), p1);
-    // canvas.drawRect(const Rect.fromLTWH(0.0, 21.0 + 42.0, 6.0, 6.0), p1);
   }
 
   @override
