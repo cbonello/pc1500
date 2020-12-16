@@ -8,7 +8,7 @@ import 'package:rxdart/rxdart.dart';
 
 const int _dispBuf1Start = 0x07600;
 const int _dispBuf2Start = 0x07700;
-const int _dispBufLen = 0x4D;
+const int _dispBufLen = 0x4E;
 const int _symBufStart = 0x0764E;
 const int _symBufLen = 2;
 
@@ -71,6 +71,8 @@ class LcdEvent extends Equatable {
 class Lcd with MemoryObserver {
   factory Lcd({@required MemoryRead memRead}) {
     assert(memRead != null);
+
+    print('#### $_dispBufLen ${memRead(_dispBuf1Start, _dispBufLen).length}');
 
     return Lcd._(
       displayBuffer1: memRead(_dispBuf1Start, _dispBufLen),
