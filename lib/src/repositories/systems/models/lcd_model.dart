@@ -4,6 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'lcd_colors_model.dart';
 import 'lcd_margin_model.dart';
 import 'lcd_pixels_model.dart';
+import 'lcd_symbols_model.dart';
 
 part 'lcd_model.g.dart';
 
@@ -17,6 +18,7 @@ class LcdModel {
   const LcdModel({
     @required this.colors,
     @required this.margin,
+    @required this.symbols,
     @required this.pixels,
     @required this.left,
     @required this.top,
@@ -32,6 +34,9 @@ class LcdModel {
 
   @JsonKey(required: true, nullable: false)
   final LcdMarginModel margin;
+
+  @JsonKey(required: true, nullable: false)
+  final LcdSymbolsModel symbols;
 
   @JsonKey(required: true, nullable: false)
   final LcdPixelsModel pixels;

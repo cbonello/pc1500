@@ -10,6 +10,7 @@ LcdModel _$LcdModelFromJson(Map<String, dynamic> json) {
   $checkKeys(json, requiredKeys: const [
     'colors',
     'margin',
+    'symbols',
     'pixels',
     'left',
     'top',
@@ -19,6 +20,7 @@ LcdModel _$LcdModelFromJson(Map<String, dynamic> json) {
   return LcdModel(
     colors: LcdColorsModel.fromJson(json['colors'] as Map<String, dynamic>),
     margin: LcdMarginModel.fromJson(json['margin'] as Map<String, dynamic>),
+    symbols: LcdSymbolsModel.fromJson(json['symbols'] as Map<String, dynamic>),
     pixels: LcdPixelsModel.fromJson(json['pixels'] as Map<String, dynamic>),
     left: _intToDouble(json['left'] as int),
     top: _intToDouble(json['top'] as int),
