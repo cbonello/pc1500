@@ -72,6 +72,9 @@ class _Screen extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final Paint pxOn = Paint()..color = Color(config.colors.pixelOn);
+    final Paint pxOff = Paint()..color = Color(config.colors.pixelOff);
+
     void _displaySymbol(String label, double left) {
       final TextPainter textPainter = TextPainter(
         text: TextSpan(
@@ -88,7 +91,7 @@ class _Screen extends CustomPainter {
       textPainter.paint(canvas, Offset(left, 0.0));
     }
 
-    void _displayPixel(Paint p, int x, int y) {
+    void _displayPixel(bool isOn, int x, int y) {
       canvas.drawRect(
         Rect.fromLTWH(
           x * (config.pixels.width + config.pixels.gap),
@@ -96,78 +99,43 @@ class _Screen extends CustomPainter {
           config.pixels.width,
           config.pixels.height,
         ),
-        p,
+        isOn ? pxOn : pxOff,
       );
     }
 
     void _displayBuffer(
       Uint8ClampedList buffer,
-      Paint p,
       int xStart1,
       int xStart2,
     ) {
       int x1 = xStart1;
       int x2 = xStart2;
 
-      for (int i = 0; i < buffer.length - 1; i += 2, x1++, x2++) {
+      for (int i = 0; i <= buffer.length - 2; i += 2, x1++, x2++) {
         final int low = buffer[i];
-        if (low & 0x10 == 0x10) {
-          _displayPixel(p, x1, 0);
-        }
-        if (low & 0x20 == 0x20) {
-          _displayPixel(p, x1, 1);
-        }
-        if (low & 0x40 == 0x40) {
-          _displayPixel(p, x1, 2);
-        }
-        if (low & 0x80 == 0x80) {
-          _displayPixel(p, x1, 3);
-        }
-        if (low & 0x01 == 0x01) {
-          _displayPixel(p, x2, 0);
-        }
-        if (low & 0x02 == 0x02) {
-          _displayPixel(p, x2, 1);
-        }
-        if (low & 0x04 == 0x04) {
-          _displayPixel(p, x2, 2);
-        }
-        if (low & 0x08 == 0x08) {
-          _displayPixel(p, x2, 3);
-        }
+        _displayPixel(low & 0x10 == 0x10, x1, 0);
+        _displayPixel(low & 0x20 == 0x20, x1, 1);
+        _displayPixel(low & 0x40 == 0x40, x1, 2);
+        _displayPixel(low & 0x80 == 0x80, x1, 3);
+
+        _displayPixel(low & 0x01 == 0x01, x2, 0);
+        _displayPixel(low & 0x02 == 0x02, x2, 1);
+        _displayPixel(low & 0x04 == 0x04, x2, 2);
+        _displayPixel(low & 0x08 == 0x08, x2, 3);
 
         final int high = buffer[i + 1];
-        if (high & 0x10 == 0x10) {
-          _displayPixel(p, x1, 4);
-        }
-        if (high & 0x20 == 0x20) {
-          _displayPixel(p, x1, 5);
-        }
-        if (high & 0x40 == 0x40) {
-          _displayPixel(p, x1, 6);
-        }
-        if (high & 0x01 == 0x01) {
-          _displayPixel(p, x2, 4);
-        }
-        if (high & 0x02 == 0x02) {
-          _displayPixel(p, x2, 5);
-        }
-        if (high & 0x04 == 0x04) {
-          _displayPixel(p, x2, 6);
-        }
+        _displayPixel(high & 0x10 == 0x10, x1, 4);
+        _displayPixel(high & 0x20 == 0x20, x1, 5);
+        _displayPixel(high & 0x40 == 0x40, x1, 6);
+
+        _displayPixel(high & 0x01 == 0x01, x2, 4);
+        _displayPixel(high & 0x02 == 0x02, x2, 5);
+        _displayPixel(high & 0x04 == 0x04, x2, 6);
       }
     }
 
-    final Paint pxOff = Paint()..color = Color(config.colors.pixelOff);
-    for (int x = 0; x < 156; x++) {
-      for (int y = 0; y < 7; y++) {
-        _displayPixel(pxOff, x, y);
-      }
-    }
-
-    final Paint pxOn = Paint()..color = Color(config.colors.pixelOn);
-    _displayBuffer(lcdEvent.displayBuffer1, pxOn, 78, 0);
-    _displayBuffer(lcdEvent.displayBuffer2, pxOn, 117, 39);
+    _displayBuffer(lcdEvent.displayBuffer1, 78, 0);
+    _displayBuffer(lcdEvent.displayBuffer2, 117, 39);
 
     if (lcdEvent.symbols.busy) {
       _displaySymbol('BUSY', 2);
