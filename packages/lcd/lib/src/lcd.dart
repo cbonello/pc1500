@@ -72,8 +72,6 @@ class Lcd with MemoryObserver {
   factory Lcd({@required MemoryRead memRead}) {
     assert(memRead != null);
 
-    print('#### $_dispBufLen ${memRead(_dispBuf1Start, _dispBufLen).length}');
-
     return Lcd._(
       displayBuffer1: memRead(_dispBuf1Start, _dispBufLen),
       displayBuffer2: memRead(_dispBuf2Start, _dispBufLen),
