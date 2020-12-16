@@ -9,6 +9,7 @@ part 'lcd_pixels_model.g.dart';
 )
 class LcdPixelsModel {
   const LcdPixelsModel({
+    @required this.top,
     @required this.width,
     @required this.height,
     @required this.gap,
@@ -16,6 +17,9 @@ class LcdPixelsModel {
 
   factory LcdPixelsModel.fromJson(Map<String, dynamic> json) =>
       _$LcdPixelsModelFromJson(json);
+
+  @JsonKey(required: true, nullable: false)
+  final double top;
 
   @JsonKey(required: true, nullable: false)
   final double width;

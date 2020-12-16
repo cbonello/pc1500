@@ -15,6 +15,7 @@
             "bottom": 10
         },
         "pixels": {
+            "top": 26.0,
             "width": 3.8,
             "height": 5.0,
             "gap": 1.0
