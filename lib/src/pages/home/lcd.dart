@@ -22,6 +22,10 @@ class LcdWidget extends StatelessWidget {
     return StreamBuilder<LcdEvent>(
       stream: lcdEvents,
       builder: (BuildContext context, AsyncSnapshot<LcdEvent> snapshot) {
+        if (snapshot.hasData == false) {
+          return Container();
+        }
+
         return Positioned(
           left: config.left,
           top: config.top,
@@ -40,7 +44,12 @@ class LcdWidget extends StatelessWidget {
                       config.width - config.margin.left - config.margin.right,
                   height:
                       config.height - config.margin.top - config.margin.bottom,
-                  child: CustomPaint(painter: _Screen(config: config)),
+                  child: CustomPaint(
+                    painter: _Screen(
+                      config: config,
+                      lcdEvent: snapshot.data,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -52,9 +61,13 @@ class LcdWidget extends StatelessWidget {
 }
 
 class _Screen extends CustomPainter {
-  const _Screen({@required this.config}) : assert(config != null);
+  const _Screen({
+    @required this.config,
+    @required this.lcdEvent,
+  }) : assert(config != null);
 
   final LcdModel config;
+  final LcdEvent lcdEvent;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -73,21 +86,6 @@ class _Screen extends CustomPainter {
       )..layout(maxWidth: size.width);
       textPainter.paint(canvas, Offset(left, 0.0));
     }
-
-    _displaySymbol('BUSY', 2);
-    _displaySymbol('SHIFT', 80.0);
-    _displaySymbol('SMALL', 175.0);
-    _displaySymbol('DEF', 620.0);
-    _displaySymbol('I', 672.0);
-    _displaySymbol('II', 678.0);
-    _displaySymbol('III', 689.0);
-
-    _displaySymbol('DE', 265.0);
-    _displaySymbol('G', 283.0);
-    _displaySymbol('RAD', 293.0);
-    _displaySymbol('RUN', 390.0);
-    _displaySymbol('PRO', 450.0);
-    _displaySymbol('RESERVE', 510.0);
 
     final Paint p0 = Paint()..color = const Color(0xFF666052);
     for (int x = 0; x < 156; x++) {
@@ -126,6 +124,48 @@ class _Screen extends CustomPainter {
       );
     }
 
+    if (lcdEvent.symbols.busy) {
+      _displaySymbol('BUSY', 2);
+    }
+    if (lcdEvent.symbols.shift) {
+      _displaySymbol('SHIFT', 80.0);
+    }
+    if (lcdEvent.symbols.small) {
+      _displaySymbol('SMALL', 175.0);
+    }
+    if (lcdEvent.symbols.def) {
+      _displaySymbol('DEF', 620.0);
+    }
+    if (lcdEvent.symbols.one) {
+      _displaySymbol('I', 672.0);
+    }
+    if (lcdEvent.symbols.two) {
+      _displaySymbol('II', 678.0);
+    }
+    if (lcdEvent.symbols.three) {
+      _displaySymbol('III', 689.0);
+    }
+
+    if (lcdEvent.symbols.de) {
+      _displaySymbol('DE', 265.0);
+    }
+    if (lcdEvent.symbols.g) {
+      _displaySymbol('G', 283.0);
+    }
+    if (lcdEvent.symbols.rad) {
+      _displaySymbol('RAD', 293.0);
+    }
+    if (lcdEvent.symbols.run) {
+      _displaySymbol('RUN', 390.0);
+    }
+    if (lcdEvent.symbols.pro) {
+      _displaySymbol('PRO', 450.0);
+    }
+    if (lcdEvent.symbols.reserve) {
+      _displaySymbol('RESERVE', 510.0);
+    }
+
+    // Battery indicator.
     canvas.drawCircle(
       Offset(155.0 * (config.pixels.width + config.pixels.gap), 8.0),
       3.0,
