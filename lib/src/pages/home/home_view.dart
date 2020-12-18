@@ -3,7 +3,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../repositories/local_storage/local_storage_repository.dart';
+import '../../repositories/local_storage/local_storage.dart';
 import '../../repositories/systems/models/models.dart';
 import '../../repositories/systems/systems_repository.dart';
 import 'lcd.dart';
