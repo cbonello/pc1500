@@ -98,7 +98,6 @@ abstract class MemoryChipBase extends Equatable with MemoryObservable {
   List<Object> get props => <Object>[
         start,
         length,
-        isReadonly,
         _data,
         _observers,
       ];
