@@ -181,7 +181,7 @@ void main() {
         );
       });
 
-      test('should raise an exception for reads for an invalid length', () {
+      test('should raise an exception for reads with invalid length', () {
         final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 128);
