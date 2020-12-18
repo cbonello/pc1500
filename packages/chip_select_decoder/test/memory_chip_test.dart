@@ -48,7 +48,8 @@ void main() {
       group('readAt()', () {
         test('should read successfully', () {
           final MemoryChipRam ram = MemoryChipRam(start: 0, length: 100);
-          expect(ram.readAt(0, 4), equals(<int>[0, 0, 0, 0]));
+          ram.writeByteAt(0, 56);
+          expect(ram.readAt(0, 4), equals(<int>[56, 0, 0, 0]));
         });
       });
 
