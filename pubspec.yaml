@@ -11,10 +11,10 @@ environment:
   sdk: '>=2.10.0 <3.0.0'
 
 dependencies:
-  device:
-    path: packages/device
   flutter:
     sdk: flutter
+  device:
+    path: packages/device
   lcd:
     path: packages/lcd
   bitsdojo_window: ^0.0.0
@@ -24,8 +24,7 @@ dependencies:
   google_fonts: ^1.1.0
   hooks_riverpod: ^0.12.0
   json_annotation: ^3.1.0
-  shared_preferences: '>=0.5.12+4 <2.0.0'
-  web_socket_channel: ^1.1.0
+  shared_preferences: ">=0.5.12+4 <2.0.0"
 
 dev_dependencies:
   flutter_test:
