@@ -52,6 +52,10 @@ class LcdEvent extends Equatable {
   final Uint8ClampedList displayBuffer2;
   final LcdSymbols symbols;
 
+  static int get length => _dispBufLen + _dispBufLen + _symBufLen;
+  static int get displayBufferLength => _dispBufLen;
+  static int get symbolsLength => _symBufLen;
+
   LcdEvent copyWith({
     Uint8ClampedList displayBuffer1,
     Uint8ClampedList displayBuffer2,
