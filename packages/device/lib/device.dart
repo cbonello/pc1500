@@ -1,4 +1,4 @@
 library device;
 
-export 'src/device.dart';
-export 'src/extension_module.dart';
+export 'src/emulator_isolate/device.dart';
+export 'src/emulator_isolate/extension_module.dart';

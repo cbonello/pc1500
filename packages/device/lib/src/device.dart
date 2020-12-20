@@ -1,206 +1,64 @@
-import 'dart:convert';
+import 'dart:async';
+import 'dart:isolate';
 
-import 'package:annotations/annotations.dart';
-import 'package:chip_select_decoder/chip_select_decoder.dart';
-import 'package:lcd/lcd.dart';
-import 'package:lh5801/lh5801.dart';
-import 'package:roms/roms.dart';
+import 'package:meta/meta.dart';
 
-import 'clock.dart';
-import 'dasm.dart';
-import 'extension_module.dart';
-import 'me0_ram_annotations.dart' as std_users_ram;
+import 'emulator_isolate/emulator.dart';
 
-class DeviceError extends Error {
-  DeviceError(this.message);
+abstract class IsolateBase {
+  IsolateBase({@required this.debugPort}) : assert(debugPort != null);
 
-  final String message;
+  final int debugPort;
 
-  @override
-  String toString() => 'Device: $message';
+  void init(SendPort isolateToMainStream);
+
+  bool isDebugClientConnected();
 }
 
-enum DeviceType { pc1500A, pc2 }
-
 class Device {
-  Device(
-    this.type, [
-    this.ir0Enter,
-    this.ir1Enter,
-    this.ir2Enter,
-    this.irExit,
-    this.subroutineEnter,
-    this.subroutineExit,
-  ])  : _csd = ChipSelectDecoder(),
-        _connector40Pins = ExtensionModule(),
-        _annotations = MemoryBanksAnnotations() {
-    _clock = Clock(freq: 1300000, fps: 50);
+  Device({@required int debugPort})
+      : assert(debugPort != null),
+        _debugPort = debugPort;
 
-    // Standard users system RAM (1.5KB).
-    final MemoryChipBase stdUserRam = _csd.appendRAM(
-      MemoryBank.me0,
-      0x7600,
-      0x0600,
+  final int _debugPort;
+  SendPort _toEmulatorPort;
+  StreamSubscription<dynamic> _fromEmulatorSub;
+
+  bool get _isEmulatorRunning => _toEmulatorPort != null;
+
+  Future<void> init() async {
+    _toEmulatorPort = await _initIsolate();
+  }
+
+  void send(Object command) {
+    if (_isEmulatorRunning) {
+      _toEmulatorPort.send(command);
+    }
+  }
+
+  Future<SendPort> _initIsolate() async {
+    final Completer<SendPort> completer = Completer<SendPort>();
+    final ReceivePort fromEmulatorPort = ReceivePort();
+
+    _fromEmulatorSub = fromEmulatorPort.listen((dynamic data) {
+      if (data is SendPort) {
+        final SendPort toEmulatorPort = data;
+        completer.complete(toEmulatorPort);
+      } else {
+        print('[isolateToMainStream] $data');
+      }
+    });
+
+    await Isolate.spawn(
+      emulatorMain,
+      fromEmulatorPort.sendPort,
+      debugName: 'Emulator',
     );
 
-    // ROM (16KB).
-    final PC1500Rom pc1500Rom = PC1500Rom(PC1500RomType.a03);
-    _csd.appendROM(MemoryBank.me0, 0xC000, pc1500Rom);
-    _annotations.load(pc1500Rom.annotations);
-
-    // Standard users RAM.
-    if (type == DeviceType.pc1500A) {
-      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800); // 6KB.
-    } else {
-      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
-    }
-
-    try {
-      final Map<String, dynamic> json =
-          jsonDecode(std_users_ram.json) as Map<String, dynamic>;
-      _annotations.load(json);
-    } catch (_) {}
-
-    // I/O ports
-    _csd.appendRAM(MemoryBank.me1, 0x8000, 0x10);
-    _csd.appendRAM(MemoryBank.me1, 0xB000, 0x10);
-    _csd.appendRAM(MemoryBank.me1, 0xD000, 0x400);
-    _csd.appendRAM(MemoryBank.me1, 0xF000, 0x10);
-
-    // _updateROMStatusInformation();
-
-    _cpu = LH5801(
-      clockFrequency: 1300000,
-      memRead: _csd.readByteAt,
-      memWrite: _csd.writeByteAt,
-      ir0Enter: ir0Enter,
-      ir1Enter: ir1Enter,
-      ir2Enter: ir2Enter,
-      irExit: irExit,
-      subroutineEnter: subroutineEnter,
-      subroutineExit: subroutineExit,
-    )..reset();
-    _cpu.resetPin = true;
-
-    _lcd = Lcd(memRead: _csd.readAt);
-    stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
-
-    _dasm = LH5801DASM(memRead: _csd.readByteAt);
-  }
-
-  final DeviceType type;
-  Clock _clock;
-  LH5801 _cpu;
-  final ChipSelectDecoder _csd;
-  Lcd _lcd;
-  final ExtensionModule _connector40Pins;
-  LH5801DASM _dasm;
-  final MemoryBanksAnnotations _annotations;
-  final LH5801Command ir0Enter;
-  final LH5801Command ir1Enter;
-  final LH5801Command ir2Enter;
-  final LH5801Command irExit;
-  final LH5801Command subroutineEnter;
-  final LH5801Command subroutineExit;
-
-  int step() => _cpu.step();
-
-  Stream<LcdEvent> get lcdEvents => _lcd.events;
-
-  DasmDescriptor dasm(int address) {
-    final Instruction instruction = _dasm.dump(address);
-    String label = '', comment = '';
-
-    if (_annotations.isAnnotated(address)) {
-      final AnnotationBase annotation = _annotations.getAnnotationFromAddress(
-        address,
-      );
-      label = annotation.label;
-      comment = annotation.comment;
-    }
-
-    return DasmCode(label: label, instruction: instruction, comment: comment);
-  }
-
-  void addCE151() {
-    // 4KB RAM card.
-    if (_connector40Pins.isUsed) {
-      throw DeviceError(
-        '40-pin connector used by ${_connector40Pins.name} module',
-      );
-    }
-    _connector40Pins.addModule('CE151', 0x1000);
-
-    if (type == DeviceType.pc1500A) {
-      _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1000);
-    } else {
-      _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
-    }
-  }
-
-  void addCE155() {
-    // 8KB RAM card.
-    if (_connector40Pins.isUsed) {
-      throw DeviceError(
-        '40-pin connector used by ${_connector40Pins.name} module',
-      );
-    }
-    _connector40Pins.addModule('CE155', 0x2000);
-
-    _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
-
-    if (type == DeviceType.pc1500A) {
-      _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1800);
-    } else {
-      _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1800);
-    }
+    return completer.future;
   }
 
   void dispose() {
-    _lcd?.dispose();
+    _fromEmulatorSub?.cancel();
   }
-
-  // void _updateROMStatusInformation() {
-  //   _csd.writeByteAt(0x4000, 0x55);
-  //   // High order one byte of the ROM top address.
-  //   _csd.writeByteAt(0x4001, 0x55);
-  //   // High order one byte of the top address of the BASIC program.
-  //   _csd.writeByteAt(0x4002, 0x55);
-  //   // Low order one byte of the top address of the BASIC program.
-  //   _csd.writeByteAt(0x4003, 0x55);
-  //   // 16KB ROM
-  //   _csd.writeByteAt(0x4004, 0x40);
-  //   // Non-confidential program.
-  //   _csd.writeByteAt(0x4007, 0xFF);
-  // }
-}
-
-class PC1500Traced extends Device {
-  PC1500Traced(
-    DeviceType device, [
-    LH5801Command ir0Enter,
-    LH5801Command ir1Enter,
-    LH5801Command ir2Enter,
-    LH5801Command irExit,
-    LH5801Command subroutineEnter,
-    LH5801Command subroutineExit,
-  ]) : super(
-          device,
-          ir0Enter,
-          ir1Enter,
-          ir2Enter,
-          irExit,
-          subroutineEnter,
-          subroutineExit,
-        ) {
-    _cpu = LH5801Traced(
-      clockFrequency: 1300000,
-      memRead: _csd.readByteAt,
-      memWrite: _csd.writeByteAt,
-    )..reset();
-
-    _cpu.resetPin = true;
-  }
-
-  List<Trace> get traces => (_cpu as LH5801Traced).traces;
 }

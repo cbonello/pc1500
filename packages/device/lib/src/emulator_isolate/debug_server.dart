@@ -1,11 +1,10 @@
 import 'dart:io';
-
 import 'dart:typed_data';
 
-class SocketServer {
-  SocketServer({InternetAddress host, int port = 3756})
+class DebugServer {
+  DebugServer({InternetAddress host, int port = 3756})
       : _host = host ?? InternetAddress.loopbackIPv6,
-        _port = port;
+        _port = port ?? 3756;
 
   final InternetAddress _host;
   final int _port;
@@ -30,7 +29,6 @@ class SocketServer {
       _clientSocket = client;
       _clientSocket.listen(
         (Uint8List onData) {
-          print(String.fromCharCodes(onData).trim());
           send('Received: ${String.fromCharCodes(onData)}');
         },
         onError: (Object _) {
