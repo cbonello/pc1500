@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const int defaultDebugPort = 3756;
-
 final Provider<LocalStorageRepository> localStorageRepositoryProvider =
     Provider<LocalStorageRepository>(
   (ProviderReference ref) => throw UnimplementedError(),
@@ -35,11 +33,11 @@ class LocalStorageRepository {
     return _sharedPreferences.setInt('debug_port', port);
   }
 
-  int getDebugPort() {
+  int getDebugPort(int defaultPort) {
     try {
-      return _sharedPreferences.getInt('debug_port') ?? defaultDebugPort;
+      return _sharedPreferences.getInt('debug_port') ?? defaultPort;
     } catch (_) {
-      return defaultDebugPort;
+      return defaultPort;
     }
   }
 }
