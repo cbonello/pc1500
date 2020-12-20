@@ -12,6 +12,7 @@ linter:
     omit_local_variable_types: false
     avoid_classes_with_only_static_members: false
     non_constant_identifier_names: false
+    sort_pub_dependencies: false
 
     sort_constructors_first: true
     prefer_single_quotes: true
