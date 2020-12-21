@@ -24,7 +24,8 @@ enum DeviceType { pc1500A, pc2 }
 
 class Device {
   Device(
-    this.type, [
+    this.type,
+    this.debugPort, [
     this.ir0Enter,
     this.ir1Enter,
     this.ir2Enter,
@@ -89,6 +90,7 @@ class Device {
   }
 
   final DeviceType type;
+  final int debugPort;
   Clock _clock;
   LH5801 _cpu;
   final ChipSelectDecoder _csd;
@@ -177,7 +179,8 @@ class Device {
 
 class PC1500Traced extends Device {
   PC1500Traced(
-    DeviceType device, [
+    DeviceType device,
+    int debugPort, [
     LH5801Command ir0Enter,
     LH5801Command ir1Enter,
     LH5801Command ir2Enter,
@@ -186,6 +189,7 @@ class PC1500Traced extends Device {
     LH5801Command subroutineExit,
   ]) : super(
           device,
+          debugPort,
           ir0Enter,
           ir1Enter,
           ir2Enter,
