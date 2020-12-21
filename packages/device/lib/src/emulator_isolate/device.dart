@@ -6,6 +6,7 @@ import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
 import 'package:roms/roms.dart';
 
+import '../device.dart';
 import 'clock.dart';
 import 'dasm.dart';
 import 'extension_module.dart';
@@ -19,8 +20,6 @@ class DeviceError extends Error {
   @override
   String toString() => 'Device: $message';
 }
-
-enum DeviceType { pc1500A, pc2 }
 
 class Device {
   Device(

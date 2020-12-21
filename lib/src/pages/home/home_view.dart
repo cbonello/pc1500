@@ -41,7 +41,10 @@ class HomeView extends ConsumerWidget {
             Center(
               child: systemsRepository.when<Widget>(
                 data: (SystemsRepository repository) {
-                  final Device device = Device(deviceTypeRepository.deviceType);
+                  final Device device = Device(
+                    type: deviceTypeRepository.deviceType,
+                    debugPort: 3756,
+                  );
                   final SkinModel skin = repository.getSkin(
                     deviceTypeRepository.deviceType,
                   );

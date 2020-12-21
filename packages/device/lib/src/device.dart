@@ -12,15 +12,17 @@ import 'messages/from_emulator.dart';
 import 'messages/message.dart';
 import 'messages/to_emulator.dart';
 
-abstract class IsolateBase {
-  IsolateBase({@required this.debugPort}) : assert(debugPort != null);
+// abstract class IsolateBase {
+//   IsolateBase({@required this.debugPort}) : assert(debugPort != null);
 
-  final int debugPort;
+//   final int debugPort;
 
-  void init(SendPort isolateToMainStream);
+//   void init(SendPort isolateToMainStream);
 
-  bool isDebugClientConnected();
-}
+//   bool isDebugClientConnected();
+// }
+
+enum DeviceType { pc1500A, pc2 }
 
 class Device {
   Device({@required DeviceType type, @required int debugPort})
@@ -44,9 +46,9 @@ class Device {
     _toEmulatorPort = await _initIsolate();
   }
 
-  void send(Uint8List message) {
+  void send<T>(T message, MessageSerializer<T> serializer) {
     if (_isEmulatorRunning) {
-      _toEmulatorPort.send(message);
+      _toEmulatorPort.send(serializer.serialize(message));
     }
   }
 
@@ -70,15 +72,10 @@ class Device {
       debugName: 'Emulator',
     );
 
+    send(SetDeviceTypeMessage(type: _type), SetDeviceTypeMessageSerializer());
     send(
-      SetDeviceTypeMessageSerializer().serialize(
-        SetDeviceTypeMessage(type: _type),
-      ),
-    );
-    send(
-      SetDebugPortMessageSerializer().serialize(
-        SetDebugPortMessage(port: _debugPort),
-      ),
+      SetDebugPortMessage(port: _debugPort),
+      SetDebugPortMessageSerializer(),
     );
 
     return completer.future;

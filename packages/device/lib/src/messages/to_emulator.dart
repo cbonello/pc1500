@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
-import '../emulator_isolate/device.dart';
+import '../device.dart';
 import 'message.dart';
 
 class SetDeviceTypeMessage extends Message {
