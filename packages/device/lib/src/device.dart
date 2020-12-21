@@ -1,9 +1,15 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 
+import 'package:lcd/lcd.dart';
 import 'package:meta/meta.dart';
+import 'package:rxdart/rxdart.dart';
 
+import 'emulator_isolate/device.dart';
 import 'emulator_isolate/emulator.dart';
+import 'messages/from_emulator.dart';
+import 'messages/message.dart';
 
 abstract class IsolateBase {
   IsolateBase({@required this.debugPort}) : assert(debugPort != null);
@@ -16,15 +22,22 @@ abstract class IsolateBase {
 }
 
 class Device {
-  Device({@required int debugPort})
-      : assert(debugPort != null),
-        _debugPort = debugPort;
+  Device({@required DeviceType type, @required int debugPort})
+      : assert(type != null),
+        _type = type,
+        assert(debugPort != null),
+        _debugPort = debugPort,
+        _outEventCtrl = BehaviorSubject<LcdEvent>();
 
+  final DeviceType _type;
   final int _debugPort;
+  final BehaviorSubject<LcdEvent> _outEventCtrl;
   SendPort _toEmulatorPort;
   StreamSubscription<dynamic> _fromEmulatorSub;
 
   bool get _isEmulatorRunning => _toEmulatorPort != null;
+
+  Stream<LcdEvent> get lcdEvents => _outEventCtrl.stream;
 
   Future<void> init() async {
     _toEmulatorPort = await _initIsolate();
@@ -45,7 +58,8 @@ class Device {
         final SendPort toEmulatorPort = data;
         completer.complete(toEmulatorPort);
       } else {
-        print('[isolateToMainStream] $data');
+        assert(data is Uint8List);
+        _messageHandler(data as Uint8List);
       }
     });
 
@@ -58,7 +72,22 @@ class Device {
     return completer.future;
   }
 
+  void _messageHandler(Uint8List data) {
+    final MessageId messageId = MessageId.values[data[0]];
+
+    switch (messageId) {
+      case MessageId.lcdEvent:
+        final LcdEventMessage message =
+            LcdEventMessageSerializer().deserialize(data);
+        _outEventCtrl.add(message.event);
+        break;
+      default:
+        throw Exception();
+    }
+  }
+
   void dispose() {
+    _outEventCtrl.close();
     _fromEmulatorSub?.cancel();
   }
 }
