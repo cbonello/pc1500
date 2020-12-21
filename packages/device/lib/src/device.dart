@@ -10,6 +10,7 @@ import 'emulator_isolate/device.dart';
 import 'emulator_isolate/emulator.dart';
 import 'messages/from_emulator.dart';
 import 'messages/message.dart';
+import 'messages/to_emulator.dart';
 
 abstract class IsolateBase {
   IsolateBase({@required this.debugPort}) : assert(debugPort != null);
@@ -43,9 +44,9 @@ class Device {
     _toEmulatorPort = await _initIsolate();
   }
 
-  void send(Object command) {
+  void send(Uint8List message) {
     if (_isEmulatorRunning) {
-      _toEmulatorPort.send(command);
+      _toEmulatorPort.send(message);
     }
   }
 
@@ -67,6 +68,17 @@ class Device {
       emulatorMain,
       fromEmulatorPort.sendPort,
       debugName: 'Emulator',
+    );
+
+    send(
+      SetDeviceTypeMessageSerializer().serialize(
+        SetDeviceTypeMessage(type: _type),
+      ),
+    );
+    send(
+      SetDebugPortMessageSerializer().serialize(
+        SetDebugPortMessage(port: _debugPort),
+      ),
     );
 
     return completer.future;
