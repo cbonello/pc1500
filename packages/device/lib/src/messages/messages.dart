@@ -36,7 +36,7 @@ class StartEmulatorMessageSerializer
 class SetDeviceTypeMessage extends EmulatorMessageBase {
   SetDeviceTypeMessage({@required this.type})
       : assert(type != null),
-        super(EmulatorMessageId.setDeviceType);
+        super(EmulatorMessageId.updateDeviceType);
 
   final DeviceType type;
 }
@@ -46,7 +46,7 @@ class SetDeviceTypeMessageSerializer
   @override
   SetDeviceTypeMessage deserialize(Uint8List data) {
     assert(data.length == 2);
-    assert(data[0] == EmulatorMessageId.setDeviceType.index);
+    assert(data[0] == EmulatorMessageId.updateDeviceType.index);
 
     return SetDeviceTypeMessage(type: DeviceType.values[data[1]]);
   }

@@ -1,6 +1,11 @@
 import 'dart:typed_data';
 
-enum EmulatorMessageId { startEmulator, setDeviceType, setDebutPort, lcdEvent }
+enum EmulatorMessageId {
+  startEmulator,
+  updateDeviceType,
+  setDebutPort,
+  lcdEvent
+}
 
 abstract class EmulatorMessageBase {
   EmulatorMessageBase(this.messageId) : assert(messageId != null);

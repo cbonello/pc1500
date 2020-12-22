@@ -43,7 +43,7 @@ void _messageHandler(Uint8List data) {
       _emulator ??= Emulator(type, debugPort);
       _isolateToMainStream.send(message);
       break;
-    case EmulatorMessageId.setDeviceType:
+    case EmulatorMessageId.updateDeviceType:
       final SetDeviceTypeMessage message =
           SetDeviceTypeMessageSerializer().deserialize(data);
       type = message.type;
