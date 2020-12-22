@@ -19,64 +19,71 @@ class StartEmulatorMessageSerializer
     extends EmulatorMessageSerializer<StartEmulatorMessage> {
   @override
   StartEmulatorMessage deserialize(Uint8List data) {
-    assert(data.length == 3);
+    assert(data.length == 4);
     assert(data[0] == EmulatorMessageId.startEmulator.index);
 
     return StartEmulatorMessage(
       type: DeviceType.values[data[1]],
-      debugPort: data[2],
+      debugPort: deserializeInt(data.sublist(2)),
     );
   }
 
   @override
-  Uint8List serialize(StartEmulatorMessage le) =>
-      le.debugPort.toUint8List(le.messageId);
+  Uint8List serialize(StartEmulatorMessage le) => Uint8List.fromList(
+        <int>[
+          le.messageId.index,
+          le.type.index,
+          ...serializeInt(le.debugPort),
+        ],
+      );
 }
 
-class SetDeviceTypeMessage extends EmulatorMessageBase {
-  SetDeviceTypeMessage({@required this.type})
+class UpdateDeviceTypeMessage extends EmulatorMessageBase {
+  UpdateDeviceTypeMessage({@required this.type})
       : assert(type != null),
         super(EmulatorMessageId.updateDeviceType);
 
   final DeviceType type;
 }
 
-class SetDeviceTypeMessageSerializer
-    extends EmulatorMessageSerializer<SetDeviceTypeMessage> {
+class UpdateDeviceTypeMessageSerializer
+    extends EmulatorMessageSerializer<UpdateDeviceTypeMessage> {
   @override
-  SetDeviceTypeMessage deserialize(Uint8List data) {
+  UpdateDeviceTypeMessage deserialize(Uint8List data) {
     assert(data.length == 2);
     assert(data[0] == EmulatorMessageId.updateDeviceType.index);
 
-    return SetDeviceTypeMessage(type: DeviceType.values[data[1]]);
+    return UpdateDeviceTypeMessage(type: DeviceType.values[data[1]]);
   }
 
   @override
-  Uint8List serialize(SetDeviceTypeMessage sdt) =>
-      sdt.type.index.toUint8List(sdt.messageId);
+  Uint8List serialize(UpdateDeviceTypeMessage sdt) =>
+      sdt.type.index.toEmulatorMessage(sdt.messageId);
 }
 
-class SetDebugPortMessage extends EmulatorMessageBase {
-  SetDebugPortMessage({@required this.port})
+class UpdateDebugPortMessage extends EmulatorMessageBase {
+  UpdateDebugPortMessage({@required this.port})
       : assert(port != null && port >= 0 && port < 65536),
         super(EmulatorMessageId.updateDebugPort);
 
   final int port;
 }
 
-class SetDebugPortMessageSerializer
-    extends EmulatorMessageSerializer<SetDebugPortMessage> {
+class UpdateDebugPortMessageSerializer
+    extends EmulatorMessageSerializer<UpdateDebugPortMessage> {
   @override
-  SetDebugPortMessage deserialize(Uint8List data) {
-    assert(data.length == 2);
+  UpdateDebugPortMessage deserialize(Uint8List data) {
+    assert(data.length == 3);
     assert(data[0] == EmulatorMessageId.updateDebugPort.index);
 
-    return SetDebugPortMessage(port: data[1]);
+    return UpdateDebugPortMessage(port: deserializeInt(data.sublist(1)));
   }
 
   @override
-  Uint8List serialize(SetDebugPortMessage sdp) =>
-      Uint8List.fromList(<int>[sdp.messageId.index, sdp.port]);
+  Uint8List serialize(UpdateDebugPortMessage udp) => Uint8List.fromList(<int>[
+        udp.messageId.index,
+        ...serializeInt(udp.port),
+      ]);
 }
 
 class LcdEventSerializer extends EmulatorMessageSerializer<LcdEvent> {

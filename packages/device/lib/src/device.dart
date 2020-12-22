@@ -32,6 +32,11 @@ class Device {
 
   Future<void> init() async {
     _toEmulatorPort = await _initIsolate();
+
+    send(
+      StartEmulatorMessage(type: _type, debugPort: _debugPort),
+      StartEmulatorMessageSerializer(),
+    );
   }
 
   void send<T>(T message, EmulatorMessageSerializer<T> serializer) {
@@ -58,11 +63,6 @@ class Device {
       emulatorMain,
       fromEmulatorPort.sendPort,
       debugName: 'Emulator',
-    );
-
-    send(
-      StartEmulatorMessage(type: _type, debugPort: _debugPort),
-      StartEmulatorMessageSerializer(),
     );
 
     return completer.future;

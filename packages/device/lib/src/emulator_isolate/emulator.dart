@@ -9,23 +9,23 @@ import 'package:lh5801/lh5801.dart';
 import 'package:roms/roms.dart';
 
 import '../device.dart';
-import '../messages/messages_base.dart';
 import '../messages/messages.dart';
+import '../messages/messages_base.dart';
 import 'clock.dart';
 import 'dasm.dart';
 import 'extension_module.dart';
 import 'me0_ram_annotations.dart' as std_users_ram;
 
-SendPort _isolateToMainStream;
+SendPort _toUI;
 Emulator _emulator;
 DeviceType type;
 int debugPort;
 
-void emulatorMain(SendPort isolateToMainStream) {
-  _isolateToMainStream = isolateToMainStream;
-  final ReceivePort mainToIsolateStream = ReceivePort();
-  _isolateToMainStream.send(mainToIsolateStream.sendPort);
-  mainToIsolateStream.listen((dynamic data) {
+void emulatorMain(SendPort toUI) {
+  _toUI = toUI;
+  final ReceivePort fromUIStream = ReceivePort();
+  _toUI.send(fromUIStream.sendPort);
+  fromUIStream.listen((dynamic data) {
     _messageHandler(data as Uint8List);
   });
 }
@@ -39,18 +39,16 @@ void _messageHandler(Uint8List data) {
           StartEmulatorMessageSerializer().deserialize(data);
       type = message.type;
       debugPort = message.debugPort;
-      print('${type.index} $debugPort');
       _emulator ??= Emulator(type, debugPort);
-      _isolateToMainStream.send(message);
       break;
     case EmulatorMessageId.updateDeviceType:
-      final SetDeviceTypeMessage message =
-          SetDeviceTypeMessageSerializer().deserialize(data);
+      final UpdateDeviceTypeMessage message =
+          UpdateDeviceTypeMessageSerializer().deserialize(data);
       type = message.type;
       break;
     case EmulatorMessageId.updateDebugPort:
-      final SetDebugPortMessage message =
-          SetDebugPortMessageSerializer().deserialize(data);
+      final UpdateDebugPortMessage message =
+          UpdateDebugPortMessageSerializer().deserialize(data);
       debugPort = message.port;
       break;
     default:
@@ -130,6 +128,9 @@ class Emulator {
 
     _lcd = Lcd(memRead: _csd.readAt);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
+    _lcd.events.listen((LcdEvent event) {
+      _toUI.send(LcdEventSerializer().serialize(event));
+    });
 
     _dasm = LH5801DASM(memRead: _csd.readByteAt);
   }
