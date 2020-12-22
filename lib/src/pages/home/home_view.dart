@@ -20,6 +20,8 @@ class HomeView extends ConsumerWidget {
         watch(systemsRepositoryProvider);
     final DeviceTypeRepository deviceTypeRepository =
         watch(deviceTypeRepositoryProvider);
+    final DebugPortRepository debugPortRepository =
+        watch(debugPortRepositoryProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFBABEC1),
@@ -43,7 +45,7 @@ class HomeView extends ConsumerWidget {
                 data: (SystemsRepository repository) {
                   final Device device = Device(
                     type: deviceTypeRepository.deviceType,
-                    debugPort: 3756,
+                    debugPort: debugPortRepository.debugPort,
                   );
                   final SkinModel skin = repository.getSkin(
                     deviceTypeRepository.deviceType,
