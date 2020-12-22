@@ -18,8 +18,8 @@ import 'me0_ram_annotations.dart' as std_users_ram;
 
 SendPort _toUI;
 Emulator _emulator;
-DeviceType type;
-int debugPort;
+DeviceType _type;
+int _debugPort;
 
 void emulatorMain(SendPort toUI) {
   _toUI = toUI;
@@ -37,19 +37,19 @@ void _messageHandler(Uint8List data) {
     case EmulatorMessageId.startEmulator:
       final StartEmulatorMessage message =
           StartEmulatorMessageSerializer().deserialize(data);
-      type = message.type;
-      debugPort = message.debugPort;
-      _emulator ??= Emulator(type, debugPort);
+      _type = message.type;
+      _debugPort = message.debugPort;
+      _emulator ??= Emulator(_type, _debugPort);
       break;
     case EmulatorMessageId.updateDeviceType:
       final UpdateDeviceTypeMessage message =
           UpdateDeviceTypeMessageSerializer().deserialize(data);
-      type = message.type;
+      _type = message.type;
       break;
     case EmulatorMessageId.updateDebugPort:
       final UpdateDebugPortMessage message =
           UpdateDebugPortMessageSerializer().deserialize(data);
-      debugPort = message.port;
+      _debugPort = message.port;
       break;
     default:
       throw Exception();
