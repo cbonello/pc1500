@@ -46,7 +46,7 @@ class HomeView extends ConsumerWidget {
                   final Device device = Device(
                     type: deviceTypeRepository.deviceType,
                     debugPort: debugPortRepository.debugPort,
-                  );
+                  )..init();
                   final SkinModel skin = repository.getSkin(
                     deviceTypeRepository.deviceType,
                   );
