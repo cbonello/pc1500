@@ -5,6 +5,36 @@ import 'package:meta/meta.dart';
 import '../device.dart';
 import 'message.dart';
 
+class StartEmulatorMessage extends Message {
+  StartEmulatorMessage({@required this.type, @required this.debugPort})
+      : assert(type != null),
+        super(messageId: MessageId.startEmulator);
+
+  final DeviceType type;
+  final int debugPort;
+}
+
+class StartEmulatorMessageSerializer
+    extends MessageSerializer<StartEmulatorMessage> {
+  @override
+  StartEmulatorMessage deserialize(Uint8List data) {
+    assert(data.length == 3);
+    assert(data[0] == MessageId.startEmulator.index);
+
+    return StartEmulatorMessage(
+      type: DeviceType.values[data[1]],
+      debugPort: data[2],
+    );
+  }
+
+  @override
+  Uint8List serialize(StartEmulatorMessage le) => Uint8List.fromList(<int>[
+        le.messageId.index,
+        le.type.index,
+        le.debugPort,
+      ]);
+}
+
 class SetDeviceTypeMessage extends Message {
   SetDeviceTypeMessage({@required this.type})
       : assert(type != null),

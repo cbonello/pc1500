@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
-enum MessageId { setDeviceType, setDebutPort, lcdEvent }
+enum MessageId { startEmulator, setDeviceType, setDebutPort, lcdEvent }
 
 abstract class Message {
   Message({@required this.messageId}) : assert(messageId != null);
