@@ -3,7 +3,7 @@ import 'dart:typed_data';
 enum EmulatorMessageId {
   startEmulator,
   updateDeviceType,
-  setDebutPort,
+  updateDebugPort,
   lcdEvent
 }
 

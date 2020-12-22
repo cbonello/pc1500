@@ -59,7 +59,7 @@ class SetDeviceTypeMessageSerializer
 class SetDebugPortMessage extends EmulatorMessageBase {
   SetDebugPortMessage({@required this.port})
       : assert(port != null && port >= 0 && port < 65536),
-        super(EmulatorMessageId.setDebutPort);
+        super(EmulatorMessageId.updateDebugPort);
 
   final int port;
 }
@@ -69,7 +69,7 @@ class SetDebugPortMessageSerializer
   @override
   SetDebugPortMessage deserialize(Uint8List data) {
     assert(data.length == 2);
-    assert(data[0] == EmulatorMessageId.setDebutPort.index);
+    assert(data[0] == EmulatorMessageId.updateDebugPort.index);
 
     return SetDebugPortMessage(port: data[1]);
   }
