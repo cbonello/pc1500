@@ -6,21 +6,10 @@ import 'package:lcd/lcd.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'emulator_isolate/device.dart';
 import 'emulator_isolate/emulator.dart';
 import 'messages/from_emulator.dart';
 import 'messages/message.dart';
 import 'messages/to_emulator.dart';
-
-// abstract class IsolateBase {
-//   IsolateBase({@required this.debugPort}) : assert(debugPort != null);
-
-//   final int debugPort;
-
-//   void init(SendPort isolateToMainStream);
-
-//   bool isDebugClientConnected();
-// }
 
 enum DeviceType { pc1500A, pc2 }
 
@@ -72,10 +61,9 @@ class Device {
       debugName: 'Emulator',
     );
 
-    send(SetDeviceTypeMessage(type: _type), SetDeviceTypeMessageSerializer());
     send(
-      SetDebugPortMessage(port: _debugPort),
-      SetDebugPortMessageSerializer(),
+      StartEmulatorMessage(type: _type, debugPort: _debugPort),
+      StartEmulatorMessageSerializer(),
     );
 
     return completer.future;
