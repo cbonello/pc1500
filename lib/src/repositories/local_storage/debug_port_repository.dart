@@ -5,7 +5,7 @@ import 'local_storage_repository.dart';
 
 const int _defaultDebugPort = 3756;
 
-final ChangeNotifierProvider<DebugPortRepository> DebugPortRepositoryProvider =
+final ChangeNotifierProvider<DebugPortRepository> debugPortRepositoryProvider =
     ChangeNotifierProvider<DebugPortRepository>(
   (ProviderReference ref) {
     final DebugPortRepository repository = DebugPortRepository(
