@@ -9,8 +9,8 @@ import 'package:lh5801/lh5801.dart';
 import 'package:roms/roms.dart';
 
 import '../device.dart';
-import '../messages/message.dart';
-import '../messages/to_emulator.dart';
+import '../messages/messages_base.dart';
+import '../messages/messages.dart';
 import 'clock.dart';
 import 'dasm.dart';
 import 'extension_module.dart';
@@ -31,10 +31,10 @@ void emulatorMain(SendPort isolateToMainStream) {
 }
 
 void _messageHandler(Uint8List data) {
-  final MessageId messageId = MessageId.values[data[0]];
+  final EmulatorMessageId emulatorMessageId = EmulatorMessageId.values[data[0]];
 
-  switch (messageId) {
-    case MessageId.startEmulator:
+  switch (emulatorMessageId) {
+    case EmulatorMessageId.startEmulator:
       final StartEmulatorMessage message =
           StartEmulatorMessageSerializer().deserialize(data);
       type = message.type;
@@ -43,12 +43,12 @@ void _messageHandler(Uint8List data) {
       _emulator ??= Emulator(type, debugPort);
       _isolateToMainStream.send(message);
       break;
-    case MessageId.setDeviceType:
+    case EmulatorMessageId.setDeviceType:
       final SetDeviceTypeMessage message =
           SetDeviceTypeMessageSerializer().deserialize(data);
       type = message.type;
       break;
-    case MessageId.setDebutPort:
+    case EmulatorMessageId.setDebutPort:
       final SetDebugPortMessage message =
           SetDebugPortMessageSerializer().deserialize(data);
       debugPort = message.port;

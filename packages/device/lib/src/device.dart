@@ -7,9 +7,8 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'emulator_isolate/emulator.dart';
-import 'messages/from_emulator.dart';
-import 'messages/message.dart';
-import 'messages/to_emulator.dart';
+import 'messages/messages.dart';
+import 'messages/messages_base.dart';
 
 enum DeviceType { pc1500A, pc2 }
 
@@ -35,7 +34,7 @@ class Device {
     _toEmulatorPort = await _initIsolate();
   }
 
-  void send<T>(T message, MessageSerializer<T> serializer) {
+  void send<T>(T message, EmulatorMessageSerializer<T> serializer) {
     if (_isEmulatorRunning) {
       _toEmulatorPort.send(serializer.serialize(message));
     }
@@ -70,13 +69,12 @@ class Device {
   }
 
   void _messageHandler(Uint8List data) {
-    final MessageId messageId = MessageId.values[data[0]];
+    final EmulatorMessageId messageId = EmulatorMessageId.values[data[0]];
 
     switch (messageId) {
-      case MessageId.lcdEvent:
-        final LcdEventMessage message =
-            LcdEventMessageSerializer().deserialize(data);
-        _outEventCtrl.add(message.event);
+      case EmulatorMessageId.lcdEvent:
+        final LcdEvent event = LcdEventSerializer().deserialize(data);
+        _outEventCtrl.add(event);
         break;
       default:
         throw Exception();
