@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
@@ -21,6 +23,9 @@ Emulator _emulator;
 DeviceType _type;
 int _debugPort;
 
+ServerSocket _serverSocket;
+_DebugClient _debugClient;
+
 void emulatorMain(SendPort toUI) {
   _toUI = toUI;
   final ReceivePort fromUIStream = ReceivePort();
@@ -37,9 +42,11 @@ void _messageHandler(Uint8List data) {
     case EmulatorMessageId.startEmulator:
       final StartEmulatorMessage message =
           StartEmulatorMessageSerializer().deserialize(data);
+      assert(_emulator == null);
       _type = message.type;
+      _emulator = Emulator(_type);
       _debugPort = message.debugPort;
-      _emulator ??= Emulator(_type, _debugPort);
+      _startDebugServer(_debugPort);
       break;
     case EmulatorMessageId.updateDeviceType:
       final UpdateDeviceTypeMessage message =
@@ -56,6 +63,78 @@ void _messageHandler(Uint8List data) {
   }
 }
 
+Future<void> _startDebugServer(int debugPort) async {
+  _serverSocket = await ServerSocket.bind(
+    'localhost', //InternetAddress.anyIPv4,
+    debugPort,
+  );
+
+  _serverSocket.listen(
+    (Socket client) {
+      _debugClient ??= _DebugClient(client);
+    },
+    onError: (Object _) {},
+    onDone: () {
+      _debugClient?.dispose();
+      _debugClient = null;
+    },
+  );
+}
+
+class _DebugClient {
+  _DebugClient(Socket s) {
+    _socket = s;
+    _address = _socket.remoteAddress.address;
+    _port = _socket.remotePort;
+
+    print('Debug server listening on $_address:$_port');
+
+    _debugSub = _socket.listen(
+      messageHandler,
+      onError: errorHandler,
+      onDone: finishedHandler,
+    );
+  }
+
+  Socket _socket;
+  String _address;
+  int _port;
+  StreamSubscription<Uint8List> _debugSub;
+
+  void messageHandler(Uint8List data) {
+    final String message = String.fromCharCodes(data).trim();
+    print(message);
+  }
+
+  void errorHandler(Object error) {
+    print('$_address:$_port Error: $error');
+    _socket.close();
+  }
+
+  void finishedHandler() {
+    print('$_address:$_port Disconnected');
+    _socket.close();
+  }
+
+  void write(String message) {
+    _socket.write(message);
+  }
+
+  void dispose() {
+    _debugSub?.cancel();
+  }
+}
+
+// List<ChatClient> clients = <ChatClient>[];
+
+// void distributeMessage(ChatClient client, String message) {
+//   for (ChatClient c in clients) {
+//     if (c != client) {
+//       c.write(message + "\n");
+//     }
+//   }
+// }
+
 class EmulatorError extends Error {
   EmulatorError(this.message);
 
@@ -67,8 +146,7 @@ class EmulatorError extends Error {
 
 class Emulator {
   Emulator(
-    this.type,
-    this.debugPort, [
+    this.type, [
     this.ir0Enter,
     this.ir1Enter,
     this.ir2Enter,
@@ -136,7 +214,6 @@ class Emulator {
   }
 
   final DeviceType type;
-  final int debugPort;
   Clock _clock;
   LH5801 _cpu;
   final ChipSelectDecoder _csd;
@@ -225,8 +302,7 @@ class Emulator {
 
 class PC1500Traced extends Emulator {
   PC1500Traced(
-    DeviceType device,
-    int debugPort, [
+    DeviceType device, [
     LH5801Command ir0Enter,
     LH5801Command ir1Enter,
     LH5801Command ir2Enter,
@@ -235,7 +311,6 @@ class PC1500Traced extends Emulator {
     LH5801Command subroutineExit,
   ]) : super(
           device,
-          debugPort,
           ir0Enter,
           ir1Enter,
           ir2Enter,
