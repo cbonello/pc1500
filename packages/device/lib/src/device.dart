@@ -6,7 +6,7 @@ import 'package:lcd/lcd.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'emulator_isolate/emulator.dart';
+import 'emulator_isolate/emulator_frontend.dart';
 import 'messages/messages.dart';
 import 'messages/messages_base.dart';
 
@@ -60,7 +60,7 @@ class Device {
     });
 
     await Isolate.spawn(
-      emulatorMain,
+      emulatorLaunch,
       fromEmulatorPort.sendPort,
       debugName: 'Emulator',
     );
