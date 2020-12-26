@@ -20,104 +20,97 @@ class EmulatorFrontEnd {
     final ReceivePort inStream = ReceivePort();
     outPort.send(inStream.sendPort);
 
-    inStream.listen((dynamic data) {
+    inStreamSub = inStream.listen((dynamic data) {
       _messageHandler(data as Uint8List);
     });
+
+    isDebugClientConnected = false;
   }
 
   SendPort outPort;
+  StreamSubscription<dynamic> inStreamSub;
   DeviceType type;
   int debugPort;
   Emulator emulator;
 
   ServerSocket serverSocket;
-  _DebugClient debugClient;
+  StreamSubscription<Socket> serverSocketSub;
+  bool isDebugClientConnected;
+
+  void dispose() {
+    inStreamSub?.cancel();
+    _stopDebuggerServer();
+  }
 
   void _messageHandler(Uint8List data) {
-    final EmulatorMessageId emulatorMessageId =
-        EmulatorMessageId.values[data[0]];
+    try {
+      final EmulatorMessageId emulatorMessageId =
+          EmulatorMessageId.values[data[0]];
 
-    switch (emulatorMessageId) {
-      case EmulatorMessageId.startEmulator:
-        final StartEmulatorMessage message =
-            StartEmulatorMessageSerializer().deserialize(data);
-        assert(emulator == null);
-        type = message.type;
-        emulator = Emulator(type, outPort);
-        debugPort = message.debugPort;
-        _startDebugServer(debugPort);
-        break;
-      case EmulatorMessageId.updateDeviceType:
-        final UpdateDeviceTypeMessage message =
-            UpdateDeviceTypeMessageSerializer().deserialize(data);
-        type = message.type;
-        break;
-      case EmulatorMessageId.updateDebugPort:
-        final UpdateDebugPortMessage message =
-            UpdateDebugPortMessageSerializer().deserialize(data);
-        debugPort = message.port;
-        break;
-      default:
-        throw Exception();
+      switch (emulatorMessageId) {
+        case EmulatorMessageId.startEmulator:
+          final StartEmulatorMessage message =
+              StartEmulatorMessageSerializer().deserialize(data);
+          assert(emulator == null);
+          type = message.type;
+          emulator = Emulator(type, outPort);
+          debugPort = message.debugPort;
+          _startDebugServer(debugPort);
+          break;
+        case EmulatorMessageId.updateDeviceType:
+          final UpdateDeviceTypeMessage message =
+              UpdateDeviceTypeMessageSerializer().deserialize(data);
+          type = message.type;
+          break;
+        case EmulatorMessageId.updateDebugPort:
+          final UpdateDebugPortMessage message =
+              UpdateDebugPortMessageSerializer().deserialize(data);
+          debugPort = message.port;
+          break;
+        case EmulatorMessageId.step:
+          print('EmulatorMessageId.step');
+          break;
+        default:
+          print('### RECEIVED: $data');
+      }
+    } catch (_) {
+      print('### RECEIVED: $data');
     }
   }
 
   Future<void> _startDebugServer(int debugPort) async {
+    if (serverSocket != null) {
+      _stopDebuggerServer();
+    }
+
     serverSocket = await ServerSocket.bind(
       'localhost', //InternetAddress.anyIPv4,
       debugPort,
     );
 
-    serverSocket.listen(
-      (Socket client) => debugClient ??= _DebugClient(client, _messageHandler),
+    serverSocketSub = serverSocket.listen(
+      isDebugClientConnected
+          ? null
+          : (Socket client) {
+              client.listen(
+                _messageHandler,
+                onError: (Object error) {
+                  print('Error: $error');
+                  client.close();
+                },
+                onDone: () {
+                  print('ClientDisconnected');
+                  client.close();
+                },
+              );
+            },
       onError: (Object _) {},
-      onDone: () {
-        debugClient?.dispose();
-        debugClient = null;
-      },
-    );
-  }
-}
-
-class _DebugClient {
-  _DebugClient(
-    this.socket,
-    this.messageHandler,
-  ) {
-    _address = socket.remoteAddress.address;
-    _port = socket.remotePort;
-
-    print('Debug server listening on $_address:$_port');
-
-    _debugSub = socket.listen(
-      messageHandler,
-      onError: errorHandler,
-      onDone: finishedHandler,
+      onDone: () => isDebugClientConnected = false,
     );
   }
 
-  Socket socket;
-  void Function(Uint8List data) messageHandler;
-
-  String _address;
-  int _port;
-  StreamSubscription<Uint8List> _debugSub;
-
-  void errorHandler(Object error) {
-    print('$_address:$_port Error: $error');
-    socket.close();
-  }
-
-  void finishedHandler() {
-    print('$_address:$_port Disconnected');
-    socket.close();
-  }
-
-  void write(String message) {
-    socket.write(message);
-  }
-
-  void dispose() {
-    _debugSub?.cancel();
+  void _stopDebuggerServer() {
+    serverSocketSub?.cancel();
+    serverSocket?.close();
   }
 }
