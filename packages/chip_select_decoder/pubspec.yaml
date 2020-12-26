@@ -1,5 +1,5 @@
 name: chip_select_decoder
-version: 0.1.0
+version: 0.5.0
 description: Implements the chip-select decoder of a Sharp PC-1500 pocket computer.
 author: Christophe Bonello
 homepage: https://github.com/cbonello/
