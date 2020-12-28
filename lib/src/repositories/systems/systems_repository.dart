@@ -22,6 +22,7 @@ class SystemsRepository {
     if (_instance == null) {
       final Map<DeviceType, SkinModel> skins = <DeviceType, SkinModel>{};
       skins[DeviceType.pc2] = await _readSkin('assets/systems/pc2.json');
+      skins[DeviceType.pc1500] = await _readSkin('assets/systems/pc1500.json');
       skins[DeviceType.pc1500A] = await _readSkin(
         'assets/systems/pc1500a.json',
       );
