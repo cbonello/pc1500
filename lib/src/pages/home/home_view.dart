@@ -117,8 +117,8 @@ class _DeviceMenu extends ConsumerWidget {
           PopupMenuItem<DeviceType>(
             value: DeviceType.pc1500A,
             child: _CheckboxOption(
-              label: 'Sharp PC-1500A',
-              isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500A,
+              label: 'Sharp PC-1500',
+              isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500,
             ),
           ),
           PopupMenuItem<DeviceType>(
@@ -127,6 +127,13 @@ class _DeviceMenu extends ConsumerWidget {
                 label: 'Radio Shack PC-2',
                 isSelected: deviceTypeRepository.deviceType == DeviceType.pc2,
               )),
+          PopupMenuItem<DeviceType>(
+            value: DeviceType.pc1500A,
+            child: _CheckboxOption(
+              label: 'Sharp PC-1500A',
+              isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500A,
+            ),
+          ),
         ],
         onSelected: (DeviceType deviceType) {
           deviceTypeRepository.deviceType = deviceType;
