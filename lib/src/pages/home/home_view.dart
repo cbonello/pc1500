@@ -115,7 +115,7 @@ class _DeviceMenu extends ConsumerWidget {
       child: PopupMenuButton<DeviceType>(
         itemBuilder: (BuildContext context) => <PopupMenuEntry<DeviceType>>[
           PopupMenuItem<DeviceType>(
-            value: DeviceType.pc1500A,
+            value: DeviceType.pc1500,
             child: _CheckboxOption(
               label: 'Sharp PC-1500',
               isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500,
