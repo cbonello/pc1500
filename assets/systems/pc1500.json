@@ -1,0 +1,847 @@
+{
+    "image": "assets/systems/pc1500a.png",
+    "lcd": {
+        "colors": {
+            "background": "FF65675C",
+            "pixel-On": "FF2C2721",
+            "pixel-Off": "FF666052",
+            "symbol-On": "FF000000",
+            "symbol-Off": "FF65675C"
+        },
+        "margin": {
+            "left": 30,
+            "top": 10,
+            "right": 30,
+            "bottom": 10
+        },
+        "symbols": {
+            "busy": 2.0,
+            "shift": 80.0,
+            "small": 175.0,
+            "def": 620.0,
+            "1": 672.0,
+            "2": 678.0,
+            "3": 689.0,
+            "de": 265.0,
+            "g": 283.0,
+            "rad": 293.0,
+            "run": 390.0,
+            "pro": 450.0,
+            "reserve": 510.0
+        },
+        "pixels": {
+            "top": 26.0,
+            "width": 3.8,
+            "height": 5.0,
+            "gap": 1.0
+        },
+        "top": 75,
+        "left": 158,
+        "width": 890,
+        "height": 87
+    },
+    "key-colors": {
+        "light-gray": {
+            "background": "FF8B908A",
+            "border": "FFB7B7AF",
+            "color": "FF232520"
+        },
+        "brown": {
+            "background": "FF483B32",
+            "border": "FF545047",
+            "color": "FFF1E8DF"
+        },
+        "red": {
+            "background": "FFB73528",
+            "border": "FFBE6658",
+            "color": "FFFFDADB"
+        },
+        "yellow": {
+            "background": "FFBA8738",
+            "border": "FFCCA059",
+            "color": "FF461C03"
+        }
+    },
+    "keys": {
+        "def": {
+            "label": {
+                "type": "text",
+                "value": "DEF"
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 60,
+            "width": 49,
+            "height": 25
+        },
+        "f1": {
+            "label": {
+                "type": "text",
+                "value": " "
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 236,
+            "width": 49,
+            "height": 25
+        },
+        "f2": {
+            "label": {
+                "type": "text",
+                "value": " "
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 348,
+            "width": 49,
+            "height": 25
+        },
+        "f3": {
+            "label": {
+                "type": "text",
+                "value": " "
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 462,
+            "width": 49,
+            "height": 25
+        },
+        "f4": {
+            "label": {
+                "type": "text",
+                "value": " "
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 574,
+            "width": 49,
+            "height": 25
+        },
+        "f5": {
+            "label": {
+                "type": "text",
+                "value": " "
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 688,
+            "width": 49,
+            "height": 25
+        },
+        "f6": {
+            "label": {
+                "type": "text",
+                "value": " "
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 800,
+            "width": 49,
+            "height": 25
+        },
+        "shift": {
+            "label": {
+                "type": "text",
+                "value": "SHIFT"
+            },
+            "color": "yellow",
+            "font-size": 16,
+            "top": 234,
+            "left": 992,
+            "width": 49,
+            "height": 25
+        },
+        "off": {
+            "label": {
+                "type": "text",
+                "value": "OFF"
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 1161,
+            "width": 49,
+            "height": 25
+        },
+        "on": {
+            "label": {
+                "type": "text",
+                "value": "ON"
+            },
+            "color": "light-gray",
+            "font-size": 20,
+            "top": 234,
+            "left": 1246,
+            "width": 49,
+            "height": 25
+        },
+        "q": {
+            "label": {
+                "type": "text",
+                "value": "Q"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 59,
+            "width": 51,
+            "height": 34
+        },
+        "w": {
+            "label": {
+                "type": "text",
+                "value": "W"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 144,
+            "width": 51,
+            "height": 34
+        },
+        "e": {
+            "label": {
+                "type": "text",
+                "value": "E"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 229,
+            "width": 51,
+            "height": 34
+        },
+        "r": {
+            "label": {
+                "type": "text",
+                "value": "R"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 313,
+            "width": 51,
+            "height": 34
+        },
+        "t": {
+            "label": {
+                "type": "text",
+                "value": "T"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 398,
+            "width": 51,
+            "height": 34
+        },
+        "y": {
+            "label": {
+                "type": "text",
+                "value": "Y"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 482,
+            "width": 51,
+            "height": 34
+        },
+        "u": {
+            "label": {
+                "type": "text",
+                "value": "U"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 567,
+            "width": 51,
+            "height": 34
+        },
+        "i": {
+            "label": {
+                "type": "text",
+                "value": "I"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 652,
+            "width": 51,
+            "height": 34
+        },
+        "o": {
+            "label": {
+                "type": "text",
+                "value": "O"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 737,
+            "width": 51,
+            "height": 34
+        },
+        "p": {
+            "label": {
+                "type": "text",
+                "value": "P"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 309,
+            "left": 821,
+            "width": 51,
+            "height": 34
+        },
+        "7": {
+            "label": {
+                "type": "text",
+                "value": "7"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 309,
+            "left": 906,
+            "width": 51,
+            "height": 34
+        },
+        "8": {
+            "label": {
+                "type": "text",
+                "value": "8"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 309,
+            "left": 991,
+            "width": 51,
+            "height": 34
+        },
+        "9": {
+            "label": {
+                "type": "text",
+                "value": "9"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 309,
+            "left": 1075,
+            "width": 51,
+            "height": 34
+        },
+        "/": {
+            "label": {
+                "type": "text",
+                "value": "/"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 309,
+            "left": 1160,
+            "width": 51,
+            "height": 34
+        },
+        "clear": {
+            "label": {
+                "type": "text",
+                "value": "CL"
+            },
+            "color": "red",
+            "font-size": 22,
+            "top": 308,
+            "left": 1245,
+            "width": 51,
+            "height": 34
+        },
+        "a": {
+            "label": {
+                "type": "text",
+                "value": "A"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 81,
+            "width": 51,
+            "height": 34
+        },
+        "s": {
+            "label": {
+                "type": "text",
+                "value": "S"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 166,
+            "width": 51,
+            "height": 34
+        },
+        "d": {
+            "label": {
+                "type": "text",
+                "value": "D"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 250,
+            "width": 51,
+            "height": 34
+        },
+        "f": {
+            "label": {
+                "type": "text",
+                "value": "F"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 335,
+            "width": 51,
+            "height": 34
+        },
+        "g": {
+            "label": {
+                "type": "text",
+                "value": "G"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 420,
+            "width": 51,
+            "height": 34
+        },
+        "h": {
+            "label": {
+                "type": "text",
+                "value": "H"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 505,
+            "width": 51,
+            "height": 34
+        },
+        "j": {
+            "label": {
+                "type": "text",
+                "value": "J"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 589,
+            "width": 51,
+            "height": 34
+        },
+        "k": {
+            "label": {
+                "type": "text",
+                "value": "K"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 674,
+            "width": 51,
+            "height": 34
+        },
+        "l": {
+            "label": {
+                "type": "text",
+                "value": "L"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 376,
+            "left": 759,
+            "width": 51,
+            "height": 34
+        },
+        "4": {
+            "label": {
+                "type": "text",
+                "value": "4"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 376,
+            "left": 906,
+            "width": 51,
+            "height": 34
+        },
+        "5": {
+            "label": {
+                "type": "text",
+                "value": "5"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 376,
+            "left": 991,
+            "width": 51,
+            "height": 34
+        },
+        "6": {
+            "label": {
+                "type": "text",
+                "value": "6"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 376,
+            "left": 1075,
+            "width": 51,
+            "height": 34
+        },
+        "*": {
+            "label": {
+                "type": "text",
+                "value": "*"
+            },
+            "color": "light-gray",
+            "font-size": 36,
+            "top": 376,
+            "left": 1160,
+            "width": 51,
+            "height": 34
+        },
+        "mode": {
+            "label": {
+                "type": "text",
+                "value": "MODE"
+            },
+            "color": "light-gray",
+            "font-size": 15,
+            "top": 376,
+            "left": 1245,
+            "width": 51,
+            "height": 34
+        },
+        "z": {
+            "label": {
+                "type": "text",
+                "value": "Z"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 124,
+            "width": 51,
+            "height": 34
+        },
+        "x": {
+            "label": {
+                "type": "text",
+                "value": "X"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 208,
+            "width": 51,
+            "height": 34
+        },
+        "c": {
+            "label": {
+                "type": "text",
+                "value": "C"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 293,
+            "width": 51,
+            "height": 34
+        },
+        "v": {
+            "label": {
+                "type": "text",
+                "value": "V"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 378,
+            "width": 51,
+            "height": 34
+        },
+        "b": {
+            "label": {
+                "type": "text",
+                "value": "B"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 462,
+            "width": 51,
+            "height": 34
+        },
+        "n": {
+            "label": {
+                "type": "text",
+                "value": "N"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 547,
+            "width": 51,
+            "height": 34
+        },
+        "m": {
+            "label": {
+                "type": "text",
+                "value": "M"
+            },
+            "color": "brown",
+            "font-size": 28,
+            "top": 443,
+            "left": 632,
+            "width": 51,
+            "height": 34
+        },
+        "(": {
+            "label": {
+                "type": "text",
+                "value": "("
+            },
+            "color": "brown",
+            "font-size": 22,
+            "top": 443,
+            "left": 716,
+            "width": 51,
+            "height": 34
+        },
+        ")": {
+            "label": {
+                "type": "text",
+                "value": ")"
+            },
+            "color": "brown",
+            "font-size": 22,
+            "top": 443,
+            "left": 801,
+            "width": 51,
+            "height": 34
+        },
+        "1": {
+            "label": {
+                "type": "text",
+                "value": "1"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 443,
+            "left": 906,
+            "width": 51,
+            "height": 34
+        },
+        "2": {
+            "label": {
+                "type": "text",
+                "value": "2"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 443,
+            "left": 991,
+            "width": 51,
+            "height": 34
+        },
+        "3": {
+            "label": {
+                "type": "text",
+                "value": "3"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 443,
+            "left": 1075,
+            "width": 51,
+            "height": 34
+        },
+        "-": {
+            "label": {
+                "type": "text",
+                "value": "-"
+            },
+            "color": "light-gray",
+            "font-size": 32,
+            "top": 443,
+            "left": 1160,
+            "width": 51,
+            "height": 34
+        },
+        "left": {
+            "label": {
+                "type": "icon",
+                "value": "left"
+            },
+            "color": "light-gray",
+            "font-size": 40,
+            "top": 443,
+            "left": 1245,
+            "width": 51,
+            "height": 34
+        },
+        "small": {
+            "label": {
+                "type": "text",
+                "value": "SML"
+            },
+            "color": "light-gray",
+            "font-size": 21,
+            "top": 511,
+            "left": 123,
+            "width": 51,
+            "height": 34
+        },
+        "up-down": {
+            "label": {
+                "type": "icon",
+                "value": "up-down"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 511,
+            "left": 208,
+            "width": 51,
+            "height": 34
+        },
+        "recall": {
+            "label": {
+                "type": "text",
+                "value": "RCL"
+            },
+            "color": "light-gray",
+            "font-size": 22,
+            "top": 511,
+            "left": 293,
+            "width": 51,
+            "height": 34
+        },
+        " ": {
+            "label": {
+                "type": "text",
+                "value": "SPACE"
+            },
+            "color": "brown",
+            "font-size": 22,
+            "top": 511,
+            "left": 378,
+            "width": 135,
+            "height": 34
+        },
+        "down": {
+            "label": {
+                "type": "icon",
+                "value": "down"
+            },
+            "color": "light-gray",
+            "font-size": 22,
+            "top": 511,
+            "left": 547,
+            "width": 51,
+            "height": 34
+        },
+        "up": {
+            "label": {
+                "type": "icon",
+                "value": "up"
+            },
+            "color": "light-gray",
+            "font-size": 22,
+            "top": 511,
+            "left": 632,
+            "width": 51,
+            "height": 34
+        },
+        "enter": {
+            "label": {
+                "type": "text",
+                "value": "ENTER"
+            },
+            "color": "light-gray",
+            "font-size": 22,
+            "top": 511,
+            "left": 716,
+            "width": 136,
+            "height": 34
+        },
+        "0": {
+            "label": {
+                "type": "text",
+                "value": "0"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 511,
+            "left": 906,
+            "width": 51,
+            "height": 34
+        },
+        ".": {
+            "label": {
+                "type": "text",
+                "value": "."
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 511,
+            "left": 991,
+            "width": 51,
+            "height": 34
+        },
+        "=": {
+            "label": {
+                "type": "text",
+                "value": "="
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 511,
+            "left": 1075,
+            "width": 51,
+            "height": 34
+        },
+        "+": {
+            "label": {
+                "type": "text",
+                "value": "+"
+            },
+            "color": "light-gray",
+            "font-size": 28,
+            "top": 511,
+            "left": 1160,
+            "width": 51,
+            "height": 34
+        },
+        "right": {
+            "label": {
+                "type": "icon",
+                "value": "right"
+            },
+            "color": "light-gray",
+            "font-size": 40,
+            "top": 511,
+            "left": 1245,
+            "width": 51,
+            "height": 34
+        }
+    }
+}
