@@ -3,9 +3,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../repositories/local_storage/local_storage.dart';
-import '../../repositories/systems/models/models.dart';
-import '../../repositories/systems/systems_repository.dart';
+import '../../repositories/repositories.dart';
 import 'lcd.dart';
 import 'skin.dart';
 
@@ -18,10 +16,11 @@ class HomeView extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final AsyncValue<SystemsRepository> systemsRepository =
         watch(systemsRepositoryProvider);
-    final DeviceTypeRepository deviceTypeRepository =
-        watch(deviceTypeRepositoryProvider);
-    final DebugPortRepository debugPortRepository =
-        watch(debugPortRepositoryProvider);
+    // final DeviceTypeRepository deviceTypeRepository =
+    //     watch(deviceTypeRepositoryProvider);
+    // final DebugPortRepository debugPortRepository =
+    //     watch(debugPortRepositoryProvider);
+    final DeviceRepository deviceRepository = watch(deviceRepositoryProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFBABEC1),
@@ -43,16 +42,17 @@ class HomeView extends ConsumerWidget {
             Center(
               child: systemsRepository.when<Widget>(
                 data: (SystemsRepository repository) {
-                  final Device device = Device(
-                    type: deviceTypeRepository.deviceType,
-                    debugPort: debugPortRepository.debugPort,
-                  )..init();
+                  // final Device device = Device(
+                  //   type: deviceTypeRepository.deviceType,
+                  //   debugPort: debugPortRepository.debugPort,
+                  // )..init();
                   final SkinModel skin = repository.getSkin(
-                    deviceTypeRepository.deviceType,
+                    // deviceTypeRepository.deviceType,
+                    deviceRepository.type,
                   );
                   final LcdWidget lcd = LcdWidget(
                     config: skin.lcd,
-                    eventsStream: device.lcdEvents,
+                    eventsStream: deviceRepository.device.lcdEvents,
                   );
 
                   return Skin(skin: skin, lcd: lcd);
