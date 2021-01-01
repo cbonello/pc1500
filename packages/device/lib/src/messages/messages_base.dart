@@ -7,7 +7,7 @@ enum EmulatorMessageId {
   updateDebugPort,
 
   // Emulator -> UI messages.
-  isDebuggerConnected,
+  isDebugClientConnected,
   lcdEvent,
 
   // Debugger <-> emulator messages.
