@@ -102,8 +102,7 @@ class WindowButtons extends StatelessWidget {
 class _DeviceMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final DeviceTypeRepository deviceTypeRepository =
-        watch(deviceTypeRepositoryProvider);
+    final DeviceRepository deviceRepository = watch(deviceRepositoryProvider);
 
     return Theme(
       // Hide tooltip.
@@ -118,25 +117,25 @@ class _DeviceMenu extends ConsumerWidget {
             value: DeviceType.pc1500,
             child: _CheckboxOption(
               label: 'Sharp PC-1500',
-              isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500,
+              isSelected: deviceRepository.type == DeviceType.pc1500,
             ),
           ),
           PopupMenuItem<DeviceType>(
               value: DeviceType.pc2,
               child: _CheckboxOption(
                 label: 'Radio Shack PC-2',
-                isSelected: deviceTypeRepository.deviceType == DeviceType.pc2,
+                isSelected: deviceRepository.type == DeviceType.pc2,
               )),
           PopupMenuItem<DeviceType>(
             value: DeviceType.pc1500A,
             child: _CheckboxOption(
               label: 'Sharp PC-1500A',
-              isSelected: deviceTypeRepository.deviceType == DeviceType.pc1500A,
+              isSelected: deviceRepository.type == DeviceType.pc1500A,
             ),
           ),
         ],
         onSelected: (DeviceType deviceType) {
-          deviceTypeRepository.deviceType = deviceType;
+          deviceRepository.type = deviceType;
         },
         tooltip: '',
         enableFeedback: true,

@@ -4,32 +4,46 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../repositories.dart';
 
-final Provider<DeviceRepository> deviceRepositoryProvider =
-    Provider<DeviceRepository>(
+final ChangeNotifierProvider<DeviceRepository> deviceRepositoryProvider =
+    ChangeNotifierProvider<DeviceRepository>(
   (ProviderReference ref) {
     final DeviceTypeRepository deviceTypeRepository =
         ref.read(deviceTypeRepositoryProvider);
     final DebugPortRepository debugPortRepository =
         ref.read(debugPortRepositoryProvider);
-
-    return DeviceRepository(
+    final DeviceRepository repository = DeviceRepository(
       type: deviceTypeRepository.deviceType,
       debugPort: debugPortRepository.debugPort,
     );
+    return repository;
   },
 );
 
-class DeviceRepository {
-  DeviceRepository({@required this.type, @required this.debugPort})
+class DeviceRepository with ChangeNotifier {
+  DeviceRepository({@required DeviceType type, @required this.debugPort})
       : assert(type != null),
+        _type = type,
         assert(debugPort != null),
         device = Device(type: type, debugPort: debugPort)..init();
 
-  final DeviceType type;
+  DeviceType _type;
   final int debugPort;
   final Device device;
 
-  Future<void> updateDeviceType(DeviceType type) {
-    return Future<void>.value();
+  DeviceType get type => _type;
+
+  set type(DeviceType newType) {
+    if (_type != newType) {
+      _type = newType;
+      notifyListeners();
+    }
+  }
+
+  bool canSafelySwitchDevices(DeviceType newType) {
+    if (_type == DeviceType.pc1500A || newType == DeviceType.pc1500A) {
+      // We are switching from/to devices that are not hardware equivalent.
+      return false;
+    }
+    return true;
   }
 }
