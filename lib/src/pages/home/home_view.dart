@@ -134,13 +134,47 @@ class _DeviceMenu extends ConsumerWidget {
             ),
           ),
         ],
-        onSelected: (DeviceType deviceType) {
-          deviceRepository.type = deviceType;
+        onSelected: (DeviceType deviceType) async {
+          bool canSwitch = deviceRepository.canSafelySwitchDevices(deviceType);
+          if (canSwitch == false) {
+            canSwitch = await _acknowledgeDeviceSwitch(context);
+          }
+          if (canSwitch) {
+            deviceRepository.type = deviceType;
+          }
         },
         tooltip: '',
         enableFeedback: true,
         child: const Text('Device'),
       ),
+    );
+  }
+
+  Future<bool> _acknowledgeDeviceSwitch(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Warning'),
+          content: const Text(
+            'Switching to a new device may cause any unsaved code/data to be lost. Do you want to continue?',
+            softWrap: true,
+          ),
+          actions: <Widget>[
+            FlatButton(
+              textColor: Colors.black,
+              autofocus: true,
+              onPressed: () => Navigator.of(context).pop<bool>(true),
+              child: const Text('Continue'),
+            ),
+            FlatButton(
+              textColor: Colors.black,
+              onPressed: () => Navigator.of(context).pop<bool>(false),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
