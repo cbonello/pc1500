@@ -110,13 +110,13 @@ class EmulatorFrontEnd {
     );
   }
 
-  void _updateDebuggerStatus(bool debuggerStatus) {
-    isDebugClientConnected = debuggerStatus;
+  void _updateDebuggerStatus(bool debugClientStatus) {
+    isDebugClientConnected = debugClientStatus;
 
-    final IsDebuggerConnectedMessage idc = IsDebuggerConnectedMessage(
+    final IsDebugClientConnectedMessage idc = IsDebugClientConnectedMessage(
       status: isDebugClientConnected,
     );
-    outPort.send(IsDebuggerConnectedMessageSerializer().serialize(idc));
+    outPort.send(IsDebugClientConnectedMessageSerializer().serialize(idc));
   }
 
   void _stopDebuggerServer() {
