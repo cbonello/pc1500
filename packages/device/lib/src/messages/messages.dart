@@ -123,3 +123,30 @@ class LcdEventSerializer extends EmulatorMessageSerializer<LcdEvent> {
         ],
       );
 }
+
+class IsDebuggerConnectedMessage extends EmulatorMessageBase {
+  IsDebuggerConnectedMessage({@required this.status})
+      : assert(status != null),
+        super(EmulatorMessageId.isDebuggerConnected);
+
+  final bool status;
+}
+
+class IsDebuggerConnectedMessageSerializer
+    extends EmulatorMessageSerializer<IsDebuggerConnectedMessage> {
+  @override
+  IsDebuggerConnectedMessage deserialize(Uint8List data) {
+    assert(data.length == 2);
+    assert(data[0] == EmulatorMessageId.isDebuggerConnected.index);
+    assert(<int>[0, 1].contains(data[1]));
+
+    return IsDebuggerConnectedMessage(status: data[1] == 1);
+  }
+
+  @override
+  Uint8List serialize(IsDebuggerConnectedMessage dc) =>
+      Uint8List.fromList(<int>[
+        dc.messageId.index,
+        if (dc.status) 1 else 0,
+      ]);
+}

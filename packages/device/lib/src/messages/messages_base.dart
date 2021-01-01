@@ -1,10 +1,13 @@
 import 'dart:typed_data';
 
 enum EmulatorMessageId {
-  // UI <-> Emulator messages.
+  // UI -> Emulator messages.
   startEmulator,
   updateDeviceType,
   updateDebugPort,
+
+  // Emulator -> UI messages.
+  isDebuggerConnected,
   lcdEvent,
 
   // Debugger <-> emulator messages.
