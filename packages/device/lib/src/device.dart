@@ -18,7 +18,10 @@ class Device {
         _type = type,
         assert(debugPort != null),
         _debugPort = debugPort,
-        _outEventCtrl = BehaviorSubject<LcdEvent>();
+        _outEventCtrl = BehaviorSubject<LcdEvent>(),
+        isDebuggerConnected = false;
+
+  bool isDebuggerConnected;
 
   final DeviceType _type;
   final int _debugPort;
@@ -72,6 +75,12 @@ class Device {
     final EmulatorMessageId messageId = EmulatorMessageId.values[data[0]];
 
     switch (messageId) {
+      case EmulatorMessageId.isDebuggerConnected:
+        final IsDebuggerConnectedMessage message =
+            IsDebuggerConnectedMessageSerializer().deserialize(data);
+        isDebuggerConnected = message.status;
+        print('STATUS $isDebuggerConnected');
+        break;
       case EmulatorMessageId.lcdEvent:
         final LcdEvent event = LcdEventSerializer().deserialize(data);
         _outEventCtrl.add(event);

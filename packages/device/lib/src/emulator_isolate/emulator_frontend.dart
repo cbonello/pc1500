@@ -92,6 +92,7 @@ class EmulatorFrontEnd {
       isDebugClientConnected
           ? null
           : (Socket client) {
+              _updateDebuggerStatus(true);
               client.listen(
                 _messageHandler,
                 onError: (Object error) {
@@ -99,14 +100,23 @@ class EmulatorFrontEnd {
                   client.close();
                 },
                 onDone: () {
-                  print('ClientDisconnected');
+                  _updateDebuggerStatus(false);
                   client.close();
                 },
               );
             },
       onError: (Object _) {},
-      onDone: () => isDebugClientConnected = false,
+      onDone: () => _updateDebuggerStatus(false),
     );
+  }
+
+  void _updateDebuggerStatus(bool debuggerStatus) {
+    isDebugClientConnected = debuggerStatus;
+
+    final IsDebuggerConnectedMessage idc = IsDebuggerConnectedMessage(
+      status: isDebugClientConnected,
+    );
+    outPort.send(IsDebuggerConnectedMessageSerializer().serialize(idc));
   }
 
   void _stopDebuggerServer() {
