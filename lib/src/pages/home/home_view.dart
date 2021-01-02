@@ -163,12 +163,14 @@ class _DeviceMenu extends ConsumerWidget {
           actions: <Widget>[
             FlatButton(
               textColor: Colors.black,
+              padding: const EdgeInsets.all(20.0),
               autofocus: true,
               onPressed: () => Navigator.of(context).pop<bool>(true),
               child: const Text('Continue'),
             ),
             FlatButton(
               textColor: Colors.black,
+              padding: const EdgeInsets.all(20.0),
               onPressed: () => Navigator.of(context).pop<bool>(false),
               child: const Text('Cancel'),
             ),
