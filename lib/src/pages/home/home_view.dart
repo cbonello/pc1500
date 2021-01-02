@@ -157,7 +157,10 @@ class _DeviceMenu extends ConsumerWidget {
         return AlertDialog(
           title: const Text('Warning'),
           content: const Text(
-            'Switching to a new device may cause any unsaved code/data to be lost. Do you want to continue?',
+            '''
+Switching to a new device may cause any un-saved code/data to be lost.
+Debug clients will also be disconnected. Do you want to continue?
+''',
             softWrap: true,
           ),
           actions: <Widget>[
