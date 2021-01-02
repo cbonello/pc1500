@@ -6,26 +6,31 @@ import '../repositories.dart';
 
 final ChangeNotifierProvider<DeviceRepository> deviceRepositoryProvider =
     ChangeNotifierProvider<DeviceRepository>(
-  (ProviderReference ref) {
-    final DeviceTypeRepository deviceTypeRepository =
-        ref.read(deviceTypeRepositoryProvider);
-    final DebugPortRepository debugPortRepository =
-        ref.read(debugPortRepositoryProvider);
-    final DeviceRepository repository = DeviceRepository(
-      type: deviceTypeRepository.deviceType,
-      debugPort: debugPortRepository.debugPort,
-    );
-    return repository;
-  },
+  (ProviderReference ref) => DeviceRepository(ref: ref),
 );
 
 class DeviceRepository with ChangeNotifier {
-  DeviceRepository({@required DeviceType type, @required this.debugPort})
-      : assert(type != null),
+  factory DeviceRepository({@required ProviderReference ref}) {
+    assert(ref != null);
+    return DeviceRepository._(
+      ref: ref,
+      type: ref.read(deviceTypeRepositoryProvider).deviceType,
+      debugPort: ref.read(debugPortRepositoryProvider).debugPort,
+    );
+  }
+
+  DeviceRepository._({
+    @required ProviderReference ref,
+    @required DeviceType type,
+    @required this.debugPort,
+  })  : assert(ref != null),
+        _ref = ref,
+        assert(type != null),
         _type = type,
         assert(debugPort != null),
         device = Device(type: type, debugPort: debugPort)..init();
 
+  final ProviderReference _ref;
   DeviceType _type;
   final int debugPort;
   final Device device;
@@ -34,7 +39,7 @@ class DeviceRepository with ChangeNotifier {
 
   set type(DeviceType newType) {
     if (_type != newType) {
-      _type = newType;
+      _type = _ref.read(deviceTypeRepositoryProvider).deviceType = newType;
       notifyListeners();
     }
   }
