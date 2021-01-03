@@ -29,7 +29,7 @@ class EmulatorFrontEnd {
 
   SendPort outPort;
   StreamSubscription<dynamic> inStreamSub;
-  DeviceType type;
+  HardwareDeviceType type;
   int debugPort;
   Emulator emulator;
 

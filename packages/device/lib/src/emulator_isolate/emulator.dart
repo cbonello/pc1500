@@ -52,7 +52,7 @@ class Emulator {
     _annotations.load(pc1500Rom.annotations);
 
     // Standard users RAM.
-    if (type == DeviceType.pc1500A) {
+    if (type == HardwareDeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800); // 6KB.
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
@@ -94,7 +94,7 @@ class Emulator {
     _dasm = LH5801DASM(memRead: _csd.readByteAt);
   }
 
-  final DeviceType type;
+  final HardwareDeviceType type;
   final SendPort outPort;
   Clock _clock;
   LH5801 _cpu;
@@ -138,7 +138,7 @@ class Emulator {
     }
     _connector40Pins.addModule('CE151', 0x1000);
 
-    if (type == DeviceType.pc1500A) {
+    if (type == HardwareDeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1000);
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
@@ -156,7 +156,7 @@ class Emulator {
 
     _csd.appendRAM(MemoryBank.me0, 0x3800, 0x0800);
 
-    if (type == DeviceType.pc1500A) {
+    if (type == HardwareDeviceType.pc1500A) {
       _csd.appendRAM(MemoryBank.me0, 0x5800, 0x1800);
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1800);
@@ -184,7 +184,7 @@ class Emulator {
 
 class PC1500Traced extends Emulator {
   PC1500Traced(
-    DeviceType device,
+    HardwareDeviceType device,
     SendPort outPort, [
     LH5801Command ir0Enter,
     LH5801Command ir1Enter,

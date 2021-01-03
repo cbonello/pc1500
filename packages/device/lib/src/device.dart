@@ -10,10 +10,10 @@ import 'emulator_isolate/emulator_frontend.dart';
 import 'messages/messages.dart';
 import 'messages/messages_base.dart';
 
-enum DeviceType { pc1500, pc1500A, pc2 }
+enum HardwareDeviceType { pc1500, pc1500A }
 
 class Device {
-  Device({@required DeviceType type, @required int debugPort})
+  Device({@required HardwareDeviceType type, @required int debugPort})
       : assert(type != null),
         _type = type,
         assert(debugPort != null),
@@ -23,7 +23,7 @@ class Device {
 
   bool isDebugClientConnected;
 
-  final DeviceType _type;
+  final HardwareDeviceType _type;
   final int _debugPort;
   final BehaviorSubject<LcdEvent> _outEventCtrl;
   SendPort _toEmulatorPort;

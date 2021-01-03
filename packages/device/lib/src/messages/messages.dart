@@ -11,7 +11,7 @@ class StartEmulatorMessage extends EmulatorMessageBase {
       : assert(type != null),
         super(EmulatorMessageId.startEmulator);
 
-  final DeviceType type;
+  final HardwareDeviceType type;
   final int debugPort;
 }
 
@@ -23,7 +23,7 @@ class StartEmulatorMessageSerializer
     assert(data[0] == EmulatorMessageId.startEmulator.index);
 
     return StartEmulatorMessage(
-      type: DeviceType.values[data[1]],
+      type: HardwareDeviceType.values[data[1]],
       debugPort: deserializeInt(data.sublist(2)),
     );
   }
@@ -43,7 +43,7 @@ class UpdateDeviceTypeMessage extends EmulatorMessageBase {
       : assert(type != null),
         super(EmulatorMessageId.updateDeviceType);
 
-  final DeviceType type;
+  final HardwareDeviceType type;
 }
 
 class UpdateDeviceTypeMessageSerializer
@@ -53,7 +53,7 @@ class UpdateDeviceTypeMessageSerializer
     assert(data.length == 2);
     assert(data[0] == EmulatorMessageId.updateDeviceType.index);
 
-    return UpdateDeviceTypeMessage(type: DeviceType.values[data[1]]);
+    return UpdateDeviceTypeMessage(type: HardwareDeviceType.values[data[1]]);
   }
 
   @override
