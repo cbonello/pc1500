@@ -33,7 +33,7 @@ class Device {
 
   Stream<LcdEvent> get lcdEvents => _outEventCtrl.stream;
 
-  Future<void> init() async {
+  Future<void> run() async {
     _toEmulatorPort = await _initIsolate();
 
     send(

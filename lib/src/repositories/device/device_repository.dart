@@ -34,7 +34,7 @@ class DeviceRepository with ChangeNotifier {
         _type = type,
         assert(debugPort != null),
         device = Device(type: _getHardwareDevice(type), debugPort: debugPort)
-          ..init();
+          ..run();
 
   final ProviderReference _ref;
   DeviceType _type;
