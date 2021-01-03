@@ -4,6 +4,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../repositories.dart';
 
+HardwareDeviceType _getHardwareDevice(DeviceType type) =>
+    type == DeviceType.pc1500A
+        ? HardwareDeviceType.pc1500A
+        : HardwareDeviceType.pc1500;
+
 final ChangeNotifierProvider<DeviceRepository> deviceRepositoryProvider =
     ChangeNotifierProvider<DeviceRepository>(
   (ProviderReference ref) => DeviceRepository(ref: ref),
@@ -28,7 +33,8 @@ class DeviceRepository with ChangeNotifier {
         assert(type != null),
         _type = type,
         assert(debugPort != null),
-        device = Device(type: type, debugPort: debugPort)..init();
+        device = Device(type: _getHardwareDevice(type), debugPort: debugPort)
+          ..init();
 
   final ProviderReference _ref;
   DeviceType _type;

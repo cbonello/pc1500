@@ -1,11 +1,12 @@
 import 'dart:convert';
 
-import 'package:device/device.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'models/models.dart';
+
+enum DeviceType { pc1500, pc2, pc1500A }
 
 final FutureProvider<SystemsRepository> systemsRepositoryProvider =
     FutureProvider<SystemsRepository>(

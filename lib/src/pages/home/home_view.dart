@@ -1,4 +1,3 @@
-import 'package:device/device.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

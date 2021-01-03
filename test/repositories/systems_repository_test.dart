@@ -1,4 +1,3 @@
-import 'package:device/device.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pc1500/src/repositories/systems/systems_repository.dart';
 

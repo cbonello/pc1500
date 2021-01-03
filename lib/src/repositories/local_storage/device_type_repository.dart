@@ -1,7 +1,7 @@
-import 'package:device/device.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/all.dart';
 
+import '../repositories.dart';
 import 'local_storage_repository.dart';
 
 final ChangeNotifierProvider<DeviceTypeRepository>
