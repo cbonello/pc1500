@@ -66,6 +66,18 @@ class Device {
     }
   }
 
+  void updateHardwareDeviceType(HardwareDeviceType type) {
+    if (type != _type) {
+      // _send(
+      //   UpdateDeviceTypeMessage(type: type),
+      //   UpdateDeviceTypeMessageSerializer(),
+      // );
+      _type = type;
+      kill();
+      run();
+    }
+  }
+
   Future<SendPort> _initIsolate() async {
     final Completer<SendPort> completer = Completer<SendPort>();
     final ReceivePort fromEmulatorPort = ReceivePort();

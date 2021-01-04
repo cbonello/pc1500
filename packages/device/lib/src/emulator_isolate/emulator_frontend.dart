@@ -12,10 +12,13 @@ import 'emulator.dart';
 
 EmulatorFrontEnd _frontEnd;
 
-void runEmulator(SendPort outPort) =>
-    _frontEnd ??= EmulatorFrontEnd(outPort: outPort);
+void runEmulator(SendPort outPort) {
+  _frontEnd ??= EmulatorFrontEnd(outPort: outPort);
+  print('#### runEmulator(): $_frontEnd');
+}
 
 void killEmulator() {
+  print('#### killEmulator(): $_frontEnd');
   _frontEnd?.dispose();
   _frontEnd = null;
 }

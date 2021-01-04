@@ -46,6 +46,7 @@ class DeviceRepository with ChangeNotifier {
   set type(DeviceType newType) {
     if (_type != newType) {
       _type = _ref.read(deviceTypeRepositoryProvider).deviceType = newType;
+      device.updateHardwareDeviceType(_getHardwareDevice(newType));
       notifyListeners();
     }
   }
