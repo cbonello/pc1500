@@ -4,7 +4,6 @@ enum EmulatorMessageId {
   // UI -> Emulator messages.
   startEmulator,
   updateDeviceType,
-  updateDebugPort,
 
   // Emulator -> UI messages.
   isDebugClientConnected,

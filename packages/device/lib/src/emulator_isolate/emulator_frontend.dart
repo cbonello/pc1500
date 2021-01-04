@@ -67,11 +67,6 @@ class EmulatorFrontEnd {
               UpdateDeviceTypeMessageSerializer().deserialize(data);
           type = message.type;
           break;
-        case EmulatorMessageId.updateDebugPort:
-          final UpdateDebugPortMessage message =
-              UpdateDebugPortMessageSerializer().deserialize(data);
-          debugPort = message.port;
-          break;
         case EmulatorMessageId.step:
           print('EmulatorMessageId.step');
           break;
