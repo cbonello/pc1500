@@ -23,28 +23,52 @@ class Device {
 
   bool isDebugClientConnected;
 
-  final HardwareDeviceType _type;
+  HardwareDeviceType _type;
   final int _debugPort;
   final BehaviorSubject<LcdEvent> _outEventCtrl;
+  Isolate _isolate;
   SendPort _toEmulatorPort;
   StreamSubscription<dynamic> _fromEmulatorSub;
 
-  bool get _isEmulatorRunning => _toEmulatorPort != null;
+  HardwareDeviceType get hardwareDeviceType => _type;
+  set hardwareDeviceType(HardwareDeviceType newType) {
+    if (newType != _type) {
+      _type = newType;
+      if (_isEmulatorRunning) {
+        kill();
+      }
+      run();
+    }
+  }
 
   Stream<LcdEvent> get lcdEvents => _outEventCtrl.stream;
 
-  Future<void> run() async {
-    _toEmulatorPort = await _initIsolate();
+  bool get _isEmulatorRunning => _isolate != null;
 
-    send(
-      StartEmulatorMessage(type: _type, debugPort: _debugPort),
-      StartEmulatorMessageSerializer(),
-    );
+  Future<void> run() async {
+    if (_isEmulatorRunning == false) {
+      _toEmulatorPort = await _initIsolate();
+
+      send(
+        StartEmulatorMessage(type: _type, debugPort: _debugPort),
+        StartEmulatorMessageSerializer(),
+      );
+    }
   }
 
   void send<T>(T message, EmulatorMessageSerializer<T> serializer) {
     if (_isEmulatorRunning) {
       _toEmulatorPort.send(serializer.serialize(message));
+    }
+  }
+
+  void kill() {
+    if (_isEmulatorRunning) {
+      _fromEmulatorSub?.cancel();
+      _fromEmulatorSub = null;
+      killEmulator();
+      _isolate.kill(priority: Isolate.immediate);
+      _isolate = null;
     }
   }
 
@@ -62,8 +86,8 @@ class Device {
       }
     });
 
-    await Isolate.spawn(
-      emulatorLaunch,
+    _isolate = await Isolate.spawn(
+      runEmulator,
       fromEmulatorPort.sendPort,
       debugName: 'Emulator',
     );
@@ -79,7 +103,6 @@ class Device {
         final IsDebugClientConnectedMessage message =
             IsDebugClientConnectedMessageSerializer().deserialize(data);
         isDebugClientConnected = message.status;
-        print('STATUS $isDebugClientConnected');
         break;
       case EmulatorMessageId.lcdEvent:
         final LcdEvent event = LcdEventSerializer().deserialize(data);
@@ -88,10 +111,5 @@ class Device {
       default:
         throw Exception();
     }
-  }
-
-  void dispose() {
-    _outEventCtrl.close();
-    _fromEmulatorSub?.cancel();
   }
 }

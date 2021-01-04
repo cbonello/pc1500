@@ -12,8 +12,13 @@ import 'emulator.dart';
 
 EmulatorFrontEnd _frontEnd;
 
-void emulatorLaunch(SendPort outPort) =>
+void runEmulator(SendPort outPort) =>
     _frontEnd ??= EmulatorFrontEnd(outPort: outPort);
+
+void killEmulator() {
+  _frontEnd?.dispose();
+  _frontEnd = null;
+}
 
 class EmulatorFrontEnd {
   EmulatorFrontEnd({@required this.outPort}) : assert(outPort != null) {
