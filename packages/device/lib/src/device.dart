@@ -49,16 +49,10 @@ class Device {
     if (_isEmulatorRunning == false) {
       _toEmulatorPort = await _initIsolate();
 
-      send(
+      _send(
         StartEmulatorMessage(type: _type, debugPort: _debugPort),
         StartEmulatorMessageSerializer(),
       );
-    }
-  }
-
-  void send<T>(T message, EmulatorMessageSerializer<T> serializer) {
-    if (_isEmulatorRunning) {
-      _toEmulatorPort.send(serializer.serialize(message));
     }
   }
 
@@ -93,6 +87,12 @@ class Device {
     );
 
     return completer.future;
+  }
+
+  void _send<T>(T message, EmulatorMessageSerializer<T> serializer) {
+    if (_isEmulatorRunning) {
+      _toEmulatorPort.send(serializer.serialize(message));
+    }
   }
 
   void _messageHandler(Uint8List data) {
