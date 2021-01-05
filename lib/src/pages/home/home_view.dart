@@ -1,6 +1,5 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart' as windows;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../repositories/repositories.dart';
@@ -18,57 +17,46 @@ class HomeView extends ConsumerWidget {
         watch(systemsRepositoryProvider);
     final DeviceRepository deviceRepository = watch(deviceRepositoryProvider);
 
-    Future<void> onEventKey(RawKeyEvent event) async {
-      if (event.runtimeType.toString() == 'RawKeyUpEvent') {
-        print('${event.logicalKey.keyId} - ${LogicalKeyboardKey.keyA}');
-      }
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xFFBABEC1),
-      body: RawKeyboardListener(
-        focusNode: FocusNode(),
-        onKey: onEventKey,
-        autofocus: true,
-        child: windows.WindowBorder(
-          color: borderColor,
-          width: 1,
-          child: Column(
-            children: <Widget>[
-              windows.WindowTitleBarBox(
-                child: Row(
-                  children: <Widget>[
-                    const SizedBox(width: 20.0),
-                    _DeviceMenu(),
-                    Expanded(child: windows.MoveWindow()),
-                    const WindowButtons()
-                  ],
-                ),
+      body: windows.WindowBorder(
+        color: borderColor,
+        width: 1,
+        child: Column(
+          children: <Widget>[
+            windows.WindowTitleBarBox(
+              child: Row(
+                children: <Widget>[
+                  const SizedBox(width: 20.0),
+                  _DeviceMenu(),
+                  Expanded(child: windows.MoveWindow()),
+                  const WindowButtons()
+                ],
               ),
-              Center(
-                child: systemsRepository.when<Widget>(
-                  data: (SystemsRepository repository) {
-                    // final Device device = Device(
-                    //   type: deviceTypeRepository.deviceType,
-                    //   debugPort: debugPortRepository.debugPort,
-                    // )..init();
-                    final SkinModel skin = repository.getSkin(
-                      // deviceTypeRepository.deviceType,
-                      deviceRepository.type,
-                    );
-                    final LcdWidget lcd = LcdWidget(
-                      config: skin.lcd,
-                      eventsStream: deviceRepository.device.lcdEvents,
-                    );
+            ),
+            Center(
+              child: systemsRepository.when<Widget>(
+                data: (SystemsRepository repository) {
+                  // final Device device = Device(
+                  //   type: deviceTypeRepository.deviceType,
+                  //   debugPort: debugPortRepository.debugPort,
+                  // )..init();
+                  final SkinModel skin = repository.getSkin(
+                    // deviceTypeRepository.deviceType,
+                    deviceRepository.type,
+                  );
+                  final LcdWidget lcd = LcdWidget(
+                    config: skin.lcd,
+                    eventsStream: deviceRepository.device.lcdEvents,
+                  );
 
-                    return Skin(skin: skin, lcd: lcd);
-                  },
-                  loading: () => const CircularProgressIndicator(),
-                  error: (Object err, StackTrace _) => Text('Error: $err'),
-                ),
+                  return Skin(skin: skin, lcd: lcd);
+                },
+                loading: () => const CircularProgressIndicator(),
+                error: (Object err, StackTrace _) => Text('Error: $err'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
