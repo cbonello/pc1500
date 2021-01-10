@@ -38,7 +38,7 @@ class _SkinState extends State<Skin> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<int, _Button> btnsMap = <int, _Button>{};
+    final Map<int, _AnimatedButton> btnsMap = <int, _AnimatedButton>{};
 
     return RawKeyboardListener(
       focusNode: _focusNode,
@@ -57,7 +57,7 @@ class _SkinState extends State<Skin> {
           ...widget.skin.keys.keys.map<Widget>(
             (String value) {
               final KeyModel key = widget.skin.keys[value];
-              final _Button btn = _Button(
+              final _AnimatedButton btn = _AnimatedButton(
                 value: value,
                 keyboardKey: key,
                 colors: widget.skin.keyColors[key.color],
@@ -140,8 +140,8 @@ class _SkinState extends State<Skin> {
   };
 }
 
-class _Button extends StatefulWidget {
-  const _Button({
+class _AnimatedButton extends StatelessWidget {
+  _AnimatedButton({
     Key key,
     @required this.value,
     @required this.keyboardKey,
@@ -161,27 +161,22 @@ class _Button extends StatefulWidget {
   final double fontSize;
   final VoidCallback onPressed;
 
-  @override
-  __ButtonState createState() => __ButtonState();
-}
-
-class __ButtonState extends State<_Button> with SingleTickerProviderStateMixin {
   AnimationController _animationController;
   double width, height;
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(vsync: this);
-    width = widget.keyboardKey.width;
-    height = widget.keyboardKey.height;
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _animationController = AnimationController(vsync: this);
+  //   width = widget.keyboardKey.width;
+  //   height = widget.keyboardKey.height;
+  // }
 
-  @override
-  void dispose() {
-    _animationController?.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _animationController?.dispose();
+  //   super.dispose();
+  // }
 
   void animate() {
     _animationController
@@ -191,15 +186,15 @@ class __ButtonState extends State<_Button> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final Widget value = widget.keyboardKey.label.when<Widget>(
+    final Widget value = keyboardKey.label.when<Widget>(
       text: (String value) {
         return Text(
           value,
           textAlign: TextAlign.center,
           style: GoogleFonts.openSans(
             textStyle: TextStyle(
-              color: Color(widget.colors.color),
-              fontSize: widget.fontSize,
+              color: Color(colors.color),
+              fontSize: fontSize,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -210,38 +205,38 @@ class __ButtonState extends State<_Button> with SingleTickerProviderStateMixin {
           case 'left':
             return Icon(
               ModernPictograms.left_dir,
-              size: widget.fontSize,
-              color: Color(widget.colors.color),
+              size: fontSize,
+              color: Color(colors.color),
             );
           case 'up':
             return Padding(
               padding: const EdgeInsets.all(4.0),
               child: Icon(
                 MfgLabs.up_bold,
-                size: widget.fontSize,
-                color: Color(widget.colors.color),
+                size: fontSize,
+                color: Color(colors.color),
               ),
             );
           case 'right':
             return Icon(
               ModernPictograms.right_dir,
-              size: widget.fontSize,
-              color: Color(widget.colors.color),
+              size: fontSize,
+              color: Color(colors.color),
             );
           case 'down':
             return Padding(
               padding: const EdgeInsets.all(4.0),
               child: Icon(
                 MfgLabs.down_bold,
-                size: widget.fontSize,
-                color: Color(widget.colors.color),
+                size: fontSize,
+                color: Color(colors.color),
               ),
             );
           case 'up-down':
             return Icon(
               FontAwesome.sort,
-              size: widget.fontSize,
-              color: Color(widget.colors.color),
+              size: fontSize,
+              color: Color(colors.color),
             );
           default:
             throw Exception('Invalid icon type: $value');
@@ -254,14 +249,14 @@ class __ButtonState extends State<_Button> with SingleTickerProviderStateMixin {
       height: height,
       width: width,
       decoration: BoxDecoration(
-        color: Color(widget.colors.background),
+        color: Color(colors.background),
         border: Border(
           right: BorderSide(
-            color: Color(widget.colors.border),
+            color: Color(colors.border),
             width: 0.5,
           ),
           bottom: BorderSide(
-            color: Color(widget.colors.border),
+            color: Color(colors.border),
             width: 0.5,
           ),
         ),
