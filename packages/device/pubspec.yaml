@@ -1,7 +1,6 @@
 name: device
 version: 0.1.0
 description: Sharp PC-1500 pocket-computer emulator.
-author: Christophe Bonello
 homepage: https://github.com/cbonello/
 repository: https://github.com/cbonello/pc1500/tree/master/packages/device
 issue_tracker: https://github.com/cbonello/pc1500/issues
