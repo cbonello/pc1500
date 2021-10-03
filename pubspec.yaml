@@ -1,7 +1,6 @@
 name: pc1500
 version: 0.1.0
 description: Sharp PC-1500 pocket compter emulator.
-author: Christophe Bonello
 homepage: https://github.com/cbonello/
 repository: https://github.com/cbonello/pc1500
 issue_tracker: https://github.com/cbonello/pc1500/issues
