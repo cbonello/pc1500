@@ -115,7 +115,6 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
 
   // Special keys
   'enter': _KeyPosition(3, 7), // PA3, IN7 → 0x0D
-  'shift': _KeyPosition(3, 4), // PA3, IN4 → 0x16
   ' ': _KeyPosition(5, 7), // PA5, IN7 → SPACE
   '(': _KeyPosition(3, 6), // PA3, IN6
   ')': _KeyPosition(3, 0), // PA3, IN0
@@ -127,9 +126,11 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '=': _KeyPosition(5, 0), // PA5, IN0
 
   // Function/control keys
+  'shift': _KeyPosition(0, 4), // PA0, IN4 → 0x01 (SHIFT toggle)
   'recall': _KeyPosition(4, 7), // PA4, IN7 → RCL
   'def': _KeyPosition(1, 4), // PA1, IN4 → DEF
-  'small': _KeyPosition(2, 4), // PA2, IN4 → SML
+  'small': _KeyPosition(2, 4), // PA2, IN4 → SML (0x15)
+  'up-down': _KeyPosition(3, 4), // PA3, IN4 → 0x16
   'clear': _KeyPosition(6, 2), // PA6, IN2 → CL (0x18)
   'mode': _KeyPosition(6, 1), // PA6, IN1 → MODE (0x1F)
 
