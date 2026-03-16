@@ -18,7 +18,7 @@ void main() {
   // Write to unmapped memory.
   try {
     csd.writeByteAt(0x0000, 0xFF);
-  } catch (e) {
+  } on ChipSelectDecoderError catch (e) {
     print('error: ${e.message}');
   }
 }

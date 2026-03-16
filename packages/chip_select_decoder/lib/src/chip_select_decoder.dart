@@ -1,9 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:chip_select_decoder/src/memory_chip.dart';
 import 'package:equatable/equatable.dart';
 import 'package:roms/roms.dart';
-
-import 'memory_chip.dart';
 
 enum ChipSelectDecoderErrorId {
   ramFit,
@@ -12,7 +11,7 @@ enum ChipSelectDecoderErrorId {
   write,
   overlap,
   address,
-  config
+  config,
 }
 
 class ChipSelectDecoderError extends Error {
@@ -32,39 +31,53 @@ enum MemoryBank { me0, me1 }
 class ChipSelectDecoder extends Equatable {
   ChipSelectDecoder();
 
-  final Map<MemoryBank, List<MemoryChipBase>> memoryBanks =
+  final Map<MemoryBank, List<MemoryChipBase>> _memoryBanks =
       <MemoryBank, List<MemoryChipBase>>{
-    MemoryBank.me0: <MemoryChipBase>[],
-    MemoryBank.me1: <MemoryChipBase>[],
-  };
+        MemoryBank.me0: <MemoryChipBase>[],
+        MemoryBank.me1: <MemoryChipBase>[],
+      };
+
+  // Flat lookup tables: address → chip. O(1) reads/writes instead of O(n).
+  final List<MemoryChipBase?> _lookupME0 =
+      List<MemoryChipBase?>.filled(bankSize, null);
+  final List<MemoryChipBase?> _lookupME1 =
+      List<MemoryChipBase?>.filled(bankSize, null);
+
+  List<MemoryChipBase> memoryChips(MemoryBank bank) =>
+      List.unmodifiable(_memoryBanks[bank]!);
 
   void restoreState(Map<String, dynamic> state) {
     for (final MemoryBank bank in MemoryBank.values) {
-      if (state.containsKey(bank.toString())) {
-        (state[bank.toString()].cast<Map<String, dynamic>>()).forEach(
-          (dynamic m) {
-            final MemoryChipBase mc = _findMemoryChip(
-              memoryBanks[bank],
-              m['start'] as int,
-              m['length'] as int,
-            );
-            mc.restoreState(m as Map<String, dynamic>);
-          },
-        );
+      final String key = bank.toString();
+      if (state.containsKey(key)) {
+        final List<Map<String, dynamic>> chips = (state[key] as Iterable)
+            .cast<Map<String, dynamic>>()
+            .toList();
+        for (final Map<String, dynamic> m in chips) {
+          final MemoryChipBase mc = _findMemoryChip(
+            _memoryBanks[bank]!,
+            m['start'] as int,
+            m['length'] as int,
+          );
+          mc.restoreState(m);
+        }
       }
     }
   }
 
   Map<String, dynamic> saveState() {
-    List<MemoryChipBase> _filterRAM(List<MemoryChipBase> m) =>
+    List<MemoryChipBase> filterRAM(List<MemoryChipBase> m) =>
         m.where((MemoryChipBase m) => m.isReadonly == false).toList();
 
     final Map<String, dynamic> state = <String, dynamic>{
-      MemoryBank.me0.toString(): _filterRAM(memoryBanks[MemoryBank.me0])
-          .map<Map<String, dynamic>>((MemoryChipBase m) => m.saveState()),
-      MemoryBank.me1.toString(): _filterRAM(memoryBanks[MemoryBank.me1])
-          .map<Map<String, dynamic>>((MemoryChipBase m) => m.saveState()),
+      MemoryBank.me0.toString(): filterRAM(
+        _memoryBanks[MemoryBank.me0]!,
+      ).map<Map<String, dynamic>>((MemoryChipBase m) => m.saveState()).toList(),
+      MemoryBank.me1.toString(): filterRAM(
+        _memoryBanks[MemoryBank.me1]!,
+      ).map<Map<String, dynamic>>((MemoryChipBase m) => m.saveState()).toList(),
     };
+
     return state;
   }
 
@@ -86,13 +99,15 @@ class ChipSelectDecoder extends Equatable {
         'RAM does not fit within a 64KB address space',
       );
     }
-    _checkMemoryOverlap(start, end, memoryBanks[bank]);
+    _checkMemoryOverlap(start, end, _memoryBanks[bank]!);
 
     final MemoryChipRam memoryChip = MemoryChipRam(
       start: start,
       length: length,
     );
-    memoryBanks[bank].add(memoryChip);
+    _memoryBanks[bank]!.add(memoryChip);
+    _populateLookup(bank, memoryChip);
+
     return memoryChip;
   }
 
@@ -116,10 +131,12 @@ class ChipSelectDecoder extends Equatable {
         'ROM does not fit within a 64KB address space',
       );
     }
-    _checkMemoryOverlap(start, end, memoryBanks[bank]);
+    _checkMemoryOverlap(start, end, _memoryBanks[bank]!);
 
     final MemoryChipRom memoryChip = MemoryChipRom(start: start, rom: rom);
-    memoryBanks[bank].add(memoryChip);
+    _memoryBanks[bank]!.add(memoryChip);
+    _populateLookup(bank, memoryChip);
+
     return memoryChip;
   }
 
@@ -136,31 +153,30 @@ class ChipSelectDecoder extends Equatable {
       throw ArgumentError.value(
         length,
         'length',
-        'RAM size must be greater than zero',
+        'ROM placeholder size must be greater than zero',
       );
     }
     final int end = start + length - 1;
     if (end >= bankSize) {
       throw ChipSelectDecoderError(
-        ChipSelectDecoderErrorId.ramFit,
-        'RAM does not fit within a 64KB address space',
+        ChipSelectDecoderErrorId.romFit,
+        'ROM placeholder does not fit within a 64KB address space',
       );
     }
-    _checkMemoryOverlap(start, end, memoryBanks[bank]);
+    _checkMemoryOverlap(start, end, _memoryBanks[bank]!);
 
     final MemoryChipRomPlaceholder memoryChip = MemoryChipRomPlaceholder(
       start: start,
       length: length,
       value: value,
     );
-    memoryBanks[bank].add(memoryChip);
+    _memoryBanks[bank]!.add(memoryChip);
+    _populateLookup(bank, memoryChip);
+
     return memoryChip;
   }
 
   Uint8ClampedList readAt(int address, int length) {
-    final MemoryBank bank = _findMemoryBank(address);
-    final int addressWithinBank = address & 0xFFFF;
-
     if (length <= 0) {
       throw ChipSelectDecoderError(
         ChipSelectDecoderErrorId.read,
@@ -168,72 +184,94 @@ class ChipSelectDecoder extends Equatable {
       );
     }
 
-    for (final MemoryChipBase mc in memoryBanks[bank]) {
-      if (mc.start <= addressWithinBank && addressWithinBank <= mc.end) {
-        if (addressWithinBank + length > mc.end) {
-          throw ChipSelectDecoderError(
-            ChipSelectDecoderErrorId.read,
-            'readAt: ME$bank: could not read from unmapped memory address ${_meHex16(address)}',
-          );
-        }
-        return mc.readAt(addressWithinBank - mc.start, length);
-      }
+    final int addressWithinBank = address & 0xFFFF;
+    final MemoryChipBase? mc = _lookupChip(address);
+
+    if (mc != null &&
+        mc.start <= addressWithinBank &&
+        addressWithinBank + length - 1 <= mc.end) {
+      return mc.readAt(addressWithinBank - mc.start, length);
     }
 
     throw ChipSelectDecoderError(
       ChipSelectDecoderErrorId.read,
-      'readAt: ME$bank: could not read from unmapped memory address ${_meHex16(address)}',
+      'readAt: could not read from unmapped memory address '
+      '${_meHex16(address)}',
     );
   }
 
   int readByteAt(int address) {
-    final MemoryBank bank = _findMemoryBank(address);
-    final int addressWithinBank = address & 0xFFFF;
-
-    for (final MemoryChipBase mc in memoryBanks[bank]) {
-      if (mc.start <= addressWithinBank && addressWithinBank <= mc.end) {
-        return mc.readByteAt(addressWithinBank - mc.start);
-      }
+    final MemoryChipBase? mc = _lookupChip(address);
+    if (mc != null) {
+      return mc.readByteAt((address & 0xFFFF) - mc.start);
     }
 
     throw ChipSelectDecoderError(
       ChipSelectDecoderErrorId.read,
-      'readByteAt: ME$bank: could not read from unmapped memory address ${_meHex16(address)}',
+      'readByteAt: could not read from unmapped memory address '
+      '${_meHex16(address)}',
     );
   }
 
   void writeByteAt(int address, int value) {
-    final MemoryBank bank = _findMemoryBank(address);
-    final int addressWithinBank = address & 0xFFFF;
-
-    for (final MemoryChipBase mc in memoryBanks[bank]) {
-      if (mc.start <= addressWithinBank && addressWithinBank <= mc.end) {
-        mc.writeByteAt(addressWithinBank - mc.start, value);
-        return;
-      }
+    final MemoryChipBase? mc = _lookupChip(address);
+    if (mc != null) {
+      mc.writeByteAt((address & 0xFFFF) - mc.start, value);
+      return;
     }
 
     throw ChipSelectDecoderError(
       ChipSelectDecoderErrorId.write,
-      'writeByteAt: could not write to unmapped memory address ${_meHex16(address)}',
+      'writeByteAt: could not write to unmapped memory address '
+      '${_meHex16(address)}',
     );
   }
 
+  /// O(1) chip lookup via flat table.
+  MemoryChipBase? _lookupChip(int address) {
+    if (address >= 0 && address < bankSize) {
+      return _lookupME0[address];
+    }
+    if (address >= bankSize && address < 2 * bankSize) {
+      return _lookupME1[address & 0xFFFF];
+    }
+    throw ChipSelectDecoderError(
+      ChipSelectDecoderErrorId.address,
+      'invalid address ${_meHex16(address)}',
+    );
+  }
+
+  void _populateLookup(MemoryBank bank, MemoryChipBase chip) {
+    final List<MemoryChipBase?> lookup =
+        bank == MemoryBank.me0 ? _lookupME0 : _lookupME1;
+    for (int i = chip.start; i <= chip.end; i++) {
+      lookup[i] = chip;
+    }
+  }
+
   void _checkMemoryOverlap(
-      int start, int end, List<MemoryChipBase> memoryBank) {
+    int start,
+    int end,
+    List<MemoryChipBase> memoryBank,
+  ) {
     for (final MemoryChipBase mc in memoryBank) {
       if ((start >= mc.start && start <= mc.end) ||
-          (end >= mc.start && end <= mc.end)) {
+          (end >= mc.start && end <= mc.end) ||
+          (start <= mc.start && end >= mc.end)) {
         throw ChipSelectDecoderError(
           ChipSelectDecoderErrorId.overlap,
-          'overlapping memory chips [${_meHex16(start)}..${_meHex16(end)}] and [${_meHex16(mc.start)}..${_meHex16(mc.end)}]',
+          'overlapping memory chips [${_meHex16(start)}..${_meHex16(end)}] '
+          'and [${_meHex16(mc.start)}..${_meHex16(mc.end)}]',
         );
       }
     }
   }
 
   MemoryChipBase _findMemoryChip(
-      List<MemoryChipBase> bank, int start, int length) {
+    List<MemoryChipBase> bank,
+    int start,
+    int length,
+  ) {
     final Iterable<MemoryChipBase> result = bank.where(
       (MemoryChipBase mc) => start == mc.start && length == mc.length,
     );
@@ -248,29 +286,17 @@ class ChipSelectDecoder extends Equatable {
     );
   }
 
-  MemoryBank _findMemoryBank(int address) {
-    if (0 <= address && address < bankSize) {
-      return MemoryBank.me0;
-    }
-    if (bankSize <= address && address < 2 * bankSize) {
-      return MemoryBank.me1;
-    }
-    throw ChipSelectDecoderError(
-      ChipSelectDecoderErrorId.address,
-      'invalid address ${_meHex16(address)}',
-    );
-  }
-
   String _hex16(int address) =>
       address.toUnsigned(16).toRadixString(16).toUpperCase().padLeft(4, '0');
 
   String _meHex16(int address) {
     final String prefix = address >= 0x10000 ? '#' : '';
+
     return '$prefix${_hex16(address)}H';
   }
 
   @override
-  List<Object> get props => <Object>[memoryBanks];
+  List<Object> get props => <Object>[_memoryBanks];
 
   @override
   bool get stringify => true;

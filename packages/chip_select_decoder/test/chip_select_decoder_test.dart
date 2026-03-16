@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:crypto/crypto.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:roms/roms.dart';
 import 'package:test/test.dart';
 
@@ -17,14 +17,14 @@ MockRom createMockRom(int length) {
   }
 
   final MockRom rom = MockRom();
-  when(rom.bytes).thenReturn(bytes);
-  when(rom.hash).thenReturn(sha1.convert(bytes));
+  when(() => rom.bytes).thenReturn(bytes);
+  when(() => rom.hash).thenReturn(sha1.convert(bytes));
 
   return rom;
 }
 
 void main() {
-  group('ChipSelectDecoder', () {
+  group(ChipSelectDecoder, () {
     group('appendRAM()', () {
       test('should raise an exception for invalid arguments', () {
         final ChipSelectDecoder cs = ChipSelectDecoder();
@@ -51,7 +51,7 @@ void main() {
         final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendRAM(MemoryBank.me0, 0, 100);
-        expect(cs.memoryBanks[MemoryBank.me0].length, equals(1));
+        expect(cs.memoryChips(MemoryBank.me0).length, equals(1));
 
         expect(
           () => cs.appendRAM(MemoryBank.me0, 10, 100),
@@ -122,7 +122,7 @@ void main() {
         final ChipSelectDecoder cs = ChipSelectDecoder();
 
         cs.appendROMPlaceholder(MemoryBank.me0, 0, 100, 0x00);
-        expect(cs.memoryBanks[MemoryBank.me0].length, equals(1));
+        expect(cs.memoryChips(MemoryBank.me0).length, equals(1));
 
         expect(
           () => cs.appendROMPlaceholder(MemoryBank.me0, 10, 100, 0xFF),
@@ -138,12 +138,12 @@ void main() {
       cs.appendRAM(MemoryBank.me0, 0x4000, 0x5800 - 0x4000 + 1);
       cs.appendRAM(MemoryBank.me0, 0x7600, 0x7C00 - 0x7600 + 1);
       cs.appendROM(MemoryBank.me0, 0xC000, rom);
-      expect(cs.memoryBanks[MemoryBank.me0].length, equals(3));
+      expect(cs.memoryChips(MemoryBank.me0).length, equals(3));
 
       cs.appendROMPlaceholder(MemoryBank.me1, 0x8000, 0x10, 0xFF);
       cs.appendROMPlaceholder(MemoryBank.me1, 0xB000, 0x10, 0xFF);
       cs.appendRAM(MemoryBank.me1, 0xF000, 0xF00F - 0xF000 + 1);
-      expect(cs.memoryBanks[MemoryBank.me1].length, equals(3));
+      expect(cs.memoryChips(MemoryBank.me1).length, equals(3));
     });
 
     test('content of RAMs should be saved/restored successfully', () {
@@ -291,6 +291,53 @@ void main() {
         cs.writeByteAt(0x8002, 1);
         expect(cs.readByteAt(0x8002), equals(0xFF));
       });
+    });
+
+    group('ME1 memory bank', () {
+      test('should read and write in ME1 address space', () {
+        final ChipSelectDecoder cs = ChipSelectDecoder();
+
+        cs.appendRAM(MemoryBank.me1, 0xF000, 16);
+        cs.writeByteAt(0x1F000, 42);
+        expect(cs.readByteAt(0x1F000), equals(42));
+      });
+    });
+
+    test('ChipSelectDecoderError.toString() should format correctly', () {
+      final ChipSelectDecoderError error = ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.read,
+        'test message',
+      );
+      expect(
+        error.toString(),
+        equals('Chip-Select Error #${ChipSelectDecoderErrorId.read}: test message'),
+      );
+    });
+
+    test('restoreState should throw for mismatched config', () {
+      final ChipSelectDecoder cs1 = ChipSelectDecoder();
+      cs1.appendRAM(MemoryBank.me0, 0, 5);
+
+      final ChipSelectDecoder cs2 = ChipSelectDecoder();
+      cs2.appendRAM(MemoryBank.me0, 0, 10);
+
+      expect(
+        () => cs2.restoreState(cs1.saveState()),
+        throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+      );
+    });
+
+    test('should raise an exception for out-of-range addresses', () {
+      final ChipSelectDecoder cs = ChipSelectDecoder();
+
+      expect(
+        () => cs.readByteAt(0x20000),
+        throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+      );
+      expect(
+        () => cs.writeByteAt(0x20000, 0),
+        throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+      );
     });
   });
 }

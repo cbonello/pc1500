@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:crypto/crypto.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:roms/roms.dart';
 import 'package:test/test.dart';
 
@@ -19,15 +19,15 @@ MockRom createMockRom(int length) {
   }
 
   final MockRom rom = MockRom();
-  when(rom.bytes).thenReturn(bytes);
-  when(rom.hash).thenReturn(sha1.convert(bytes));
+  when(() => rom.bytes).thenReturn(bytes);
+  when(() => rom.hash).thenReturn(sha1.convert(bytes));
 
   return rom;
 }
 
 void main() {
   group('MemoryChip', () {
-    group('MemoryChipRam', () {
+    group(MemoryChipRam, () {
       test('should create a RAM successfully', () {
         expect(
           MemoryChipRam(start: 0, length: 100),
@@ -65,11 +65,13 @@ void main() {
           ram.registerObserver(MemoryAccessType.read, observer);
 
           ram.readByteAt(3);
-          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.read, any(), any()),
+          ).called(1);
           ram.readByteAt(2);
-          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.read, any(), any()),
+          ).called(1);
         });
       });
 
@@ -87,11 +89,13 @@ void main() {
           ram.registerObserver(MemoryAccessType.write, observer);
 
           ram.writeByteAt(10, 89);
-          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.write, any(), any()),
+          ).called(1);
           ram.writeByteAt(99, 12);
-          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.write, any(), any()),
+          ).called(1);
         });
       });
 
@@ -115,7 +119,7 @@ void main() {
       });
     });
 
-    group('MemoryChipRom', () {
+    group(MemoryChipRom, () {
       test('should create a ROM successfully', () {
         final MockRom mockRom = createMockRom(256);
         expect(
@@ -158,11 +162,13 @@ void main() {
           rom.registerObserver(MemoryAccessType.read, observer);
 
           rom.readByteAt(3);
-          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.read, any(), any()),
+          ).called(1);
           rom.readByteAt(2);
-          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.read, any(), any()),
+          ).called(1);
         });
       });
 
@@ -254,11 +260,13 @@ void main() {
           rpArea.registerObserver(MemoryAccessType.read, observer);
 
           rpArea.readByteAt(3);
-          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.read, any(), any()),
+          ).called(1);
           rpArea.readByteAt(2);
-          verify(observer.memoryUpdated(MemoryAccessType.read, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.read, any(), any()),
+          ).called(1);
         });
       });
 
@@ -283,22 +291,21 @@ void main() {
           rpArea.registerObserver(MemoryAccessType.write, observer);
 
           rpArea.writeByteAt(10, 89);
-          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.write, any(), any()),
+          ).called(1);
           rpArea.writeByteAt(99, 12);
-          verify(observer.memoryUpdated(MemoryAccessType.write, any, any))
-              .called(1);
+          verify(
+            () => observer.memoryUpdated(MemoryAccessType.write, any(), any()),
+          ).called(1);
         });
       });
 
       test('clone() should clone a RAM successfully', () {
-        final MemoryChipRomPlaceholder ioArea1 = MemoryChipRomPlaceholder(
-          start: 0,
-          length: 128,
-          value: 16,
-        )
-          ..writeByteAt(10, 10)
-          ..writeByteAt(15, 15);
+        final MemoryChipRomPlaceholder ioArea1 =
+            MemoryChipRomPlaceholder(start: 0, length: 128, value: 16)
+              ..writeByteAt(10, 10)
+              ..writeByteAt(15, 15);
         final MemoryChipRomPlaceholder ioAre2 =
             ioArea1.clone() as MemoryChipRomPlaceholder;
 
@@ -319,97 +326,79 @@ void main() {
         ioArea2.restoreState(ioArea1.saveState());
         expect(ioArea1, equals(ioArea2));
       });
+
+      test('restoreState should throw for value mismatch', () {
+        final MemoryChipRomPlaceholder io1 = MemoryChipRomPlaceholder(
+          start: 0,
+          length: 10,
+          value: 16,
+        );
+        final MemoryChipRomPlaceholder io2 = MemoryChipRomPlaceholder(
+          start: 0,
+          length: 10,
+          value: 99,
+        );
+
+        expect(
+          () => io2.restoreState(io1.saveState()),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
     });
 
-    // group('MemoryChip.rom', () {
-    //   test('should create a ROM successfully', () {
-    //     expect(
-    //       MemoryChipRom(start: 0, content: Uint8List(100)),
-    //       equals(const TypeMatcher<MemoryChipBase>()),
-    //     );
-    //   });
-    // });
+    group('bounds checking', () {
+      test('readByteAt should throw for out-of-bounds offset', () {
+        final MemoryChipRam ram = MemoryChipRam(start: 0, length: 10);
+        expect(() => ram.readByteAt(-1), throwsA(isA<RangeError>()));
+        expect(() => ram.readByteAt(10), throwsA(isA<RangeError>()));
+      });
 
-    // group('end getter', () {
-    //   test('should return the last valid relative index', () {
-    //     final MemoryChipBase rom = MemoryChipRom(
-    //       start: 0,
-    //       content: Uint8List(100),
-    //     );
+      test('writeByteAt should throw for out-of-bounds offset', () {
+        final MemoryChipRam ram = MemoryChipRam(start: 0, length: 10);
+        expect(() => ram.writeByteAt(-1, 0), throwsA(isA<RangeError>()));
+        expect(() => ram.writeByteAt(10, 0), throwsA(isA<RangeError>()));
+      });
+    });
 
-    //     expect(rom.end, equals(99));
-    //   });
-    // });
-    // test('content of RAMS should be saved/restored successfully', () {
-    //   // final MemoryChipBase memoryChip1 = MemoryChipRam(start: 0, length: 128);
-    //   // final MemoryChipBase memoryChip2 = memoryChip1.clone();
+    group('restoreState validation', () {
+      test('RAM should throw for mismatched state type', () {
+        final MemoryChipRam ram = MemoryChipRam(start: 0, length: 5);
+        expect(
+          () => ram.restoreState(<String, dynamic>{
+            'type': 'rom',
+            'start': 0,
+            'length': 5,
+          }),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
 
-    //   // memoryChip1.writeByteAt(100, 43);
+      test('RAM should throw for mismatched data length', () {
+        final MemoryChipRam ram = MemoryChipRam(start: 0, length: 5);
+        expect(
+          () => ram.restoreState(<String, dynamic>{
+            'type': 'ram',
+            'start': 0,
+            'length': 5,
+            'data': <int>[1, 2, 3],
+          }),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
 
-    //   // memoryChip2.restoreState(memoryChip1.saveState());
-    //   // expect(memoryChip1, equals(memoryChip2));
-    // });
-
-    // test(
-    //   'isReadOnly should return false for RAMs or I/O ports and true for ROMs',
-    //   () {
-    //     final MemoryChipBase memoryChip1 = MemoryChipRam(start: 0, length: 128);
-    //     expect(memoryChip1.isReadonly, isFalse);
-
-    //     final Uint8List data = Uint8List.fromList(<int>[1, 2, 3, 4]);
-    //     final MemoryChipBase memoryChip2 =
-    //         MemoryChipRom(start: 0, content: data);
-    //     expect(memoryChip2.isReadonly, isTrue);
-    //   },
-    // );
-
-    // group('readByteAt()', () {
-    //   test('should return the expected data', () {
-    //     final Uint8List data = Uint8List.fromList(<int>[1, 2, 3, 4]);
-    //     final MemoryChipBase memoryChip =
-    //         MemoryChipRom(start: 0, content: data);
-
-    //     for (int i = 0; i < data.length; i++) {
-    //       expect(memoryChip.readByteAt(i), equals(data[i]));
-    //     }
-    //   });
-
-    //   test('should call the registered observers after each read', () {
-    //     final MockMemoryObserver observer = MockMemoryObserver();
-    //     final MemoryChipBase memoryChip = MemoryChipRam(start: 0, length: 128);
-    //     memoryChip.registerObserver(MemoryAccessType.read, observer);
-
-    //     memoryChip.readByteAt(3);
-    //     verify(observer.update(MemoryAccessType.read, any, any)).called(1);
-    //     memoryChip.readByteAt(2);
-    //     verify(observer.update(MemoryAccessType.read, any, any)).called(1);
-    //   });
-    // });
-
-    // group('write()', () {
-    //   test('should update a RAM successfully', () {
-    //     final MemoryChipBase memoryChip = MemoryChipRam(start: 0, length: 6);
-    //     final List<int> data = <int>[43, 237, 7, 0, 12, 154];
-
-    //     for (int i = 0; i < data.length; i++) {
-    //       memoryChip.writeByteAt(i, data[i]);
-    //     }
-
-    //     for (int i = 0; i < data.length; i++) {
-    //       expect(memoryChip.readByteAt(i), equals(data[i]));
-    //     }
-    //   });
-
-    //   test('should call the registered observers after each write', () {
-    //     final MockMemoryObserver observer = MockMemoryObserver();
-    //     final MemoryChipBase memoryChip = MemoryChipRam(start: 0, length: 128);
-    //     memoryChip.registerObserver(MemoryAccessType.write, observer);
-
-    //     memoryChip.writeByteAt(3, 25);
-    //     verify(observer.update(MemoryAccessType.write, any, any)).called(1);
-    //     memoryChip.writeByteAt(2, 185);
-    //     verify(observer.update(MemoryAccessType.write, any, any)).called(1);
-    //   });
-    // });
+      test('ROM should throw for hash mismatch', () {
+        final MockRom mockRom = createMockRom(10);
+        final MemoryChipRom rom = MemoryChipRom(start: 0, rom: mockRom);
+        expect(
+          () => rom.restoreState(<String, dynamic>{
+            'type': 'rom',
+            'start': 0,
+            'length': 10,
+            'hash': 'invalid_hash',
+          }),
+          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
+        );
+      });
+    });
   });
 }
