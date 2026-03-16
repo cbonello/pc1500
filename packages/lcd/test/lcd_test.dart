@@ -78,7 +78,7 @@ void main() {
     test('static getters should return correct lengths', () {
       expect(LcdEvent.displayBufferLength, equals(0x4E));
       expect(LcdEvent.symbolsLength, equals(2));
-      expect(LcdEvent.length, equals(0x4E + 0x4E + 2));
+      expect(LcdEvent.length, equals(0x4E + 0x4E + 2 + 1));
     });
 
     test('copyWith() should replace specified fields', () {
@@ -91,6 +91,7 @@ void main() {
         displayBuffer1: buf1,
         displayBuffer2: buf2,
         symbols: sym,
+        displayOn: true,
       );
 
       final Uint8ClampedList newBuf1 = Uint8ClampedList(0x4E)..[0] = 42;
@@ -99,6 +100,7 @@ void main() {
       expect(copied.displayBuffer1[0], equals(42));
       expect(copied.displayBuffer2, same(buf2));
       expect(copied.symbols, same(sym));
+      expect(copied.displayOn, isTrue);
     });
 
     test('props[] should contain all fields', () {
@@ -111,8 +113,9 @@ void main() {
         displayBuffer1: buf1,
         displayBuffer2: buf2,
         symbols: sym,
+        displayOn: true,
       );
-      expect(event.props, equals([buf1, buf2, sym]));
+      expect(event.props, equals([buf1, buf2, sym, true]));
     });
   });
 

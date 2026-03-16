@@ -45,6 +45,7 @@ class LcdEvent extends Equatable {
     required this.displayBuffer1,
     required this.displayBuffer2,
     required this.symbols,
+    required this.displayOn,
   }) : assert(displayBuffer1.length == _dispBufLen),
        assert(displayBuffer2.length == _dispBufLen);
 
@@ -52,7 +53,11 @@ class LcdEvent extends Equatable {
   final Uint8ClampedList displayBuffer2;
   final LcdSymbols symbols;
 
-  static int get length => _dispBufLen + _dispBufLen + _symBufLen;
+  /// Whether the display is active (controlled by the CPU DISP flip-flop).
+  /// When false, the LCD should show a blank screen.
+  final bool displayOn;
+
+  static int get length => _dispBufLen + _dispBufLen + _symBufLen + 1;
   static int get displayBufferLength => _dispBufLen;
   static int get symbolsLength => _symBufLen;
 
@@ -60,14 +65,17 @@ class LcdEvent extends Equatable {
     Uint8ClampedList? displayBuffer1,
     Uint8ClampedList? displayBuffer2,
     LcdSymbols? symbols,
+    bool? displayOn,
   }) => LcdEvent(
     displayBuffer1: displayBuffer1 ?? this.displayBuffer1,
     displayBuffer2: displayBuffer2 ?? this.displayBuffer2,
     symbols: symbols ?? this.symbols,
+    displayOn: displayOn ?? this.displayOn,
   );
 
   @override
-  List<Object> get props => <Object>[displayBuffer1, displayBuffer2, symbols];
+  List<Object> get props =>
+      <Object>[displayBuffer1, displayBuffer2, symbols, displayOn];
 }
 
 class Lcd with MemoryObserver {
@@ -87,6 +95,7 @@ class Lcd with MemoryObserver {
        _displayBuffer1 = displayBuffer1,
        _displayBuffer2 = displayBuffer2,
        _symbolData = symbolData,
+       _displayOn = false,
        _eventCtrl = StreamController<LcdEvent>.broadcast();
 
   /// Emits the current LCD state to all listeners.
@@ -96,11 +105,20 @@ class Lcd with MemoryObserver {
   final Uint8ClampedList _displayBuffer1;
   final Uint8ClampedList _displayBuffer2;
   final Uint8ClampedList _symbolData;
+  bool _displayOn;
   final StreamController<LcdEvent> _eventCtrl;
   Timer? _debounceTimer;
   bool _dirty = false;
 
   Stream<LcdEvent> get events => _eventCtrl.stream;
+
+  /// Sets the display on/off state (from CPU DISP flip-flop).
+  void setDisplayOn(bool value) {
+    if (_displayOn != value) {
+      _displayOn = value;
+      _markDirty();
+    }
+  }
 
   @override
   void memoryUpdated(MemoryAccessType type, int address, int value) {
@@ -138,6 +156,7 @@ class Lcd with MemoryObserver {
         displayBuffer1: Uint8ClampedList.fromList(_displayBuffer1),
         displayBuffer2: Uint8ClampedList.fromList(_displayBuffer2),
         symbols: LcdSymbols(data: Uint8ClampedList.fromList(_symbolData)),
+        displayOn: _displayOn,
       ),
     );
   }

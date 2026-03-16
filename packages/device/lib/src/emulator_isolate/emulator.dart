@@ -242,6 +242,12 @@ class Emulator {
     _scheduleFrame();
   }
 
+  /// Powers off the emulator: stops CPU, turns display off.
+  void powerOff() {
+    stop();
+    _lcd.setDisplayOn(false);
+  }
+
   /// Stops the emulation loop.
   void stop() {
     _running = false;
@@ -276,6 +282,9 @@ class Emulator {
         break;
       }
     }
+
+    // Sync DISP flip-flop state to the LCD each frame.
+    _lcd.setDisplayOn(_cpu.pins.dispFlipflop);
 
     if (!_running) return;
 

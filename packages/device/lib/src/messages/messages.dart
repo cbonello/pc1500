@@ -74,11 +74,14 @@ class LcdEventSerializer extends EmulatorMessageSerializer<LcdEvent> {
       data.sublist(start, start + LcdEvent.symbolsLength),
     );
     final LcdSymbols symbols = LcdSymbols(data: symbolsBuffer);
+    start += LcdEvent.symbolsLength;
+    final bool displayOn = data[start] != 0;
 
     return LcdEvent(
       displayBuffer1: displayBuffer1,
       displayBuffer2: displayBuffer2,
       symbols: symbols,
+      displayOn: displayOn,
     );
   }
 
@@ -88,6 +91,7 @@ class LcdEventSerializer extends EmulatorMessageSerializer<LcdEvent> {
     ...lcdEvent.displayBuffer1,
     ...lcdEvent.displayBuffer2,
     ...lcdEvent.symbols.data,
+    lcdEvent.displayOn ? 1 : 0,
   ]);
 }
 

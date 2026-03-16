@@ -63,9 +63,8 @@ class EmulatorFrontEnd {
           emulator = Emulator(type, outPort);
           debugPort = message.debugPort;
           _startDebugServer(debugPort);
-          // Schedule the emulation loop to start after this handler returns,
-          // so the ReceivePort can process messages between frames.
-          scheduleMicrotask(() => emulator?.run());
+          // Don't start the CPU yet — the real PC-1500 stays powered off
+          // until the ON key is pressed. run() is called on first ON key.
         case EmulatorMessageId.updateDeviceType:
           final UpdateDeviceTypeMessage message =
               UpdateDeviceTypeMessageSerializer().deserialize(data);
@@ -73,6 +72,14 @@ class EmulatorFrontEnd {
         case EmulatorMessageId.keyDown:
           final KeyEventMessage msg =
               KeyEventMessageSerializer().deserialize(data);
+          // Start the emulation on first ON key press (power on).
+          if (msg.keyName == 'on' && emulator?.isRunning == false) {
+            emulator?.run();
+          }
+          // OFF key: stop emulation and clear display.
+          if (msg.keyName == 'off') {
+            emulator?.powerOff();
+          }
           emulator?.keyboard.keyDown(msg.keyName);
           emulator?.updateKeyboardInput();
         case EmulatorMessageId.keyUp:

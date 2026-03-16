@@ -67,6 +67,10 @@ class _Screen extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // When the display is off (DISP flip-flop cleared by RDP instruction),
+    // the LCD shows a blank screen — no pixels, no symbols.
+    if (!lcdEvent.displayOn) return;
+
     // See PC-1500 Technical Reference Manual, page 98.
     final Paint pxOn = Paint()..color = Color(config.colors.pixelOn);
     final Paint pxOff = Paint()..color = Color(config.colors.pixelOff);
