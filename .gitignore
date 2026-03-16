@@ -46,3 +46,5 @@ app.*.map.json
 assets/roms/*
 .fvm/flutter_sdk
 **/*.xcf
+
+coverage/

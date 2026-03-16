@@ -206,11 +206,9 @@ class ChipSelectDecoder extends Equatable {
       return mc.readByteAt((address & 0xFFFF) - mc.start);
     }
 
-    throw ChipSelectDecoderError(
-      ChipSelectDecoderErrorId.read,
-      'readByteAt: could not read from unmapped memory address '
-      '${_meHex16(address)}',
-    );
+    // Unmapped address — return 0xFF (floating bus).
+    // The ROM probes unmapped ranges to detect expansion modules.
+    return 0xFF;
   }
 
   void writeByteAt(int address, int value) {
@@ -220,11 +218,8 @@ class ChipSelectDecoder extends Equatable {
       return;
     }
 
-    throw ChipSelectDecoderError(
-      ChipSelectDecoderErrorId.write,
-      'writeByteAt: could not write to unmapped memory address '
-      '${_meHex16(address)}',
-    );
+    // Unmapped address — silently ignore.
+    // Writes to unmapped memory have no effect on real hardware.
   }
 
   /// O(1) chip lookup via flat table.

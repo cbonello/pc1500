@@ -1,28 +1,29 @@
-import 'package:flutter/services.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
-import 'package:fluttericon/mfg_labs_icons.dart';
-import 'package:fluttericon/modern_pictograms_icons.dart';
+import 'package:device/device.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../repositories/systems/models/models.dart';
 import 'lcd.dart';
 
 class Skin extends StatefulWidget {
-  const Skin({Key key, @required this.skin, @required this.lcd})
-      : assert(skin != null),
-        assert(lcd != null),
-        super(key: key);
+  const Skin({
+    super.key,
+    required this.skin,
+    required this.lcd,
+    required this.device,
+  });
 
   final SkinModel skin;
   final LcdWidget lcd;
+  final Device device;
 
   @override
-  _SkinState createState() => _SkinState();
+  State<Skin> createState() => _SkinState();
 }
 
 class _SkinState extends State<Skin> {
-  FocusNode _focusNode;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
@@ -32,241 +33,174 @@ class _SkinState extends State<Skin> {
 
   @override
   void dispose() {
-    _focusNode?.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Map<int, _AnimatedButton> btnsMap = <int, _AnimatedButton>{};
-
-    return RawKeyboardListener(
+    return KeyboardListener(
       focusNode: _focusNode,
       autofocus: true,
-      onKey: (RawKeyEvent event) {
-        if (event.runtimeType.toString() == 'RawKeyUpEvent') {
-          if (btnsMap.containsKey(event.logicalKey.keyId)) {
-            // btnsMap[event.logicalKey.keyId].animate();
+      onKeyEvent: (KeyEvent event) {
+        final String? keyName = _physicalKeyMap[event.logicalKey];
+        if (keyName != null) {
+          if (event is KeyDownEvent) {
+            widget.device.sendKeyDown(keyName);
+          } else if (event is KeyUpEvent) {
+            widget.device.sendKeyUp(keyName);
           }
         }
       },
-      child: Stack(
-        children: <Widget>[
-          widget.lcd,
-          Image.asset(widget.skin.image),
-          ...widget.skin.keys.keys.map<Widget>(
-            (String value) {
-              final KeyModel key = widget.skin.keys[value];
-              final _AnimatedButton btn = _AnimatedButton(
-                value: value,
-                keyboardKey: key,
-                colors: widget.skin.keyColors[key.color],
-                fontSize: key.fontSize,
-                onPressed: () {},
-              );
-
-              if (_keysToMap.containsKey(value)) {
-                btnsMap[_keysToMap[value]] = btn;
-              }
-
-              return Positioned(left: key.left, top: key.top, child: btn);
-            },
-          ).toList(),
-        ],
+      // FittedBox scales from native pixel space (1506x628) to the
+      // available window size. All Positioned coordinates are in the
+      // image's native pixel space — no device-pixel-ratio issues.
+      child: FittedBox(
+        child: SizedBox(
+          width: 1506,
+          height: 628,
+          child: Stack(
+            children: <Widget>[
+              Positioned(
+                left: widget.skin.lcd.left,
+                top: widget.skin.lcd.top,
+                child: widget.lcd,
+              ),
+              Positioned.fill(
+                child: Image.asset(
+                  widget.skin.image,
+                  fit: BoxFit.fill,
+                ),
+              ),
+              ...widget.skin.keys.keys.map<Widget>((String value) {
+                final KeyModel key = widget.skin.keys[value]!;
+                return Positioned(
+                  left: key.left,
+                  top: key.top,
+                  child: _KeyButton(
+                    keyboardKey: key,
+                    colors: widget.skin.keyColors[key.color]!,
+                    onTapDown: () => widget.device.sendKeyDown(value),
+                    onTapUp: () => widget.device.sendKeyUp(value),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  static final Map<String, int> _keysToMap = <String, int>{
-    'f1': LogicalKeyboardKey.f1.keyId,
-    'f2': LogicalKeyboardKey.f2.keyId,
-    'f3': LogicalKeyboardKey.f3.keyId,
-    'f4': LogicalKeyboardKey.f4.keyId,
-    'f5': LogicalKeyboardKey.f5.keyId,
-    'f6': LogicalKeyboardKey.f6.keyId,
-    // 'shift': LogicalKeyboardKey.shift.keyId,
-    'q': LogicalKeyboardKey.keyQ.keyId,
-    'w': LogicalKeyboardKey.keyW.keyId,
-    'e': LogicalKeyboardKey.keyE.keyId,
-    'r': LogicalKeyboardKey.keyR.keyId,
-    't': LogicalKeyboardKey.keyT.keyId,
-    'y': LogicalKeyboardKey.keyY.keyId,
-    'u': LogicalKeyboardKey.keyU.keyId,
-    'i': LogicalKeyboardKey.keyI.keyId,
-    'o': LogicalKeyboardKey.keyO.keyId,
-    'p': LogicalKeyboardKey.keyP.keyId,
-    '7': LogicalKeyboardKey.digit7.keyId,
-    '8': LogicalKeyboardKey.digit8.keyId,
-    '9': LogicalKeyboardKey.digit9.keyId,
-    '/': LogicalKeyboardKey.slash.keyId,
-    'clear': LogicalKeyboardKey.delete.keyId,
-    'a': LogicalKeyboardKey.keyA.keyId,
-    's': LogicalKeyboardKey.keyS.keyId,
-    'd': LogicalKeyboardKey.keyD.keyId,
-    'f': LogicalKeyboardKey.keyF.keyId,
-    'g': LogicalKeyboardKey.keyG.keyId,
-    'h': LogicalKeyboardKey.keyH.keyId,
-    'j': LogicalKeyboardKey.keyJ.keyId,
-    'k': LogicalKeyboardKey.keyK.keyId,
-    'l': LogicalKeyboardKey.keyL.keyId,
-    '=': LogicalKeyboardKey.equal.keyId,
-    '4': LogicalKeyboardKey.digit4.keyId,
-    '5': LogicalKeyboardKey.digit5.keyId,
-    '6': LogicalKeyboardKey.digit6.keyId,
-    '*': LogicalKeyboardKey.numpadMultiply.keyId,
-    'z': LogicalKeyboardKey.keyZ.keyId,
-    'x': LogicalKeyboardKey.keyX.keyId,
-    'c': LogicalKeyboardKey.keyC.keyId,
-    'v': LogicalKeyboardKey.keyV.keyId,
-    'b': LogicalKeyboardKey.keyB.keyId,
-    'n': LogicalKeyboardKey.keyN.keyId,
-    'm': LogicalKeyboardKey.keyM.keyId,
-    '(': LogicalKeyboardKey.numpadParenLeft.keyId,
-    ')': LogicalKeyboardKey.numpadParenRight.keyId,
-    'up': LogicalKeyboardKey.arrowUp.keyId,
-    '1': LogicalKeyboardKey.digit1.keyId,
-    '2': LogicalKeyboardKey.digit2.keyId,
-    '3': LogicalKeyboardKey.digit3.keyId,
-    '-': LogicalKeyboardKey.numpadSubtract.keyId,
-    ' ': LogicalKeyboardKey.space.keyId,
-    'enter': LogicalKeyboardKey.enter.keyId,
-    'left': LogicalKeyboardKey.arrowLeft.keyId,
-    'right': LogicalKeyboardKey.arrowRight.keyId,
-    'down': LogicalKeyboardKey.arrowDown.keyId,
-    '0': LogicalKeyboardKey.digit0.keyId,
-    '.': LogicalKeyboardKey.period.keyId,
-    'ent': LogicalKeyboardKey.numpadEqual.keyId,
-    // '+': LogicalKeyboardKey.numpadAdd.keyId,
+  static final Map<LogicalKeyboardKey, String> _physicalKeyMap =
+      <LogicalKeyboardKey, String>{
+    LogicalKeyboardKey.f1: 'f1',
+    LogicalKeyboardKey.f2: 'f2',
+    LogicalKeyboardKey.f3: 'f3',
+    LogicalKeyboardKey.f4: 'f4',
+    LogicalKeyboardKey.f5: 'f5',
+    LogicalKeyboardKey.f6: 'f6',
+    LogicalKeyboardKey.keyQ: 'q',
+    LogicalKeyboardKey.keyW: 'w',
+    LogicalKeyboardKey.keyE: 'e',
+    LogicalKeyboardKey.keyR: 'r',
+    LogicalKeyboardKey.keyT: 't',
+    LogicalKeyboardKey.keyY: 'y',
+    LogicalKeyboardKey.keyU: 'u',
+    LogicalKeyboardKey.keyI: 'i',
+    LogicalKeyboardKey.keyO: 'o',
+    LogicalKeyboardKey.keyP: 'p',
+    LogicalKeyboardKey.keyA: 'a',
+    LogicalKeyboardKey.keyS: 's',
+    LogicalKeyboardKey.keyD: 'd',
+    LogicalKeyboardKey.keyF: 'f',
+    LogicalKeyboardKey.keyG: 'g',
+    LogicalKeyboardKey.keyH: 'h',
+    LogicalKeyboardKey.keyJ: 'j',
+    LogicalKeyboardKey.keyK: 'k',
+    LogicalKeyboardKey.keyL: 'l',
+    LogicalKeyboardKey.keyZ: 'z',
+    LogicalKeyboardKey.keyX: 'x',
+    LogicalKeyboardKey.keyC: 'c',
+    LogicalKeyboardKey.keyV: 'v',
+    LogicalKeyboardKey.keyB: 'b',
+    LogicalKeyboardKey.keyN: 'n',
+    LogicalKeyboardKey.keyM: 'm',
+    LogicalKeyboardKey.digit0: '0',
+    LogicalKeyboardKey.digit1: '1',
+    LogicalKeyboardKey.digit2: '2',
+    LogicalKeyboardKey.digit3: '3',
+    LogicalKeyboardKey.digit4: '4',
+    LogicalKeyboardKey.digit5: '5',
+    LogicalKeyboardKey.digit6: '6',
+    LogicalKeyboardKey.digit7: '7',
+    LogicalKeyboardKey.digit8: '8',
+    LogicalKeyboardKey.digit9: '9',
+    LogicalKeyboardKey.space: ' ',
+    LogicalKeyboardKey.enter: 'enter',
+    LogicalKeyboardKey.period: '.',
+    LogicalKeyboardKey.equal: '=',
+    LogicalKeyboardKey.slash: '/',
+    LogicalKeyboardKey.minus: '-',
+    LogicalKeyboardKey.arrowUp: 'up',
+    LogicalKeyboardKey.arrowDown: 'down',
+    LogicalKeyboardKey.arrowLeft: 'left',
+    LogicalKeyboardKey.arrowRight: 'right',
+    LogicalKeyboardKey.delete: 'clear',
+    LogicalKeyboardKey.backspace: 'clear',
   };
 }
 
-class _AnimatedButton extends StatelessWidget {
-  _AnimatedButton({
-    Key key,
-    @required this.value,
-    @required this.keyboardKey,
-    @required this.colors,
-    @required this.fontSize,
-    @required this.onPressed,
-  })  : assert(value != null),
-        assert(keyboardKey != null),
-        assert(colors != null),
-        assert(fontSize != null),
-        assert(onPressed != null),
-        super(key: key);
+class _KeyButton extends StatelessWidget {
+  const _KeyButton({
+    required this.keyboardKey,
+    required this.colors,
+    required this.onTapDown,
+    required this.onTapUp,
+  });
 
-  final String value;
   final KeyModel keyboardKey;
   final ColorModel colors;
-  final double fontSize;
-  final VoidCallback onPressed;
-
-  AnimationController _animationController;
-  double width, height;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _animationController = AnimationController(vsync: this);
-  //   width = widget.keyboardKey.width;
-  //   height = widget.keyboardKey.height;
-  // }
-
-  // @override
-  // void dispose() {
-  //   _animationController?.dispose();
-  //   super.dispose();
-  // }
-
-  void animate() {
-    _animationController
-      ..forward()
-      ..reverse();
-  }
+  final VoidCallback onTapDown;
+  final VoidCallback onTapUp;
 
   @override
   Widget build(BuildContext context) {
-    final Widget value = keyboardKey.label.when<Widget>(
-      text: (String value) {
-        return Text(
-          value,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.openSans(
-            textStyle: TextStyle(
-              color: Color(colors.color),
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
-      },
-      icon: (String value) {
-        switch (value) {
-          case 'left':
-            return Icon(
-              ModernPictograms.left_dir,
-              size: fontSize,
-              color: Color(colors.color),
-            );
-          case 'up':
-            return Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Icon(
-                MfgLabs.up_bold,
-                size: fontSize,
-                color: Color(colors.color),
-              ),
-            );
-          case 'right':
-            return Icon(
-              ModernPictograms.right_dir,
-              size: fontSize,
-              color: Color(colors.color),
-            );
-          case 'down':
-            return Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Icon(
-                MfgLabs.down_bold,
-                size: fontSize,
-                color: Color(colors.color),
-              ),
-            );
-          case 'up-down':
-            return Icon(
-              FontAwesome.sort,
-              size: fontSize,
-              color: Color(colors.color),
-            );
-          default:
-            throw Exception('Invalid icon type: $value');
-        }
-      },
-    );
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-        color: Color(colors.background),
-        border: Border(
-          right: BorderSide(
-            color: Color(colors.border),
-            width: 0.5,
-          ),
-          bottom: BorderSide(
-            color: Color(colors.border),
-            width: 0.5,
+    final Widget label = keyboardKey.label.when<Widget>(
+      text: (String value) => Text(
+        value,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.openSans(
+          textStyle: TextStyle(
+            color: Color(colors.color),
+            fontSize: keyboardKey.fontSize,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      child: GestureDetector(
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: FittedBox(child: value),
-        ),
+      icon: (String value) => Icon(
+        switch (value) {
+          'left' => Icons.arrow_left,
+          'up' => Icons.arrow_drop_up,
+          'right' => Icons.arrow_right,
+          'down' => Icons.arrow_drop_down,
+          'up-down' => Icons.swap_vert,
+          _ => Icons.error,
+        },
+        size: keyboardKey.fontSize,
+        color: Color(colors.color),
+      ),
+    );
+
+    return GestureDetector(
+      onTapDown: (_) => onTapDown(),
+      onTapUp: (_) => onTapUp(),
+      onTapCancel: onTapUp,
+      child: Container(
+        height: keyboardKey.height,
+        width: keyboardKey.width,
+        color: Color(colors.background),
+        child: Center(child: label),
       ),
     );
   }

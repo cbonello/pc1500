@@ -1,19 +1,20 @@
-include: package:lint/analysis_options_package.yaml
+# This file configures the analyzer to use the lint rule set from `package:lint`
 
+include: package:lint/strict.yaml # For production apps
+
+# You might want to exclude auto-generated files from dart analysis
 analyzer:
   exclude:
-    - lib/**/*.g.dart
-    - lib/**/*.freezed.dart
-    - test/.test_coverage.dart
+    #- '**.freezed.dart'
+    #- '**.g.dart'
 
+# You can customize the lint rules set to your own liking. A list of all rules
+# can be found at https://dart.dev/tools/linter-rules
 linter:
   rules:
-    always_put_required_named_parameters_first: false
-    omit_local_variable_types: false
-    avoid_classes_with_only_static_members: false
-    non_constant_identifier_names: false
-    sort_pub_dependencies: false
+    # Make constructors the first thing in every class
+    # sort_constructors_first: true
 
-    sort_constructors_first: true
-    prefer_single_quotes: true
-    always_specify_types: true
+    # Choose wisely, but you don't have to
+    # prefer_double_quotes: true
+    # prefer_single_quotes: true

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'home_view.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({Key key}) : super(key: key);
+  const HomePage({super.key});
 
   static const String routeName = '/home';
 

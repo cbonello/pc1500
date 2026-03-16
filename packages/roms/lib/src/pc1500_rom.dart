@@ -14,7 +14,7 @@ final Map<PC1500RomType, List<int>> _roms = <PC1500RomType, List<int>>{
 };
 
 final Map<PC1500RomType, String> _annotationsJson = <PC1500RomType, String>{
-  PC1500RomType.a03: pc1500_a03_annotations.json,
+  PC1500RomType.a03: pc1500_a03_annotations.pc1500A03AnnotationsJson,
 };
 
 class PC1500Rom implements RomBase {

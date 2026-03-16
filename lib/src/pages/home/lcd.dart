@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,10 +7,7 @@ import 'package:lcd/lcd.dart';
 import '../../repositories/systems/models/models.dart';
 
 class LcdWidget extends StatelessWidget {
-  const LcdWidget({Key key, @required this.config, @required this.eventsStream})
-      : assert(config != null),
-        assert(eventsStream != null),
-        super(key: key);
+  const LcdWidget({super.key, required this.config, required this.eventsStream});
 
   final LcdModel config;
   final Stream<LcdEvent> eventsStream;
@@ -22,18 +18,21 @@ class LcdWidget extends StatelessWidget {
       stream: eventsStream,
       builder: (BuildContext context, AsyncSnapshot<LcdEvent> snapshot) {
         if (snapshot.hasData == false) {
-          return Container();
+          return SizedBox(
+            height: config.height,
+            width: config.width,
+            child: ColoredBox(color: Color(config.colors.background)),
+          );
         }
 
-        return Positioned(
-          left: config.left,
-          top: config.top,
+        return SizedBox(
+          height: config.height,
+          width: config.width,
           child: Stack(
             children: <Widget>[
-              Container(
-                height: config.height,
-                width: config.width,
+              ColoredBox(
                 color: Color(config.colors.background),
+                child: const SizedBox.expand(),
               ),
               Positioned(
                 left: config.margin.left,
@@ -46,7 +45,7 @@ class LcdWidget extends StatelessWidget {
                   child: CustomPaint(
                     painter: _Screen(
                       config: config,
-                      lcdEvent: snapshot.data,
+                      lcdEvent: snapshot.data!,
                     ),
                   ),
                 ),
@@ -60,10 +59,7 @@ class LcdWidget extends StatelessWidget {
 }
 
 class _Screen extends CustomPainter {
-  const _Screen({@required this.config, @required this.lcdEvent})
-      : assert(config != null),
-        assert(lcdEvent != null),
-        assert(config != null);
+  const _Screen({required this.config, required this.lcdEvent});
 
   final LcdModel config;
   final LcdEvent lcdEvent;
@@ -76,7 +72,7 @@ class _Screen extends CustomPainter {
     final Color symOn = Color(config.colors.symbolOn);
     final Color symOff = Color(config.colors.symbolOff);
 
-    void _displaySymbol(bool isOn, String label, double left) {
+    void displaySymbol(bool isOn, String label, double left) {
       final TextPainter textPainter = TextPainter(
         text: TextSpan(
           text: label,
@@ -88,13 +84,13 @@ class _Screen extends CustomPainter {
             ),
           ),
         ),
-        textScaleFactor: 0.8,
+        textScaler: const TextScaler.linear(0.8),
         textDirection: TextDirection.ltr,
       )..layout(maxWidth: size.width);
       textPainter.paint(canvas, Offset(left, 0.0));
     }
 
-    void _displayPixel(bool isOn, int x, int y) {
+    void displayPixel(bool isOn, int x, int y) {
       canvas.drawRect(
         Rect.fromLTWH(
           x * (config.pixels.width + config.pixels.gap),
@@ -106,49 +102,49 @@ class _Screen extends CustomPainter {
       );
     }
 
-    void _displayBuffer(Uint8ClampedList buffer, int xStart1, int xStart2) {
+    void displayBuffer(Uint8ClampedList buffer, int xStart1, int xStart2) {
       int x1 = xStart1;
       int x2 = xStart2;
 
       for (int i = 0; i <= buffer.length - 2; i += 2, x1++, x2++) {
         final int low = buffer[i];
-        _displayPixel(low & 0x10 == 0x10, x1, 0);
-        _displayPixel(low & 0x20 == 0x20, x1, 1);
-        _displayPixel(low & 0x40 == 0x40, x1, 2);
-        _displayPixel(low & 0x80 == 0x80, x1, 3);
+        displayPixel(low & 0x10 == 0x10, x1, 0);
+        displayPixel(low & 0x20 == 0x20, x1, 1);
+        displayPixel(low & 0x40 == 0x40, x1, 2);
+        displayPixel(low & 0x80 == 0x80, x1, 3);
 
-        _displayPixel(low & 0x01 == 0x01, x2, 0);
-        _displayPixel(low & 0x02 == 0x02, x2, 1);
-        _displayPixel(low & 0x04 == 0x04, x2, 2);
-        _displayPixel(low & 0x08 == 0x08, x2, 3);
+        displayPixel(low & 0x01 == 0x01, x2, 0);
+        displayPixel(low & 0x02 == 0x02, x2, 1);
+        displayPixel(low & 0x04 == 0x04, x2, 2);
+        displayPixel(low & 0x08 == 0x08, x2, 3);
 
         final int high = buffer[i + 1];
-        _displayPixel(high & 0x10 == 0x10, x1, 4);
-        _displayPixel(high & 0x20 == 0x20, x1, 5);
-        _displayPixel(high & 0x40 == 0x40, x1, 6);
+        displayPixel(high & 0x10 == 0x10, x1, 4);
+        displayPixel(high & 0x20 == 0x20, x1, 5);
+        displayPixel(high & 0x40 == 0x40, x1, 6);
 
-        _displayPixel(high & 0x01 == 0x01, x2, 4);
-        _displayPixel(high & 0x02 == 0x02, x2, 5);
-        _displayPixel(high & 0x04 == 0x04, x2, 6);
+        displayPixel(high & 0x01 == 0x01, x2, 4);
+        displayPixel(high & 0x02 == 0x02, x2, 5);
+        displayPixel(high & 0x04 == 0x04, x2, 6);
       }
     }
 
-    _displayBuffer(lcdEvent.displayBuffer1, 78, 0);
-    _displayBuffer(lcdEvent.displayBuffer2, 117, 39);
+    displayBuffer(lcdEvent.displayBuffer1, 78, 0);
+    displayBuffer(lcdEvent.displayBuffer2, 117, 39);
 
-    _displaySymbol(lcdEvent.symbols.busy, 'BUSY', config.symbols.busy);
-    _displaySymbol(lcdEvent.symbols.shift, 'SHIFT', config.symbols.shift);
-    _displaySymbol(lcdEvent.symbols.small, 'SMALL', config.symbols.small);
-    _displaySymbol(lcdEvent.symbols.def, 'DEF', config.symbols.def);
-    _displaySymbol(lcdEvent.symbols.one, 'I', config.symbols.one);
-    _displaySymbol(lcdEvent.symbols.two, 'II', config.symbols.two);
-    _displaySymbol(lcdEvent.symbols.three, 'III', config.symbols.three);
-    _displaySymbol(lcdEvent.symbols.de, 'DE', config.symbols.de);
-    _displaySymbol(lcdEvent.symbols.g, 'G', config.symbols.g);
-    _displaySymbol(lcdEvent.symbols.rad, 'RAD', config.symbols.rad);
-    _displaySymbol(lcdEvent.symbols.run, 'RUN', config.symbols.run);
-    _displaySymbol(lcdEvent.symbols.pro, 'PRO', config.symbols.pro);
-    _displaySymbol(lcdEvent.symbols.reserve, 'RESERVE', config.symbols.reserve);
+    displaySymbol(lcdEvent.symbols.busy, 'BUSY', config.symbols.busy);
+    displaySymbol(lcdEvent.symbols.shift, 'SHIFT', config.symbols.shift);
+    displaySymbol(lcdEvent.symbols.small, 'SMALL', config.symbols.small);
+    displaySymbol(lcdEvent.symbols.def, 'DEF', config.symbols.def);
+    displaySymbol(lcdEvent.symbols.one, 'I', config.symbols.one);
+    displaySymbol(lcdEvent.symbols.two, 'II', config.symbols.two);
+    displaySymbol(lcdEvent.symbols.three, 'III', config.symbols.three);
+    displaySymbol(lcdEvent.symbols.de, 'DE', config.symbols.de);
+    displaySymbol(lcdEvent.symbols.g, 'G', config.symbols.g);
+    displaySymbol(lcdEvent.symbols.rad, 'RAD', config.symbols.rad);
+    displaySymbol(lcdEvent.symbols.run, 'RUN', config.symbols.run);
+    displaySymbol(lcdEvent.symbols.pro, 'PRO', config.symbols.pro);
+    displaySymbol(lcdEvent.symbols.reserve, 'RESERVE', config.symbols.reserve);
 
     // Battery indicator.
     canvas.drawCircle(
@@ -159,7 +155,7 @@ class _Screen extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant _Screen oldDelegate) {
+    return lcdEvent != oldDelegate.lcdEvent;
   }
 }

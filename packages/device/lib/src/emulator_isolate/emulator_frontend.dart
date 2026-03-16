@@ -3,28 +3,24 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:meta/meta.dart';
+import 'package:device/src/device.dart';
+import 'package:device/src/emulator_isolate/emulator.dart';
+import 'package:device/src/messages/messages.dart';
+import 'package:device/src/messages/messages_base.dart';
 
-import '../device.dart';
-import '../messages/messages.dart';
-import '../messages/messages_base.dart';
-import 'emulator.dart';
-
-EmulatorFrontEnd _frontEnd;
+EmulatorFrontEnd? _frontEnd;
 
 void runEmulator(SendPort outPort) {
   _frontEnd ??= EmulatorFrontEnd(outPort: outPort);
-  print('#### runEmulator(): $_frontEnd');
 }
 
 void killEmulator() {
-  print('#### killEmulator(): $_frontEnd');
   _frontEnd?.dispose();
   _frontEnd = null;
 }
 
 class EmulatorFrontEnd {
-  EmulatorFrontEnd({@required this.outPort}) : assert(outPort != null) {
+  EmulatorFrontEnd({required this.outPort}) {
     final ReceivePort inStream = ReceivePort();
     outPort.send(inStream.sendPort);
 
@@ -35,18 +31,21 @@ class EmulatorFrontEnd {
     isDebugClientConnected = false;
   }
 
-  SendPort outPort;
-  StreamSubscription<dynamic> inStreamSub;
-  HardwareDeviceType type;
-  int debugPort;
-  Emulator emulator;
+  final SendPort outPort;
+  late StreamSubscription<dynamic> inStreamSub;
+  late HardwareDeviceType type;
+  late int debugPort;
+  Emulator? emulator;
 
-  ServerSocket serverSocket;
-  StreamSubscription<Socket> serverSocketSub;
-  bool isDebugClientConnected;
+  ServerSocket? serverSocket;
+  StreamSubscription<Socket>? serverSocketSub;
+  bool isDebugClientConnected = false;
 
   void dispose() {
-    inStreamSub?.cancel();
+    emulator?.stop();
+    emulator?.dispose();
+    emulator = null;
+    inStreamSub.cancel();
     _stopDebuggerServer();
   }
 
@@ -57,27 +56,35 @@ class EmulatorFrontEnd {
 
       switch (emulatorMessageId) {
         case EmulatorMessageId.startEmulator:
-          final StartEmulatorMessage message =
-              StartEmulatorMessageSerializer().deserialize(data);
+          final StartEmulatorMessage message = StartEmulatorMessageSerializer()
+              .deserialize(data);
           assert(emulator == null);
           type = message.type;
           emulator = Emulator(type, outPort);
           debugPort = message.debugPort;
           _startDebugServer(debugPort);
-          break;
+          // Schedule the emulation loop to start after this handler returns,
+          // so the ReceivePort can process messages between frames.
+          scheduleMicrotask(() => emulator?.run());
         case EmulatorMessageId.updateDeviceType:
           final UpdateDeviceTypeMessage message =
               UpdateDeviceTypeMessageSerializer().deserialize(data);
           type = message.type;
-          break;
+        case EmulatorMessageId.keyDown:
+          final KeyEventMessage msg =
+              KeyEventMessageSerializer().deserialize(data);
+          emulator?.keyboard.keyDown(msg.keyName);
+        case EmulatorMessageId.keyUp:
+          final KeyEventMessage msg =
+              KeyEventMessageSerializer().deserialize(data);
+          emulator?.keyboard.keyUp(msg.keyName);
         case EmulatorMessageId.step:
-          print('EmulatorMessageId.step');
-          break;
+          emulator?.step();
         default:
-          print('### RECEIVED: $data');
+          break;
       }
     } catch (_) {
-      print('### RECEIVED: $data');
+      // Ignore malformed messages.
     }
   }
 
@@ -86,12 +93,9 @@ class EmulatorFrontEnd {
       _stopDebuggerServer();
     }
 
-    serverSocket = await ServerSocket.bind(
-      'localhost', //InternetAddress.anyIPv4,
-      debugPort,
-    );
+    serverSocket = await ServerSocket.bind('localhost', debugPort);
 
-    serverSocketSub = serverSocket.listen(
+    serverSocketSub = serverSocket!.listen(
       isDebugClientConnected
           ? null
           : (Socket client) {
@@ -99,7 +103,6 @@ class EmulatorFrontEnd {
               client.listen(
                 _messageHandler,
                 onError: (Object error) {
-                  print('Error: $error');
                   client.close();
                 },
                 onDone: () {

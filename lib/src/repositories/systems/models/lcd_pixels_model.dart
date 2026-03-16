@@ -1,32 +1,28 @@
-import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'lcd_pixels_model.g.dart';
 
-@JsonSerializable(
-  createFactory: true,
-  createToJson: false,
-)
+@JsonSerializable(createFactory: true, createToJson: false)
 class LcdPixelsModel {
   const LcdPixelsModel({
-    @required this.top,
-    @required this.width,
-    @required this.height,
-    @required this.gap,
+    required this.top,
+    required this.width,
+    required this.height,
+    required this.gap,
   });
 
   factory LcdPixelsModel.fromJson(Map<String, dynamic> json) =>
       _$LcdPixelsModelFromJson(json);
 
-  @JsonKey(required: true, nullable: false)
+  @JsonKey(required: true)
   final double top;
 
-  @JsonKey(required: true, nullable: false)
+  @JsonKey(required: true)
   final double width;
 
-  @JsonKey(required: true, nullable: false)
+  @JsonKey(required: true)
   final double height;
 
-  @JsonKey(required: true, nullable: false)
+  @JsonKey(required: true)
   final double gap;
 }

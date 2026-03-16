@@ -1,18 +1,18 @@
-import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pc1500/src/repositories/repositories.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../repositories.dart';
 
 final Provider<LocalStorageRepository> localStorageRepositoryProvider =
     Provider<LocalStorageRepository>(
-  (ProviderReference ref) => throw UnimplementedError(),
-);
+      (Ref ref) => throw StateError(
+        'localStorageRepositoryProvider must be overridden with a '
+        'LocalStorageRepository instance in ProviderScope.overrides',
+      ),
+    );
 
 class LocalStorageRepository {
-  LocalStorageRepository({@required SharedPreferences sharedPreferences})
-      : assert(sharedPreferences != null),
-        _sharedPreferences = sharedPreferences;
+  LocalStorageRepository({required SharedPreferences sharedPreferences})
+    : _sharedPreferences = sharedPreferences;
 
   final SharedPreferences _sharedPreferences;
 

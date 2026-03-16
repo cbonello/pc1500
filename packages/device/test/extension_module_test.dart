@@ -2,7 +2,7 @@ import 'package:device/device.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ExtensionModule', () {
+  group(ExtensionModule, () {
     test('should create an extension module successfully', () {
       final ExtensionModule extensionModule = ExtensionModule();
 
@@ -12,13 +12,8 @@ void main() {
     });
 
     group('addModule()', () {
-      final ExtensionModule extensionModule = ExtensionModule();
-
       test('should detect invalid arguments', () {
-        expect(
-          () => extensionModule.addModule(null, 0),
-          throwsA(const TypeMatcher<AssertionError>()),
-        );
+        final ExtensionModule extensionModule = ExtensionModule();
 
         expect(
           () => extensionModule.addModule('', 0),
@@ -32,6 +27,7 @@ void main() {
       });
 
       test('should add an extension module successfully', () {
+        final ExtensionModule extensionModule = ExtensionModule();
         extensionModule.addModule('CE151', 0x1000);
 
         expect(extensionModule.name, equals('CE151'));
@@ -41,9 +37,8 @@ void main() {
     });
 
     group('removeModule()', () {
-      final ExtensionModule extensionModule = ExtensionModule();
-
       test('should remove an extension module successfully', () {
+        final ExtensionModule extensionModule = ExtensionModule();
         extensionModule.addModule('CE151', 0x1000);
         extensionModule.removeModule();
 

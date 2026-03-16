@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'pages/home/home_page.dart';
+import 'package:pc1500/src/pages/home/home_page.dart';
 
 class PC1500App extends StatelessWidget {
-  const PC1500App({Key key}) : super(key: key);
+  const PC1500App({super.key});
 
   @override
   Widget build(BuildContext context) {

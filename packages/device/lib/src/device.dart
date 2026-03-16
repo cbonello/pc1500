@@ -2,33 +2,28 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:device/src/emulator_isolate/emulator_frontend.dart';
+import 'package:device/src/messages/messages.dart';
+import 'package:device/src/messages/messages_base.dart';
 import 'package:lcd/lcd.dart';
-import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
-
-import 'emulator_isolate/emulator_frontend.dart';
-import 'messages/messages.dart';
-import 'messages/messages_base.dart';
 
 enum HardwareDeviceType { pc1500, pc1500A }
 
 class Device {
-  Device({@required HardwareDeviceType type, @required int debugPort})
-      : assert(type != null),
-        _type = type,
-        assert(debugPort != null),
-        _debugPort = debugPort,
-        _outEventCtrl = BehaviorSubject<LcdEvent>(),
-        isDebugClientConnected = false;
+  Device({required HardwareDeviceType type, required int debugPort})
+    : _type = type,
+      _debugPort = debugPort,
+      _outEventCtrl = StreamController<LcdEvent>.broadcast(),
+      isDebugClientConnected = false;
 
   bool isDebugClientConnected;
 
   HardwareDeviceType _type;
   final int _debugPort;
-  final BehaviorSubject<LcdEvent> _outEventCtrl;
-  Isolate _isolate;
-  SendPort _toEmulatorPort;
-  StreamSubscription<dynamic> _fromEmulatorSub;
+  final StreamController<LcdEvent> _outEventCtrl;
+  Isolate? _isolate;
+  SendPort? _toEmulatorPort;
+  StreamSubscription<dynamic>? _fromEmulatorSub;
 
   HardwareDeviceType get hardwareDeviceType => _type;
   set hardwareDeviceType(HardwareDeviceType newType) {
@@ -61,17 +56,13 @@ class Device {
       _fromEmulatorSub?.cancel();
       _fromEmulatorSub = null;
       killEmulator();
-      _isolate.kill(priority: Isolate.immediate);
+      _isolate!.kill(priority: Isolate.immediate);
       _isolate = null;
     }
   }
 
   void updateHardwareDeviceType(HardwareDeviceType type) {
     if (type != _type) {
-      // _send(
-      //   UpdateDeviceTypeMessage(type: type),
-      //   UpdateDeviceTypeMessageSerializer(),
-      // );
       _type = type;
       kill();
       run();
@@ -84,8 +75,7 @@ class Device {
 
     _fromEmulatorSub = fromEmulatorPort.listen((dynamic data) {
       if (data is SendPort) {
-        final SendPort toEmulatorPort = data;
-        completer.complete(toEmulatorPort);
+        completer.complete(data);
       } else {
         assert(data is Uint8List);
         _messageHandler(data as Uint8List);
@@ -103,8 +93,22 @@ class Device {
 
   void _send<T>(T message, EmulatorMessageSerializer<T> serializer) {
     if (_isEmulatorRunning) {
-      _toEmulatorPort.send(serializer.serialize(message));
+      _toEmulatorPort!.send(serializer.serialize(message));
     }
+  }
+
+  void sendKeyDown(String keyName) {
+    _send(
+      KeyEventMessage(keyName: keyName, isDown: true),
+      KeyEventMessageSerializer(),
+    );
+  }
+
+  void sendKeyUp(String keyName) {
+    _send(
+      KeyEventMessage(keyName: keyName, isDown: false),
+      KeyEventMessageSerializer(),
+    );
   }
 
   void _messageHandler(Uint8List data) {
@@ -115,13 +119,11 @@ class Device {
         final IsDebugClientConnectedMessage message =
             IsDebugClientConnectedMessageSerializer().deserialize(data);
         isDebugClientConnected = message.status;
-        break;
       case EmulatorMessageId.lcdEvent:
         final LcdEvent event = LcdEventSerializer().deserialize(data);
         _outEventCtrl.add(event);
-        break;
       default:
-        throw Exception();
+        throw Exception('Unknown message: $messageId');
     }
   }
 }

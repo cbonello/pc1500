@@ -3,18 +3,18 @@ class ExtensionModule {
     _reset();
   }
 
-  bool _used;
+  bool _used = false;
 
   // Module name
-  String name;
+  String name = '';
 
   // Capacity in bytes
-  int capacity;
+  int capacity = 0;
 
   bool get isUsed => _used;
 
   void addModule(String name, int capacity) {
-    assert(name != null && name.isNotEmpty);
+    assert(name.isNotEmpty);
     assert(capacity >= 2 * 1024 && capacity <= 16 * 1024);
 
     this.name = name;

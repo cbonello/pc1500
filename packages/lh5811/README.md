@@ -22,6 +22,7 @@ LH5810/LH5811 I/O port controller emulator for the Sharp PC-1500 pocket computer
 ```dart
 import 'package:lh5811/lh5811.dart';
 
+// Basic setup with interrupt handler.
 final LH5811 io = LH5811(onInterrupt: () {
   // Handle interrupt — signal the CPU.
 });
@@ -38,6 +39,19 @@ final int pb = io.read(0x0F); // Returns 0xAB.
 // Enable IRQ interrupt and trigger it.
 io.write(0x0A, 0x01);  // MSK: enable IRQ.
 io.triggerIRQ();        // Sets IF0, fires onInterrupt callback.
+```
+
+### Keyboard matrix integration
+
+Port input providers allow external hardware to supply pin state lazily at
+read time — ideal for keyboard scanning where PA selects a column and PB
+returns the pressed keys for that column.
+
+```dart
+final LH5811 io = LH5811(
+  onPortBRead: () => keyboardMatrix.scan(io.portAOutput),
+  onInterrupt: () => cpu.requestInterrupt(),
+);
 ```
 
 ## Features and bugs

@@ -1,4 +1,4 @@
-const String json = '''
+const String pc1500A03AnnotationsJson = '''
 {
     "C000-FFFF": {
         "name": "PC-1500 System Program (ROM), 16KB",

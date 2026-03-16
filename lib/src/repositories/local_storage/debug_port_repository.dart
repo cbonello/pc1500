@@ -1,26 +1,23 @@
 import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'local_storage_repository.dart';
+import 'package:pc1500/src/repositories/local_storage/local_storage_repository.dart';
 
 const int _defaultDebugPort = 3756;
 
 final ChangeNotifierProvider<DebugPortRepository> debugPortRepositoryProvider =
-    ChangeNotifierProvider<DebugPortRepository>(
-  (ProviderReference ref) {
-    final DebugPortRepository repository = DebugPortRepository(
-      localStorageRepository: ref.watch(localStorageRepositoryProvider),
-    );
-    return repository;
-  },
-);
+    ChangeNotifierProvider<DebugPortRepository>((Ref ref) {
+      final DebugPortRepository repository = DebugPortRepository(
+        localStorageRepository: ref.watch(localStorageRepositoryProvider),
+      );
+
+      return repository;
+    });
 
 class DebugPortRepository with ChangeNotifier {
-  DebugPortRepository({
-    @required LocalStorageRepository localStorageRepository,
-  })  : assert(localStorageRepository != null),
-        _localStorageRepository = localStorageRepository,
-        _debugPort = localStorageRepository.getDebugPort(_defaultDebugPort);
+  DebugPortRepository({required LocalStorageRepository localStorageRepository})
+    : _localStorageRepository = localStorageRepository,
+      _debugPort = localStorageRepository.getDebugPort(_defaultDebugPort);
 
   final LocalStorageRepository _localStorageRepository;
   int _debugPort;

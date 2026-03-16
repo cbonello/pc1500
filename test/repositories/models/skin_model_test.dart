@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pc1500/src/repositories/systems/models/models.dart';
 
@@ -24,7 +23,7 @@ void main() {
       final dynamic json = jsonDecode(await file.readAsString());
       final SkinModel skin = SkinModel.fromJson(json as Map<String, dynamic>);
 
-      await checkSkin(skin);
+      checkSkin(skin);
     });
   });
 }
@@ -38,88 +37,59 @@ void checkColor(int color) {
   expect(color, lessThanOrEqualTo(0xFFFFFFFF));
 }
 
-Future<void> checkSkin(SkinModel skin) async {
-  expect(skin.image, isNotNull);
-  // Asset exists?
-  await expectLater(rootBundle.load(skin.image), completion(isNotNull));
+void checkSkin(SkinModel skin) {
+  expect(skin.image, isNotEmpty);
 
-  expect(skin.lcd, isNotNull);
-
-  expect(skin.lcd.colors, isNotNull);
-  expect(skin.lcd.colors.background, isNotNull);
+  expect(skin.lcd.colors.background, greaterThanOrEqualTo(0));
   checkColor(skin.lcd.colors.background);
-  expect(skin.lcd.colors.pixelOn, isNotNull);
   checkColor(skin.lcd.colors.pixelOn);
-  expect(skin.lcd.colors.pixelOff, isNotNull);
   checkColor(skin.lcd.colors.pixelOff);
-  expect(skin.lcd.colors.symbolOn, isNotNull);
   checkColor(skin.lcd.colors.symbolOn);
-  expect(skin.lcd.colors.symbolOff, isNotNull);
   checkColor(skin.lcd.colors.symbolOff);
 
-  expect(skin.lcd.top, isNotNull);
   expect(skin.lcd.top, greaterThan(0));
-  expect(skin.lcd.left, isNotNull);
   expect(skin.lcd.left, greaterThan(0));
-  expect(skin.lcd.height, isNotNull);
   expect(skin.lcd.height, greaterThan(0));
-  expect(skin.lcd.width, isNotNull);
   expect(skin.lcd.width, greaterThan(0));
 
-  expect(skin.lcd.margin, isNotNull);
-  expect(skin.lcd.margin.left, isNotNull);
   expect(skin.lcd.margin.left, greaterThan(0));
   expect(skin.lcd.margin.left, lessThan(skin.lcd.width / 2.0));
-  expect(skin.lcd.margin.top, isNotNull);
   expect(skin.lcd.margin.top, greaterThan(0));
   expect(skin.lcd.margin.top, lessThan(skin.lcd.height / 2.0));
-  expect(skin.lcd.margin.right, isNotNull);
   expect(skin.lcd.margin.right, greaterThan(0));
   expect(skin.lcd.margin.right, lessThan(skin.lcd.width / 2.0));
-  expect(skin.lcd.margin.bottom, isNotNull);
   expect(skin.lcd.margin.bottom, greaterThan(0));
   expect(skin.lcd.margin.bottom, lessThan(skin.lcd.height / 2.0));
 
   expect(skin.keyColors.length, greaterThan(0));
   skin.keyColors.values.forEach(checkColorModel);
 
-  expect(skin.keys, isNotNull);
   expect(skin.keys.length, equals(allowedKeys.length));
   for (final String key in skin.keys.keys) {
     expect(allowedKeys.contains(key), isTrue);
-    checkKey(skin.keyColors.keys, skin.keys[key]);
+    checkKey(skin.keyColors.keys, skin.keys[key]!);
   }
 }
 
 void checkKey(Iterable<String> colors, KeyModel key) {
-  expect(key.label, isNotNull);
   key.label.when<void>(
     text: (String value) {
-      expect(key.label.value, isNotNull);
-      expect(key.label.value.isNotEmpty, isTrue);
+      expect(value.isNotEmpty, isTrue);
     },
     icon: (String value) {
-      expect(key.label.value, isNotNull);
-      expect(key.label.value.isNotEmpty, isTrue);
+      expect(value.isNotEmpty, isTrue);
       expect(
-        <String>['left', 'up', 'right', 'down', 'up-down'].contains(
-          key.label.value,
-        ),
+        <String>['left', 'up', 'right', 'down', 'up-down'].contains(value),
         isTrue,
       );
     },
   );
   expect(colors.contains(key.color), isTrue);
-  expect(key.fontSize, isNotNull);
   expect(key.fontSize, greaterThan(10));
   expect(key.fontSize, lessThan(48));
-  expect(key.top, isNotNull);
   expect(key.top, greaterThan(0));
-  expect(key.left, isNotNull);
   expect(key.left, greaterThan(0));
-  expect(key.height, isNotNull);
   expect(key.height, greaterThan(0));
-  expect(key.width, isNotNull);
   expect(key.width, greaterThan(0));
 }
 

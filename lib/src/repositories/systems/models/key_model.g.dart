@@ -7,22 +7,25 @@ part of 'key_model.dart';
 // **************************************************************************
 
 KeyModel _$KeyModelFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const [
-    'label',
-    'color',
-    'font-size',
-    'top',
-    'left',
-    'width',
-    'height'
-  ]);
+  $checkKeys(
+    json,
+    requiredKeys: const [
+      'label',
+      'color',
+      'font-size',
+      'top',
+      'left',
+      'width',
+      'height',
+    ],
+  );
   return KeyModel(
     label: KeyLabelModel.fromJson(json['label'] as Map<String, dynamic>),
     color: json['color'] as String,
-    fontSize: _intToDouble(json['font-size'] as int),
-    top: _intToDouble(json['top'] as int),
-    left: _intToDouble(json['left'] as int),
-    width: _intToDouble(json['width'] as int),
-    height: _intToDouble(json['height'] as int),
+    fontSize: intToDouble((json['font-size'] as num).toInt()),
+    top: intToDouble((json['top'] as num).toInt()),
+    left: intToDouble((json['left'] as num).toInt()),
+    width: intToDouble((json['width'] as num).toInt()),
+    height: intToDouble((json['height'] as num).toInt()),
   );
 }

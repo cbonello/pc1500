@@ -7,21 +7,24 @@ part of 'lcd_symbols_model.dart';
 // **************************************************************************
 
 LcdSymbolsModel _$LcdSymbolsModelFromJson(Map<String, dynamic> json) {
-  $checkKeys(json, requiredKeys: const [
-    'busy',
-    'shift',
-    'small',
-    'def',
-    '1',
-    '2',
-    '3',
-    'de',
-    'g',
-    'rad',
-    'run',
-    'pro',
-    'reserve'
-  ]);
+  $checkKeys(
+    json,
+    requiredKeys: const [
+      'busy',
+      'shift',
+      'small',
+      'def',
+      '1',
+      '2',
+      '3',
+      'de',
+      'g',
+      'rad',
+      'run',
+      'pro',
+      'reserve',
+    ],
+  );
   return LcdSymbolsModel(
     busy: (json['busy'] as num).toDouble(),
     shift: (json['shift'] as num).toDouble(),

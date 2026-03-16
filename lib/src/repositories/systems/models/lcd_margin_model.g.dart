@@ -9,9 +9,9 @@ part of 'lcd_margin_model.dart';
 LcdMarginModel _$LcdMarginModelFromJson(Map<String, dynamic> json) {
   $checkKeys(json, requiredKeys: const ['left', 'top', 'right', 'bottom']);
   return LcdMarginModel(
-    left: _intToDouble(json['left'] as int),
-    top: _intToDouble(json['top'] as int),
-    right: _intToDouble(json['right'] as int),
-    bottom: _intToDouble(json['bottom'] as int),
+    left: intToDouble((json['left'] as num).toInt()),
+    top: intToDouble((json['top'] as num).toInt()),
+    right: intToDouble((json['right'] as num).toInt()),
+    bottom: intToDouble((json['bottom'] as num).toInt()),
   );
 }

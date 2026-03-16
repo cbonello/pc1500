@@ -15,7 +15,7 @@ final Map<CE150RomType, List<int>> _roms = <CE150RomType, List<int>>{
 };
 
 final Map<CE150RomType, String> _annotationsJson = <CE150RomType, String>{
-  CE150RomType.version_1: ce150_version_1_annotations.json,
+  CE150RomType.version_1: ce150_version_1_annotations.ce150Version1AnnotationsJson,
 };
 
 class CE150Rom implements RomBase {

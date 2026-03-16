@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'models/models.dart';
 
@@ -10,33 +9,32 @@ enum DeviceType { pc1500, pc2, pc1500A }
 
 final FutureProvider<SystemsRepository> systemsRepositoryProvider =
     FutureProvider<SystemsRepository>(
-  (ProviderReference ref) => SystemsRepository.getInstance(),
+  (Ref ref) => SystemsRepository.getInstance(),
 );
 
 class SystemsRepository {
-  SystemsRepository._({@required Map<DeviceType, SkinModel> skins})
-      : assert(skins != null),
-        _skins = skins;
+  SystemsRepository._({required Map<DeviceType, SkinModel> skins})
+      : _skins = skins;
 
-  static SystemsRepository _instance;
-  static Future<SystemsRepository> getInstance() async {
-    if (_instance == null) {
-      final Map<DeviceType, SkinModel> skins = <DeviceType, SkinModel>{};
-      skins[DeviceType.pc2] = await _readSkin('assets/systems/pc2.json');
-      skins[DeviceType.pc1500] = await _readSkin('assets/systems/pc1500.json');
-      skins[DeviceType.pc1500A] = await _readSkin(
-        'assets/systems/pc1500a.json',
-      );
+  static Future<SystemsRepository>? _instanceFuture;
+  static Future<SystemsRepository> getInstance() {
+    return _instanceFuture ??= _create();
+  }
 
-      _instance = SystemsRepository._(skins: skins);
-    }
+  static Future<SystemsRepository> _create() async {
+    final Map<DeviceType, SkinModel> skins = <DeviceType, SkinModel>{};
+    skins[DeviceType.pc2] = await _readSkin('assets/systems/pc2.json');
+    skins[DeviceType.pc1500] = await _readSkin('assets/systems/pc1500.json');
+    skins[DeviceType.pc1500A] = await _readSkin(
+      'assets/systems/pc1500a.json',
+    );
 
-    return _instance;
+    return SystemsRepository._(skins: skins);
   }
 
   final Map<DeviceType, SkinModel> _skins;
 
-  SkinModel getSkin(DeviceType type) => _skins[type];
+  SkinModel getSkin(DeviceType type) => _skins[type]!;
 
   bool skinExistsForDevice(DeviceType type) => _skins.containsKey(type);
 

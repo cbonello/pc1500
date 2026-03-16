@@ -2,18 +2,18 @@ import 'dart:io';
 import 'dart:typed_data';
 
 class DebugServer {
-  DebugServer({InternetAddress host, int port = 3756})
+  DebugServer({InternetAddress? host, int port = 3756})
       : _host = host ?? InternetAddress.loopbackIPv6,
-        _port = port ?? 3756;
+        _port = port;
 
   final InternetAddress _host;
   final int _port;
-  ServerSocket _serverSocket;
-  Socket _clientSocket;
+  ServerSocket? _serverSocket;
+  Socket? _clientSocket;
 
   Future<void> start() async {
     _serverSocket = await ServerSocket.bind(_host, _port);
-    _serverSocket.listen(_handleClient);
+    _serverSocket!.listen(_handleClient);
   }
 
   void send(Object message) => _clientSocket?.writeln(message);
@@ -27,7 +27,7 @@ class DebugServer {
     // Only one client!
     if (_clientSocket == null) {
       _clientSocket = client;
-      _clientSocket.listen(
+      _clientSocket!.listen(
         (Uint8List onData) {
           send('Received: ${String.fromCharCodes(onData)}');
         },

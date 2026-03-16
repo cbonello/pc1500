@@ -1,16 +1,32 @@
-import 'package:flutter/foundation.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
+sealed class KeyLabelModel {
+  const KeyLabelModel(this.value);
 
-part 'key_label_model.freezed.dart';
-part 'key_label_model.g.dart';
+  factory KeyLabelModel.fromJson(Map<String, dynamic> json) {
+    final String type = json['type'] as String;
+    final String value = json['value'] as String;
+    return switch (type) {
+      'text' => KeyLabelModelText(value),
+      'icon' => KeyLabelModelIcon(value),
+      _ => throw ArgumentError('Unknown KeyLabelModel type: $type'),
+    };
+  }
 
-@Freezed(unionKey: 'type')
-abstract class KeyLabelModel with _$KeyLabelModel {
-  const factory KeyLabelModel.text(String value) = KeyLabelModelText;
+  final String value;
 
-  const factory KeyLabelModel.icon(String value) = KeyLabelModelIcon;
+  T when<T>({
+    required T Function(String value) text,
+    required T Function(String value) icon,
+  }) =>
+      switch (this) {
+        KeyLabelModelText() => text(value),
+        KeyLabelModelIcon() => icon(value),
+      };
+}
 
-  factory KeyLabelModel.fromJson(Map<String, dynamic> json) =>
-      _$KeyLabelModelFromJson(json);
+class KeyLabelModelText extends KeyLabelModel {
+  const KeyLabelModelText(super.value);
+}
+
+class KeyLabelModelIcon extends KeyLabelModel {
+  const KeyLabelModelIcon(super.value);
 }
