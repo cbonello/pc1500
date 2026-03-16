@@ -43,23 +43,6 @@ void main() {
 
   group('AnnotatedArea', () {
     group('AnnotatedArea.empty()', () {
-      test('should raise an AnnotationsError for invalid arguments', () {
-        expect(
-          () => AnnotatedArea.empty(
-            addressSpace: null,
-            name: 'test',
-          ),
-          throwsA(const TypeMatcher<AnnotationsError>()),
-        );
-        expect(
-          () => AnnotatedArea.empty(
-            addressSpace: AddressSpace.fromTag('1234'),
-            name: null,
-          ),
-          throwsA(const TypeMatcher<AnnotationsError>()),
-        );
-      });
-
       test('should create an empty AnnotatedArea successfully', () {
         AnnotatedArea annotatedArea;
 
@@ -104,7 +87,7 @@ void main() {
       expect(annotatedArea.subAreas.length, equals(1));
 
       expect(
-        annotatedArea.subAreas[0].parent.name,
+        annotatedArea.subAreas[0].parent!.name,
         equals(annotatedArea.name),
       );
       expect(
@@ -113,10 +96,7 @@ void main() {
       );
       expect(annotatedArea.subAreas[0].subAreas, isEmpty);
       expect(annotatedArea.subAreas[0].codeAnnotations, isEmpty);
-      expect(
-        annotatedArea.subAreas[0].dataAnnotations.length,
-        equals(1),
-      );
+      expect(annotatedArea.subAreas[0].dataAnnotations.length, equals(1));
 
       expect(
         annotatedArea.subAreas[0].dataAnnotations[0].area.name,
@@ -126,8 +106,10 @@ void main() {
         annotatedArea.subAreas[0].dataAnnotations[0].addressSpace,
         equals(AddressSpace.fromTag('78F0-78FF')),
       );
-      expect(annotatedArea.subAreas[0].dataAnnotations[0].label,
-          equals('VARIABLE_D\$'));
+      expect(
+        annotatedArea.subAreas[0].dataAnnotations[0].label,
+        equals('VARIABLE_D\$'),
+      );
       expect(
         annotatedArea.subAreas[0].dataAnnotations[0].comment,
         equals('Fixed character variable D\$'),

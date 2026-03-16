@@ -28,27 +28,29 @@ const String annotationsStr = '''
 ''';
 
 void main() {
-  final MemoryBanksAnnotations annotations = MemoryBanksAnnotations();
-  final Map<String, dynamic> json =
-      jsonDecode(annotationsStr) as Map<String, dynamic>;
+  final annotations = MemoryBanksAnnotations();
+  final json = jsonDecode(annotationsStr) as Map<String, dynamic>;
 
   annotations.load(json);
 
   if (annotations.isAnnotated(0x764E)) {
-    final AnnotationBase annotation =
-        annotations.getAnnotationFromAddress(0x764E);
+    final annotation = annotations.getAnnotationFromAddress(0x764E);
     if (annotation is CodeAnnotation) {
-      final String label =
-          annotation.label == null ? '' : '${annotation.label}: ';
-      final String comment =
-          annotation.comment == null ? '' : '; ${annotation.comment}';
+      final String label = annotation.label == null
+          ? ''
+          : '${annotation.label}: ';
+      final String comment = annotation.comment == null
+          ? ''
+          : '; ${annotation.comment}';
 
       print('${annotation.addressSpace} $label$comment');
     } else if (annotation is DataAnnotation) {
-      final String label =
-          annotation.label == null ? '' : '${annotation.label}: ';
-      final String comment =
-          annotation.comment == null ? '' : '; ${annotation.comment}';
+      final String label = annotation.label == null
+          ? ''
+          : '${annotation.label}: ';
+      final String comment = annotation.comment == null
+          ? ''
+          : '; ${annotation.comment}';
 
       print('${annotation.addressSpace} $label$comment');
     }

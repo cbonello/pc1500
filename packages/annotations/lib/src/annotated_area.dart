@@ -1,70 +1,65 @@
+import 'package:annotations/src/address_space.dart';
+import 'package:annotations/src/base_annotation.dart';
+import 'package:annotations/src/code_annotation.dart';
+import 'package:annotations/src/data_annotation.dart';
+import 'package:annotations/src/exception.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
-
-import 'address_space.dart';
-import 'base_annotation.dart';
-import 'code_annotation.dart';
-import 'data_annotation.dart';
-import 'exception.dart';
 
 class AnnotatedArea extends AnnotationBase with EquatableMixin {
-  const AnnotatedArea._({
+  AnnotatedArea._({
     this.parent,
-    @required AddressSpace addressSpace,
-    @required this.name,
-    @required this.subAreas,
-    @required this.codeAnnotations,
-    @required this.dataAnnotations,
-  })  : assert(addressSpace != null),
-        assert(name != null),
-        assert(subAreas != null),
-        assert(codeAnnotations != null),
-        assert(dataAnnotations != null),
-        super(addressSpace: addressSpace);
+    required AddressSpace addressSpace,
+    required this.name,
+    required List<AnnotatedArea> subAreas,
+    required List<CodeAnnotation> codeAnnotations,
+    required List<DataAnnotation> dataAnnotations,
+  }) : subAreas = List.unmodifiable(subAreas),
+       codeAnnotations = List.unmodifiable(codeAnnotations),
+       dataAnnotations = List.unmodifiable(dataAnnotations),
+       super(addressSpace: addressSpace);
 
   factory AnnotatedArea.empty({
-    AnnotatedArea parent,
-    @required AddressSpace addressSpace,
-    @required String name,
-  }) {
-    if (addressSpace == null) {
-      throw AnnotationsError('AnnotatedArea: Missing address-space');
-    }
-    if (name == null) {
-      throw AnnotationsError('AnnotatedArea: Missing name');
-    }
-
-    return AnnotatedArea._(
-      parent: parent,
-      addressSpace: addressSpace,
-      name: name,
-      subAreas: <AnnotatedArea>[],
-      codeAnnotations: <CodeAnnotation>[],
-      dataAnnotations: <DataAnnotation>[],
-    );
-  }
+    AnnotatedArea? parent,
+    required AddressSpace addressSpace,
+    required String name,
+  }) => AnnotatedArea._(
+    parent: parent,
+    addressSpace: addressSpace,
+    name: name,
+    subAreas: <AnnotatedArea>[],
+    codeAnnotations: <CodeAnnotation>[],
+    dataAnnotations: <DataAnnotation>[],
+  );
 
   factory AnnotatedArea.fromJson(
-    AnnotatedArea parent,
+    AnnotatedArea? parent,
     AddressSpace addressSpace,
     Map<String, dynamic> json,
   ) {
-    assert(parent?.addressSpace?.containsAddress(addressSpace.start) ?? true);
-
-    final String name = json['name'] as String;
-    if (name == null) {
+    if (parent != null &&
+        !parent.addressSpace.containsAddress(addressSpace.start)) {
       throw AnnotationsError(
-        'AnnotatedArea: $addressSpace: Missing area name',
+        'AnnotatedArea: $addressSpace is outside parent ${parent.addressSpace}',
       );
     }
 
+    final name = json['name'] as String;
+
+    // Build into temporary mutable lists, then pass to constructor for
+    // unmodifiable wrapping.
+    final tempSubAreas = <AnnotatedArea>[];
+    final tempCodeAnnotations = <CodeAnnotation>[];
+    final tempDataAnnotations = <DataAnnotation>[];
+
+    // We need a temporary area reference for children to point back to.
+    // Create the final area after all children are built.
     final AnnotatedArea area = AnnotatedArea.empty(
       parent: parent,
       addressSpace: addressSpace,
       name: name,
     );
 
-    final Map<String, dynamic> areas = json['areas'] as Map<String, dynamic>;
+    final areas = json['areas'] as Map<String, dynamic>?;
     if (areas != null) {
       for (final String tag in areas.keys) {
         if (areas[tag] == null) {
@@ -79,11 +74,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
           addrspace,
           areas[tag] as Map<String, dynamic>,
         );
-        area.subAreas.add(subArea);
+        tempSubAreas.add(subArea);
       }
     }
 
-    final Map<String, dynamic> code = json['code'] as Map<String, dynamic>;
+    final code = json['code'] as Map<String, dynamic>?;
     if (code != null) {
       for (final String tag in code.keys) {
         if (code[tag] == null) {
@@ -98,11 +93,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
           addrspace,
           code[tag] as Map<String, dynamic>,
         );
-        area.codeAnnotations.add(codeAnnotation);
+        tempCodeAnnotations.add(codeAnnotation);
       }
     }
 
-    final Map<String, dynamic> data = json['data'] as Map<String, dynamic>;
+    final data = json['data'] as Map<String, dynamic>?;
     if (data != null) {
       for (final String tag in data.keys) {
         if (data[tag] == null) {
@@ -111,39 +106,47 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
           );
         }
 
-        final AddressSpace addrspace = AddressSpace.fromTag(tag);
-        final DataAnnotation dataAnnotation = DataAnnotation.fromJson(
+        final addrspace = AddressSpace.fromTag(tag);
+        final dataAnnotation = DataAnnotation.fromJson(
           area,
           addrspace,
           data[tag] as Map<String, dynamic>,
         );
-        area.dataAnnotations.add(dataAnnotation);
+        tempDataAnnotations.add(dataAnnotation);
       }
     }
 
-    final List<AnnotationBase> annotations = <AnnotationBase>[
-      ...area.subAreas,
-      ...area.codeAnnotations,
-      ...area.dataAnnotations,
+    final annotations = <AnnotationBase>[
+      ...tempSubAreas,
+      ...tempCodeAnnotations,
+      ...tempDataAnnotations,
     ];
 
     for (int i = 0; i < annotations.length - 1; i++) {
       for (int j = i + 1; j < annotations.length; j++) {
-        if (annotations[i]
-                .addressSpace
-                .intersectWith(annotations[j].addressSpace) ==
+        if (annotations[i].addressSpace.intersectWith(
+              annotations[j].addressSpace,
+            ) ==
             true) {
           throw AnnotationsError(
-            'AnnotatedArea: ${annotations[i].addressSpace} and ${annotations[j].addressSpace} intersect',
+            'AnnotatedArea: ${annotations[i].addressSpace} and '
+            '${annotations[j].addressSpace} intersect',
           );
         }
       }
     }
 
-    return area;
+    return AnnotatedArea._(
+      parent: parent,
+      addressSpace: addressSpace,
+      name: name,
+      subAreas: tempSubAreas,
+      codeAnnotations: tempCodeAnnotations,
+      dataAnnotations: tempDataAnnotations,
+    );
   }
 
-  final AnnotatedArea parent;
+  final AnnotatedArea? parent;
   final String name;
   final List<AnnotatedArea> subAreas;
   final List<CodeAnnotation> codeAnnotations;
@@ -176,11 +179,11 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
   }
 
   @override
-  List<Object> get props => <Object>[
-        parent,
-        name,
-        subAreas,
-        codeAnnotations,
-        dataAnnotations,
-      ];
+  List<Object?> get props => [
+    parent?.name,
+    name,
+    subAreas,
+    codeAnnotations,
+    dataAnnotations,
+  ];
 }

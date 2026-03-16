@@ -15,27 +15,6 @@ void main() {
 
   group('CodeAnnotation', () {
     test('should raise an AnnotationsError for invalid arguments', () {
-      // Parent must not be null.
-      expect(
-        () => CodeAnnotation.fromJson(
-          null,
-          AddressSpace.fromTag('C001'),
-          json,
-        ),
-        throwsA(const TypeMatcher<AnnotationsError>()),
-      );
-      // Address-space must not be null.
-      expect(
-        () => CodeAnnotation.fromJson(
-          AnnotatedArea.empty(
-            addressSpace: AddressSpace.fromTag('C000-C01C'),
-            name: 'Code Section #1',
-          ),
-          null,
-          json,
-        ),
-        throwsA(const TypeMatcher<AnnotationsError>()),
-      );
       // Address-space length of a code annotation must be 1.
       expect(
         () => CodeAnnotation.fromJson(

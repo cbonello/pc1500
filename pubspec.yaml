@@ -7,7 +7,7 @@ issue_tracker: https://github.com/cbonello/pc1500/issues
 publish_to: none
 
 environment:
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:

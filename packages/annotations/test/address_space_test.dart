@@ -5,10 +5,6 @@ void main() {
   group('AddressSpace', () {
     test('should detect malformed tags', () {
       expect(
-        () => AddressSpace.fromTag(null),
-        throwsA(const TypeMatcher<AnnotationsError>()),
-      );
-      expect(
         () => AddressSpace.fromTag(''),
         throwsA(const TypeMatcher<AnnotationsError>()),
       );
@@ -82,14 +78,8 @@ void main() {
 
     group('length getter', () {
       test('should return the address-space size', () {
-        expect(
-          AddressSpace.fromTag('1234').length,
-          equals(1),
-        );
-        expect(
-          AddressSpace.fromTag('0004-0008').length,
-          equals(8 - 4 + 1),
-        );
+        expect(AddressSpace.fromTag('1234').length, equals(1));
+        expect(AddressSpace.fromTag('0004-0008').length, equals(8 - 4 + 1));
       });
     });
 
@@ -97,56 +87,35 @@ void main() {
       test(
         'should return the memory bank corresponding to the address-space',
         () {
-          expect(
-            AddressSpace.fromTag('1234').memoryBank,
-            equals(0),
-          );
-          expect(
-            AddressSpace.fromTag('#0012-#1234').memoryBank,
-            equals(1),
-          );
+          expect(AddressSpace.fromTag('1234').memoryBank, equals(0));
+          expect(AddressSpace.fromTag('#0012-#1234').memoryBank, equals(1));
         },
       );
     });
 
     group('containsAddress()', () {
-      test(
-        'should detect if an address is included in the address-space',
-        () {
-          expect(
-            AddressSpace.fromTag('1234').containsAddress(0x1234),
-            isTrue,
-          );
-          expect(
-            AddressSpace.fromTag('1234').containsAddress(0x12),
-            isFalse,
-          );
-          expect(
-            AddressSpace.fromTag('1234-5678').containsAddress(0x3456),
-            isTrue,
-          );
-          expect(
-            AddressSpace.fromTag('1234-5678').containsAddress(0xFFFF),
-            isFalse,
-          );
-          expect(
-            AddressSpace.fromTag('#1234').containsAddress(0x11234),
-            isTrue,
-          );
-          expect(
-            AddressSpace.fromTag('#1234').containsAddress(0x4),
-            isFalse,
-          );
-          expect(
-            AddressSpace.fromTag('#1234-#5678').containsAddress(0x13456),
-            isTrue,
-          );
-          expect(
-            AddressSpace.fromTag('#1234-#5678').containsAddress(0x3456),
-            isFalse,
-          );
-        },
-      );
+      test('should detect if an address is included in the address-space', () {
+        expect(AddressSpace.fromTag('1234').containsAddress(0x1234), isTrue);
+        expect(AddressSpace.fromTag('1234').containsAddress(0x12), isFalse);
+        expect(
+          AddressSpace.fromTag('1234-5678').containsAddress(0x3456),
+          isTrue,
+        );
+        expect(
+          AddressSpace.fromTag('1234-5678').containsAddress(0xFFFF),
+          isFalse,
+        );
+        expect(AddressSpace.fromTag('#1234').containsAddress(0x11234), isTrue);
+        expect(AddressSpace.fromTag('#1234').containsAddress(0x4), isFalse);
+        expect(
+          AddressSpace.fromTag('#1234-#5678').containsAddress(0x13456),
+          isTrue,
+        );
+        expect(
+          AddressSpace.fromTag('#1234-#5678').containsAddress(0x3456),
+          isFalse,
+        );
+      });
     });
 
     group('containsAddressSpace()', () {
@@ -165,13 +134,15 @@ void main() {
             isFalse,
           );
           expect(
-            AddressSpace.fromTag('1234-5678')
-                .containsAddressSpace(me0AddressSpace),
+            AddressSpace.fromTag(
+              '1234-5678',
+            ).containsAddressSpace(me0AddressSpace),
             isTrue,
           );
           expect(
-            AddressSpace.fromTag('1235-5678')
-                .containsAddressSpace(me0AddressSpace),
+            AddressSpace.fromTag(
+              '1235-5678',
+            ).containsAddressSpace(me0AddressSpace),
             isFalse,
           );
           expect(
@@ -183,13 +154,15 @@ void main() {
             isFalse,
           );
           expect(
-            AddressSpace.fromTag('#1234-#5678')
-                .containsAddressSpace(me1AddressSpace),
+            AddressSpace.fromTag(
+              '#1234-#5678',
+            ).containsAddressSpace(me1AddressSpace),
             isTrue,
           );
           expect(
-            AddressSpace.fromTag('#4321-#5678')
-                .containsAddressSpace(me1AddressSpace),
+            AddressSpace.fromTag(
+              '#4321-#5678',
+            ).containsAddressSpace(me1AddressSpace),
             isFalse,
           );
         },
@@ -212,15 +185,11 @@ void main() {
             isFalse,
           );
           expect(
-            AddressSpace.fromTag('1234-5678').intersectWith(
-              me0AddressSpace,
-            ),
+            AddressSpace.fromTag('1234-5678').intersectWith(me0AddressSpace),
             isTrue,
           );
           expect(
-            AddressSpace.fromTag('1235-5678').intersectWith(
-              me0AddressSpace,
-            ),
+            AddressSpace.fromTag('1235-5678').intersectWith(me0AddressSpace),
             isFalse,
           );
           expect(
@@ -232,21 +201,17 @@ void main() {
             isFalse,
           );
           expect(
-            AddressSpace.fromTag('#1234-#5678').intersectWith(
-              me1AddressSpace,
-            ),
+            AddressSpace.fromTag('#1234-#5678').intersectWith(me1AddressSpace),
             isTrue,
           );
           expect(
-            AddressSpace.fromTag('#4321-#5678').intersectWith(
-              me1AddressSpace,
-            ),
+            AddressSpace.fromTag('#4321-#5678').intersectWith(me1AddressSpace),
             isFalse,
           );
           expect(
-            AddressSpace.fromTag('#0010-#0020').intersectWith(
-              AddressSpace.fromTag('#0000-#00FF'),
-            ),
+            AddressSpace.fromTag(
+              '#0010-#0020',
+            ).intersectWith(AddressSpace.fromTag('#0000-#00FF')),
             isTrue,
           );
         },
@@ -276,10 +241,7 @@ void main() {
 
     group('toString()', () {
       test('should display the expected data', () {
-        expect(
-          AddressSpace.fromTag('1234').toString(),
-          equals('[1234]'),
-        );
+        expect(AddressSpace.fromTag('1234').toString(), equals('[1234]'));
         expect(
           AddressSpace.fromTag('#1234-#5678').toString(),
           equals('[#1234-#5678]'),

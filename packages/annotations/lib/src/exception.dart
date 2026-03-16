@@ -4,5 +4,5 @@ class AnnotationsError extends Error {
   final String message;
 
   @override
-  String toString() => 'System: $message';
+  String toString() => 'AnnotationsError: $message';
 }

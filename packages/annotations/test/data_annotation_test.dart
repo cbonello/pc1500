@@ -16,27 +16,6 @@ void main() {
 
   group('DataAnnotation', () {
     test('should raise an AnnotationsError for invalid arguments', () {
-      // Parent must not be null.
-      expect(
-        () => DataAnnotation.fromJson(
-          null,
-          AddressSpace.fromTag('78C0-78FF'),
-          json,
-        ),
-        throwsA(const TypeMatcher<AnnotationsError>()),
-      );
-      // Address-space must not be null.
-      expect(
-        () => DataAnnotation.fromJson(
-          AnnotatedArea.empty(
-            addressSpace: AddressSpace.fromTag('7850-78BF'),
-            name: 'Fixed character variables #3',
-          ),
-          null,
-          json,
-        ),
-        throwsA(const TypeMatcher<AnnotationsError>()),
-      );
       // Address-space of a code annotation must be included in its parent
       // address-space.
       expect(
@@ -102,10 +81,7 @@ void main() {
         equals(const TypeMatcher<DataAnnotation>()),
       );
       expect(dataAnnotation.label, equals('VARIABLE_A\$'));
-      expect(
-        dataAnnotation.comment,
-        equals('Fixed character variable A\$'),
-      );
+      expect(dataAnnotation.comment, equals('Fixed character variable A\$'));
       expect(
         dataAnnotation.type,
         equals(DataAnnotationType.fixedCharacterVariable),
@@ -128,10 +104,7 @@ void main() {
         equals(const TypeMatcher<DataAnnotation>()),
       );
       expect(dataAnnotation.label, isNull);
-      expect(
-        dataAnnotation.comment,
-        equals('Fixed character variable A\$'),
-      );
+      expect(dataAnnotation.comment, equals('Fixed character variable A\$'));
       expect(
         dataAnnotation.type,
         equals(DataAnnotationType.fixedCharacterVariable),
@@ -155,14 +128,8 @@ void main() {
         equals(const TypeMatcher<DataAnnotation>()),
       );
       expect(dataAnnotation.label, isNull);
-      expect(
-        dataAnnotation.comment,
-        equals('Fixed character variable A\$'),
-      );
-      expect(
-        dataAnnotation.type,
-        equals(DataAnnotationType.data),
-      );
+      expect(dataAnnotation.comment, equals('Fixed character variable A\$'));
+      expect(dataAnnotation.type, equals(DataAnnotationType.data));
     });
   });
 }
