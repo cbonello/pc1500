@@ -24,11 +24,11 @@ void main(List<String> arguments) {
       abbr: outputOption[0],
       help: 'Output filename',
     );
-  ArgResults argResults;
 
+  final ArgResults argResults;
   try {
     argResults = parser.parse(arguments);
-  } catch (exception) {
+  } on FormatException catch (exception) {
     stderr.write('error: ${exception.message}');
     exit(kErrors);
   }
@@ -43,14 +43,14 @@ void main(List<String> arguments) {
 
   if (argResults.rest.isEmpty) {
     stderr.write(
-      'error: Please specifiy the location of the binary file to convert',
+      'error: Please specify the location of the binary file to convert',
     );
     exit(kErrors);
   }
 
   final String inputFilename = argResults.rest.single;
 
-  String outputFilename;
+  final String outputFilename;
   if (argResults[outputOption] != null) {
     outputFilename = argResults[outputOption] as String;
     if (path.extension(outputFilename) != '.dart') {
@@ -63,7 +63,7 @@ void main(List<String> arguments) {
   }
 
   final File inputFile = File(inputFilename);
-  IOSink sink;
+  IOSink? sink;
   try {
     stdout.writeln("Reading file '$inputFilename'...");
     final Uint8List binData = inputFile.readAsBytesSync();
@@ -78,10 +78,10 @@ void main(List<String> arguments) {
       );
     }
     sink.writeln('];');
-  } catch (e) {
-    stderr.write('error: ${e.message}');
+  } on IOException catch (e) {
+    stderr.write('error: $e');
     exit(kErrors);
   } finally {
-    sink.close();
+    sink?.close();
   }
 }

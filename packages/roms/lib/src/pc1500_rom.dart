@@ -19,25 +19,29 @@ final Map<PC1500RomType, String> _annotationsJson = <PC1500RomType, String>{
 
 class PC1500Rom implements RomBase {
   PC1500Rom(this.type) {
-    if (_roms.containsKey(type) == false) {
+    final List<int>? rom = _roms[type];
+    if (rom == null) {
       throw Exception('ROM not available');
     }
 
-    _bytes = Uint8List.fromList(_roms[type]);
+    _bytes = Uint8List.fromList(rom);
 
-    if (_annotationsJson.containsKey(type)) {
+    final String? annotationsStr = _annotationsJson[type];
+    if (annotationsStr != null) {
       try {
-        annotations =
-            jsonDecode(_annotationsJson[type]) as Map<String, dynamic>;
-      } catch (e) {
-        annotations = <String, dynamic>{};
+        _annotations =
+            jsonDecode(annotationsStr) as Map<String, dynamic>;
+      } catch (_) {
+        _annotations = <String, dynamic>{};
       }
     }
   }
 
   final PC1500RomType type;
-  Uint8List _bytes;
-  Map<String, dynamic> annotations;
+  late final Uint8List _bytes;
+  Map<String, dynamic> _annotations = <String, dynamic>{};
+
+  Map<String, dynamic> get annotations => _annotations;
 
   @override
   Uint8List get bytes => Uint8List.view(_bytes.buffer);
