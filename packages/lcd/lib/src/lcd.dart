@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
 
 const int _dispBuf1Start = 0x07600;
 const int _dispBuf2Start = 0x07700;
@@ -12,9 +11,11 @@ const int _dispBufLen = 0x4E;
 const int _symBufStart = 0x0764E;
 const int _symBufLen = 2;
 
+typedef MemoryReadFn = Uint8ClampedList Function(int address, int length);
+
 @immutable
 class LcdSymbols extends Equatable {
-  const LcdSymbols({@required this.data}) : assert(data?.length == _symBufLen);
+  const LcdSymbols({required this.data}) : assert(data.length == _symBufLen);
 
   final Uint8ClampedList data;
 
@@ -41,12 +42,11 @@ class LcdSymbols extends Equatable {
 @immutable
 class LcdEvent extends Equatable {
   const LcdEvent({
-    @required this.displayBuffer1,
-    @required this.displayBuffer2,
-    @required this.symbols,
-  })  : assert(displayBuffer1?.length == _dispBufLen),
-        assert(displayBuffer2?.length == _dispBufLen),
-        assert(symbols != null);
+    required this.displayBuffer1,
+    required this.displayBuffer2,
+    required this.symbols,
+  }) : assert(displayBuffer1.length == _dispBufLen),
+       assert(displayBuffer2.length == _dispBufLen);
 
   final Uint8ClampedList displayBuffer1;
   final Uint8ClampedList displayBuffer2;
@@ -57,92 +57,94 @@ class LcdEvent extends Equatable {
   static int get symbolsLength => _symBufLen;
 
   LcdEvent copyWith({
-    Uint8ClampedList displayBuffer1,
-    Uint8ClampedList displayBuffer2,
-    LcdSymbols symbols,
-  }) {
-    return LcdEvent(
-      displayBuffer1: displayBuffer1 ?? this.displayBuffer1,
-      displayBuffer2: displayBuffer2 ?? this.displayBuffer2,
-      symbols: symbols ?? this.symbols,
-    );
-  }
+    Uint8ClampedList? displayBuffer1,
+    Uint8ClampedList? displayBuffer2,
+    LcdSymbols? symbols,
+  }) => LcdEvent(
+    displayBuffer1: displayBuffer1 ?? this.displayBuffer1,
+    displayBuffer2: displayBuffer2 ?? this.displayBuffer2,
+    symbols: symbols ?? this.symbols,
+  );
 
   @override
   List<Object> get props => <Object>[displayBuffer1, displayBuffer2, symbols];
 }
 
 class Lcd with MemoryObserver {
-  factory Lcd({@required MemoryRead memRead}) {
-    assert(memRead != null);
-
-    return Lcd._(
-      displayBuffer1: memRead(_dispBuf1Start, _dispBufLen),
-      displayBuffer2: memRead(_dispBuf2Start, _dispBufLen),
-      symbols: LcdSymbols(data: memRead(_symBufStart, _symBufLen)),
-      memRead: memRead,
-    );
-  }
+  factory Lcd({required MemoryReadFn memRead}) => Lcd._(
+    displayBuffer1: memRead(_dispBuf1Start, _dispBufLen),
+    displayBuffer2: memRead(_dispBuf2Start, _dispBufLen),
+    symbolData: memRead(_symBufStart, _symBufLen),
+  );
 
   Lcd._({
-    @required Uint8ClampedList displayBuffer1,
-    @required Uint8ClampedList displayBuffer2,
-    @required LcdSymbols symbols,
-    @required MemoryRead memRead,
-  })  : assert(displayBuffer1?.length == _dispBufLen),
-        assert(displayBuffer2?.length == _dispBufLen),
-        assert(symbols != null),
-        assert(memRead != null),
-        _displayBuffer1 = displayBuffer1,
-        _displayBuffer2 = displayBuffer2,
-        _symbols = symbols,
-        _memRead = memRead,
-        _inEventCtrl = StreamController<LcdEvent>(),
-        _outEventCtrl = BehaviorSubject<LcdEvent>() {
-    _inEventCtrl.stream
-        .debounceTime(const Duration(milliseconds: 12))
-        .listen((LcdEvent event) => _outEventCtrl.add(event));
-    _emitEvent();
-  }
+    required Uint8ClampedList displayBuffer1,
+    required Uint8ClampedList displayBuffer2,
+    required Uint8ClampedList symbolData,
+  }) : assert(displayBuffer1.length == _dispBufLen),
+       assert(displayBuffer2.length == _dispBufLen),
+       assert(symbolData.length == _symBufLen),
+       _displayBuffer1 = displayBuffer1,
+       _displayBuffer2 = displayBuffer2,
+       _symbolData = symbolData,
+       _eventCtrl = StreamController<LcdEvent>.broadcast();
 
-  final MemoryRead _memRead;
-  final StreamController<LcdEvent> _inEventCtrl;
-  final BehaviorSubject<LcdEvent> _outEventCtrl;
-  Uint8ClampedList _displayBuffer1;
-  Uint8ClampedList _displayBuffer2;
-  LcdSymbols _symbols;
+  /// Emits the current LCD state to all listeners.
+  /// Call after subscribing to [events] to receive the initial state.
+  void emitInitialState() => _emitSnapshot();
 
-  Stream<LcdEvent> get events => _outEventCtrl.stream;
+  final Uint8ClampedList _displayBuffer1;
+  final Uint8ClampedList _displayBuffer2;
+  final Uint8ClampedList _symbolData;
+  final StreamController<LcdEvent> _eventCtrl;
+  Timer? _debounceTimer;
+  bool _dirty = false;
+
+  Stream<LcdEvent> get events => _eventCtrl.stream;
 
   @override
   void memoryUpdated(MemoryAccessType type, int address, int value) {
-    assert(type == MemoryAccessType.write);
-
-    if (_isAddressInRange(address, _dispBuf1Start, _dispBufLen)) {
+    if (address >= _dispBuf1Start && address < _dispBuf1Start + _dispBufLen) {
       _displayBuffer1[address - _dispBuf1Start] = value;
-      _emitEvent();
-    } else if (_isAddressInRange(address, _dispBuf2Start, _dispBufLen)) {
+    } else if (address >= _dispBuf2Start &&
+        address < _dispBuf2Start + _dispBufLen) {
       _displayBuffer2[address - _dispBuf2Start] = value;
-      _emitEvent();
-    } else if (_isAddressInRange(address, _symBufStart, _symBufLen)) {
-      _symbols = LcdSymbols(data: _memRead(_symBufStart, _symBufLen));
-      _emitEvent();
+    } else if (address >= _symBufStart &&
+        address < _symBufStart + _symBufLen) {
+      _symbolData[address - _symBufStart] = value;
+    } else {
+      return;
     }
+    _markDirty();
   }
 
-  void _emitEvent() => _inEventCtrl.add(
-        LcdEvent(
-          displayBuffer1: _displayBuffer1,
-          displayBuffer2: _displayBuffer2,
-          symbols: _symbols,
-        ),
-      );
+  /// Coalesces rapid writes into a single event emission.
+  /// No intermediate LcdEvent objects are allocated until the timer fires.
+  void _markDirty() {
+    if (_dirty) return;
+    _dirty = true;
+    _debounceTimer ??= Timer(const Duration(milliseconds: 12), () {
+      _debounceTimer = null;
+      _dirty = false;
+      _emitSnapshot();
+    });
+  }
 
-  bool _isAddressInRange(int address, int start, int length) =>
-      address >= start && address < (start + length);
+  /// Takes a snapshot of current buffer state and emits it.
+  /// Copies the buffers so the event is immutable.
+  void _emitSnapshot() {
+    _eventCtrl.add(
+      LcdEvent(
+        displayBuffer1: Uint8ClampedList.fromList(_displayBuffer1),
+        displayBuffer2: Uint8ClampedList.fromList(_displayBuffer2),
+        symbols: LcdSymbols(data: Uint8ClampedList.fromList(_symbolData)),
+      ),
+    );
+  }
 
   void dispose() {
-    _outEventCtrl.close();
-    _inEventCtrl.close();
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
+    _eventCtrl.close();
   }
 }
