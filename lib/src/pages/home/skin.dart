@@ -24,6 +24,7 @@ class Skin extends StatefulWidget {
 
 class _SkinState extends State<Skin> {
   late final FocusNode _focusNode;
+  final Set<String> _pressedKeys = <String>{};
 
   @override
   void initState() {
@@ -37,6 +38,16 @@ class _SkinState extends State<Skin> {
     super.dispose();
   }
 
+  void _onKeyDown(String keyName) {
+    widget.device.sendKeyDown(keyName);
+    setState(() => _pressedKeys.add(keyName));
+  }
+
+  void _onKeyUp(String keyName) {
+    widget.device.sendKeyUp(keyName);
+    setState(() => _pressedKeys.remove(keyName));
+  }
+
   @override
   Widget build(BuildContext context) {
     return KeyboardListener(
@@ -46,9 +57,9 @@ class _SkinState extends State<Skin> {
         final String? keyName = _physicalKeyMap[event.logicalKey];
         if (keyName != null) {
           if (event is KeyDownEvent) {
-            widget.device.sendKeyDown(keyName);
+            _onKeyDown(keyName);
           } else if (event is KeyUpEvent) {
-            widget.device.sendKeyUp(keyName);
+            _onKeyUp(keyName);
           }
         }
       },
@@ -80,8 +91,9 @@ class _SkinState extends State<Skin> {
                   child: _KeyButton(
                     keyboardKey: key,
                     colors: widget.skin.keyColors[key.color]!,
-                    onTapDown: () => widget.device.sendKeyDown(value),
-                    onTapUp: () => widget.device.sendKeyUp(value),
+                    pressed: _pressedKeys.contains(value),
+                    onTapDown: () => _onKeyDown(value),
+                    onTapUp: () => _onKeyUp(value),
                   ),
                 );
               }),
@@ -136,6 +148,22 @@ class _SkinState extends State<Skin> {
     LogicalKeyboardKey.digit7: '7',
     LogicalKeyboardKey.digit8: '8',
     LogicalKeyboardKey.digit9: '9',
+    LogicalKeyboardKey.numpad0: '0',
+    LogicalKeyboardKey.numpad1: '1',
+    LogicalKeyboardKey.numpad2: '2',
+    LogicalKeyboardKey.numpad3: '3',
+    LogicalKeyboardKey.numpad4: '4',
+    LogicalKeyboardKey.numpad5: '5',
+    LogicalKeyboardKey.numpad6: '6',
+    LogicalKeyboardKey.numpad7: '7',
+    LogicalKeyboardKey.numpad8: '8',
+    LogicalKeyboardKey.numpad9: '9',
+    LogicalKeyboardKey.numpadDecimal: '.',
+    LogicalKeyboardKey.numpadDivide: '/',
+    LogicalKeyboardKey.numpadMultiply: '*',
+    LogicalKeyboardKey.numpadSubtract: '-',
+    LogicalKeyboardKey.numpadAdd: '+',
+    LogicalKeyboardKey.numpadEnter: 'enter',
     LogicalKeyboardKey.space: ' ',
     LogicalKeyboardKey.enter: 'enter',
     LogicalKeyboardKey.period: '.',
@@ -155,17 +183,23 @@ class _KeyButton extends StatelessWidget {
   const _KeyButton({
     required this.keyboardKey,
     required this.colors,
+    required this.pressed,
     required this.onTapDown,
     required this.onTapUp,
   });
 
   final KeyModel keyboardKey;
   final ColorModel colors;
+  final bool pressed;
   final VoidCallback onTapDown;
   final VoidCallback onTapUp;
 
   @override
   Widget build(BuildContext context) {
+    final Color bgColor = pressed
+        ? Color.lerp(Color(colors.background), Colors.white, 0.3)!
+        : Color(colors.background);
+
     final Widget label = keyboardKey.label.when<Widget>(
       text: (String value) => Text(
         value,
@@ -192,15 +226,17 @@ class _KeyButton extends StatelessWidget {
       ),
     );
 
-    return GestureDetector(
-      onTapDown: (_) => onTapDown(),
-      onTapUp: (_) => onTapUp(),
-      onTapCancel: onTapUp,
-      child: Container(
-        height: keyboardKey.height,
-        width: keyboardKey.width,
-        color: Color(colors.background),
-        child: Center(child: label),
+    return Material(
+      color: bgColor,
+      child: InkWell(
+        onTapDown: (_) => onTapDown(),
+        onTapUp: (_) => onTapUp(),
+        onTapCancel: onTapUp,
+        child: SizedBox(
+          height: keyboardKey.height,
+          width: keyboardKey.width,
+          child: Center(child: label),
+        ),
       ),
     );
   }

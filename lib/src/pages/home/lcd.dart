@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lcd/lcd.dart';
 
-import '../../repositories/systems/models/models.dart';
+import 'package:pc1500/src/repositories/systems/models/models.dart';
 
 class LcdWidget extends StatelessWidget {
-  const LcdWidget({super.key, required this.config, required this.eventsStream});
+  const LcdWidget({
+    super.key,
+    required this.config,
+    required this.eventsStream,
+  });
 
   final LcdModel config;
   final Stream<LcdEvent> eventsStream;
@@ -43,10 +47,7 @@ class LcdWidget extends StatelessWidget {
                   height:
                       config.height - config.margin.top - config.margin.bottom,
                   child: CustomPaint(
-                    painter: _Screen(
-                      config: config,
-                      lcdEvent: snapshot.data!,
-                    ),
+                    painter: _Screen(config: config, lcdEvent: snapshot.data!),
                   ),
                 ),
               ),

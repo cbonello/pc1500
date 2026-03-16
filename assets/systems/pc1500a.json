@@ -31,13 +31,13 @@
         },
         "pixels": {
             "top": 26.0,
-            "width": 3.8,
-            "height": 5.0,
-            "gap": 1.0
+            "width": 4.3,
+            "height": 5.5,
+            "gap": 1.05
         },
         "top": 86,
         "left": 178,
-        "width": 900,
+        "width": 1400,
         "height": 94
     },
     "key-colors": {

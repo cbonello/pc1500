@@ -84,6 +84,10 @@ class Emulator {
 
     // LH5811 I/O port controllers.
     _pc1500IO = LH5811(
+      onPortBRead: () {
+        // PB7 = ON key input (active low).
+        return keyboard.isOnKeyPressed ? 0x7F : 0xFF;
+      },
       onInterrupt: () {
         // PC-1500 I/O interrupt → CPU IR2.
       },

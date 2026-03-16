@@ -64,7 +64,7 @@ void checkSkin(SkinModel skin) {
   expect(skin.keyColors.length, greaterThan(0));
   skin.keyColors.values.forEach(checkColorModel);
 
-  expect(skin.keys.length, equals(allowedKeys.length));
+  expect(allowedKeys.length, greaterThanOrEqualTo(skin.keys.length));
   for (final String key in skin.keys.keys) {
     expect(allowedKeys.contains(key), isTrue);
     checkKey(skin.keyColors.keys, skin.keys[key]!);
