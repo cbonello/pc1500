@@ -1,20 +1,18 @@
 /// PC-1500 keyboard matrix emulator.
 ///
-/// The keyboard uses the CE-153 LH5811 I/O port controller at ME1 0x8000.
-/// Key scanning works by:
-/// 1. CPU writes to PB2-PB7 (strobe lines, active low) for rows 0-9
-/// 2. CPU writes to PC0-PC5 (strobe lines, active low) for rows A-F
-/// 3. CPU reads PA0-PA7 and PB0-PB1 (input lines)
+/// The keyboard matrix has:
+/// - 6 strobe columns: PC-1500 I/O PA0-PA5 (active low via DDA/OPA)
+/// - 16 input rows split across two sets:
+///   - Rows 0-7: CPU IN0-IN7 pins (read via ITA instruction)
+///   - Rows 8-F: CE-153 PA0-PA7 (read via CE-153 port A register)
 ///
 /// The key code chart (p.109 Technical Reference Manual) encodes each key as:
-///   high nibble (0-5) = column, mapped to strobe lines
-///   low nibble (0-F) = row, mapped to input lines
+///   high nibble (0-5) = column (PA0-PA5 strobe line)
+///   low nibble (0-F) = row
+///     0-7: IN0-IN7 input
+///     8-F: CE-153 PA0-PA7 input (row 8 = PA0, row F = PA7)
 ///
-/// For rows 0-7: strobe is PB(column+2), input is PA(row)
-/// For rows 8-9: strobe is PB(column+2), input is PB(row-8)
-/// For rows A-F: strobe is PC(column), input is PA(row-10)
-///
-/// The ON key is NOT in the CE-153 matrix. It connects to PB7 of the
+/// The ON key is NOT in the keyboard matrix. It connects to PB7 of the
 /// PC-1500 main I/O at 0xF000 (see p.105).
 class Keyboard {
   /// Set of currently pressed key names.
@@ -29,84 +27,70 @@ class Keyboard {
   /// Returns true if the ON key is currently pressed.
   bool get isOnKeyPressed => _pressedKeys.contains('on');
 
-  /// Scans the keyboard matrix and returns the PA input byte.
+  /// Debug: returns the set of currently pressed key names.
+  Set<String> get debugPressedKeys => _pressedKeys;
+
+  /// Returns the CPU IN0-IN7 response for keyboard rows 0-7.
   ///
-  /// [strobePB] is the CE-153 PB output (bits 2-7 are strobe lines).
-  /// [strobePC] is the CE-153 PC output (bits 0-7 are strobe lines).
-  /// Returns PA0-PA7 input state (active low: 0 = key pressed).
-  int scanPortA(int strobePB, int strobePC) {
-    int result = 0xFF; // All high = no keys pressed.
-
-    for (final String key in _pressedKeys) {
-      final _KeyPosition? pos = _keyMap[key];
-      if (pos == null) continue;
-
-      if (pos.row < 8) {
-        // Rows 0-7: strobe via PB(column+2), input on PA(row).
-        if (_isPBStrobeActive(pos.column, strobePB)) {
-          result &= ~(1 << pos.row);
-        }
-      } else if (pos.row >= 10) {
-        // Rows A-F (10-15): strobe via PC(column), input on PA(row-10).
-        if (_isPCStrobeActive(pos.column, strobePC)) {
-          result &= ~(1 << (pos.row - 10));
-        }
-      }
-      // Rows 8-9 are PB inputs, handled by scanPortB.
-    }
-
-    return result;
-  }
-
-  /// Scans the keyboard matrix and returns the PB input byte.
+  /// Called when the CPU executes ITA. The strobe state comes from
+  /// PC-1500 I/O DDA and OPA registers. A PA pin is actively strobing
+  /// when DDA bit = 1 and OPA bit = 0.
   ///
-  /// Only bits 0-1 are key inputs (PB0, PB1). Bits 2-7 are strobe outputs.
-  int scanPortB(int strobePB, int strobePC) {
+  /// Returns IN0-IN7 (active low: 0 = key pressed).
+  int scanIN(int dda, int opa) {
+    final int activeStrobes = dda & ~opa;
     int result = 0xFF;
 
     for (final String key in _pressedKeys) {
       final _KeyPosition? pos = _keyMap[key];
-      if (pos == null) continue;
+      if (pos == null || pos.row >= 8) continue;
 
-      // Only rows 8-9 map to PB0-PB1 inputs.
-      if (pos.row == 8 || pos.row == 9) {
-        if (_isPBStrobeActive(pos.column, strobePB)) {
-          result &= ~(1 << (pos.row - 8));
-        }
+      if ((activeStrobes & (1 << pos.column)) != 0) {
+        result &= ~(1 << pos.row);
       }
     }
 
     return result;
   }
 
-  /// Checks if a PB strobe line is active (low) for the given column.
-  /// Column 0 = PB2, column 1 = PB3, ..., column 5 = PB7.
-  bool _isPBStrobeActive(int column, int strobePB) {
-    return (strobePB & (1 << (column + 2))) == 0;
-  }
+  /// Returns the CE-153 PA0-PA7 response for keyboard rows 8-F.
+  ///
+  /// Called when the CPU reads CE-153 port A. The strobe state comes from
+  /// PC-1500 I/O DDA and OPA registers.
+  ///
+  /// Returns PA0-PA7 (active low: 0 = key pressed).
+  int scanCE153(int dda, int opa) {
+    final int activeStrobes = dda & ~opa;
+    int result = 0xFF;
 
-  /// Checks if a PC strobe line is active (low) for the given column.
-  /// Column 0 = PC0, column 1 = PC1, ..., column 5 = PC5.
-  bool _isPCStrobeActive(int column, int strobePC) {
-    return (strobePC & (1 << column)) == 0;
+    for (final String key in _pressedKeys) {
+      final _KeyPosition? pos = _keyMap[key];
+      if (pos == null || pos.row < 8) continue;
+
+      if ((activeStrobes & (1 << pos.column)) != 0) {
+        result &= ~(1 << (pos.row - 8));
+      }
+    }
+
+    return result;
   }
 }
 
 class _KeyPosition {
   const _KeyPosition(this.column, this.row);
-  final int column; // Key code high nibble (0-5).
-  final int row; // Key code low nibble (0-15, i.e. 0x0-0xF).
+  final int column; // Key code high nibble: PA strobe line (0-5).
+  final int row; // Key code low nibble: 0-7 = IN bit, 8-15 = CE-153 PA bit.
 }
 
-/// Key matrix mapping from skin key names to key code positions.
+/// Key matrix mapping from skin key names to key code chart positions.
 ///
-/// Derived from the key code chart on p.109 of the Technical Reference Manual.
-/// Key code = (column << 4) | row.
+/// From the key code chart on p.109 of the Technical Reference Manual.
+/// Key code = (column << 4) | row, where column is the high nibble
+/// and row is the low nibble.
 const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
-  // Column 0 (key codes 0x00-0x0F, PB2 strobe / PC0 strobe)
+  // Column 0 (PA0 strobe) — key codes 0x00-0x0F
   'shift': _KeyPosition(0, 1), // 0x01
   'small': _KeyPosition(0, 2), // 0x02
-  'mode': _KeyPosition(0, 3), // 0x03
   'up-down': _KeyPosition(0, 4), // 0x04
   'recall': _KeyPosition(0, 5), // 0x05
   'left': _KeyPosition(0, 8), // 0x08 — ◄
@@ -116,7 +100,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'enter': _KeyPosition(0, 13), // 0x0D
   'off': _KeyPosition(0, 15), // 0x0F
 
-  // Column 1 (key codes 0x10-0x1F, PB3 strobe / PC1 strobe)
+  // Column 1 (PA1 strobe) — key codes 0x10-0x1F
   'f1': _KeyPosition(1, 1), // 0x11
   'f2': _KeyPosition(1, 2), // 0x12
   'f3': _KeyPosition(1, 3), // 0x13
@@ -126,8 +110,9 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'clear': _KeyPosition(1, 8), // 0x18 — CL
   '*': _KeyPosition(1, 10), // 0x1A
   'def': _KeyPosition(1, 11), // 0x1B
+  'mode': _KeyPosition(1, 15), // 0x1F
 
-  // Column 2 (key codes 0x20-0x2F, PB4 strobe / PC2 strobe)
+  // Column 2 (PA2 strobe) — key codes 0x20-0x2F
   ' ': _KeyPosition(2, 0), // 0x20 — SPACE
   '(': _KeyPosition(2, 8), // 0x28
   ')': _KeyPosition(2, 9), // 0x29
@@ -136,7 +121,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '.': _KeyPosition(2, 14), // 0x2E
   '/': _KeyPosition(2, 15), // 0x2F
 
-  // Column 3 (key codes 0x30-0x3F, PB5 strobe / PC3 strobe)
+  // Column 3 (PA3 strobe) — key codes 0x30-0x3F
   '0': _KeyPosition(3, 0), // 0x30
   '1': _KeyPosition(3, 1), // 0x31
   '2': _KeyPosition(3, 2), // 0x32
@@ -149,7 +134,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '9': _KeyPosition(3, 9), // 0x39
   '=': _KeyPosition(3, 13), // 0x3D
 
-  // Column 4 (key codes 0x40-0x4F, PB6 strobe / PC4 strobe)
+  // Column 4 (PA4 strobe) — key codes 0x40-0x4F
   'a': _KeyPosition(4, 1), // 0x41
   'b': _KeyPosition(4, 2), // 0x42
   'c': _KeyPosition(4, 3), // 0x43
@@ -166,7 +151,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'n': _KeyPosition(4, 14), // 0x4E
   'o': _KeyPosition(4, 15), // 0x4F
 
-  // Column 5 (key codes 0x50-0x5F, PB7 strobe / PC5 strobe)
+  // Column 5 (PA5 strobe) — key codes 0x50-0x5F
   'p': _KeyPosition(5, 0), // 0x50
   'q': _KeyPosition(5, 1), // 0x51
   'r': _KeyPosition(5, 2), // 0x52

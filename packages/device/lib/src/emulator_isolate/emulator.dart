@@ -89,22 +89,20 @@ class Emulator {
         return keyboard.isOnKeyPressed ? 0x7F : 0xFF;
       },
       onInterrupt: () {
-        // PC-1500 I/O interrupt → CPU IR2.
+        // PC-1500 I/O interrupt → CPU IR2 (maskable interrupt).
+        _cpu.pins.miPin = true;
+        // Workaround: LH5801 emulator only clears HLT on IR2,
+        // but all interrupts should clear HLT per the datasheet.
+        _cpu.cpu.hlt = false;
       },
     );
 
     _ce153IO = LH5811(
       onPortARead: () {
-        // Keyboard scan: return PA input based on active strobe lines.
-        return keyboard.scanPortA(
-          _ce153IO.portBOutput,
-          _ce153IO.portCOutput,
-        );
-      },
-      onPortBRead: () {
-        return keyboard.scanPortB(
-          _ce153IO.portBOutput,
-          _ce153IO.portCOutput,
+        // Keyboard rows 8-F: CE-153 PA inputs driven by PC-1500 I/O PA strobes.
+        return keyboard.scanCE153(
+          _pc1500IO.read(0x0C), // DDA — port A direction register.
+          _pc1500IO.read(0x0E), // OPA — port A output register.
         );
       },
       onInterrupt: () {
@@ -124,6 +122,10 @@ class Emulator {
       subroutineExit: subroutineExit,
     )..reset();
     _cpu.pins.resetPin = true;
+    _cpu.pins.inputPorts = 0xFF; // No keys pressed (active low).
+    // Seed the timer LFSR with a non-zero value so it can generate
+    // periodic IR1 interrupts. An all-zero LFSR never advances.
+    _cpu.cpu.tm.value = 1;
 
     _lcd = Lcd(memRead: _csd.readAt);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
@@ -156,6 +158,25 @@ class Emulator {
   late final LH5811 _pc1500IO;
   late final LH5811 _ce153IO;
 
+  /// Updates CPU IN0-IN7 based on current keyboard and strobe state.
+  void updateKeyboardInput() {
+    final int dda = _pc1500IO.read(0x0C);
+    final int opa = _pc1500IO.read(0x0E);
+    final int result = keyboard.scanIN(dda, opa);
+    _cpu.pins.inputPorts = result;
+    // Wake the CPU from HLT when a key is pressed.
+    if (result != 0xFF) {
+      _pc1500IO.triggerIRQ();
+    }
+    // ON key: connected to PB7 of PC-1500 I/O.
+    // Sets IF1 (PB7 flag) and triggers IRQ to wake CPU via IR2.
+    // The IR2 handler at E171 checks IF1 to detect the ON key.
+    if (keyboard.isOnKeyPressed) {
+      _pc1500IO.triggerPB7();
+      _pc1500IO.triggerIRQ();
+    }
+  }
+
   /// Returns the LH5811 for a given ME1 address, or null if not I/O mapped.
   /// The chip select circuit decodes 4KB blocks, so we mask to the base.
   LH5811? _ioForAddress(int address) {
@@ -185,7 +206,16 @@ class Emulator {
       final int me1Addr = address & 0xFFFF;
       final LH5811? io = _ioForAddress(me1Addr);
       if (io != null) {
-        io.write(me1Addr & 0x0F, value);
+        final int reg = me1Addr & 0x0F;
+        io.write(reg, value);
+        // Update CPU IN0-IN7 when PC-1500 I/O strobe state changes.
+        // DDA (0x0C) or OPA (0x0E) affect keyboard column strobes.
+        if (io == _pc1500IO && (reg == 0x0C || reg == 0x0E)) {
+          final int dda = _pc1500IO.read(0x0C);
+          final int opa = _pc1500IO.read(0x0E);
+          final int scanResult = keyboard.scanIN(dda, opa);
+          _cpu.pins.inputPorts = scanResult;
+        }
         return;
       }
     }
@@ -195,7 +225,15 @@ class Emulator {
   bool get isRunning => _running;
 
   /// Executes a single CPU instruction. Returns the number of cycles consumed.
-  int step() => _cpu.step();
+  int step() {
+    // Workaround: the LH5801 emulator only clears HLT on IR2, but
+    // per the datasheet all interrupts (IR0, IR1, IR2) should clear HLT.
+    // Check if the timer interrupt (IR1) is pending and clear HLT.
+    if (_cpu.cpu.hlt && _cpu.cpu.t.ie && _cpu.cpu.tm.isInterruptRaised) {
+      _cpu.cpu.hlt = false;
+    }
+    return _cpu.step();
+  }
 
   /// Starts the emulation loop.
   void run() {
@@ -220,6 +258,14 @@ class Emulator {
 
   void _executeFrame() {
     if (!_running) return;
+
+    // Simulate LH5811 timer: generate a periodic IRQ each frame (~50Hz)
+    // to drive the ROM's main loop (keyboard scan, display refresh).
+    _pc1500IO.triggerIRQ();
+    // Keep IF1 (PB7) set while ON is held, matching real hardware behavior.
+    if (keyboard.isOnKeyPressed) {
+      _pc1500IO.triggerPB7();
+    }
 
     final DateTime frameStart = DateTime.now();
     final Duration frameBudget = _clock.frameDuration;

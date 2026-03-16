@@ -74,10 +74,12 @@ class EmulatorFrontEnd {
           final KeyEventMessage msg =
               KeyEventMessageSerializer().deserialize(data);
           emulator?.keyboard.keyDown(msg.keyName);
+          emulator?.updateKeyboardInput();
         case EmulatorMessageId.keyUp:
           final KeyEventMessage msg =
               KeyEventMessageSerializer().deserialize(data);
           emulator?.keyboard.keyUp(msg.keyName);
+          emulator?.updateKeyboardInput();
         case EmulatorMessageId.step:
           emulator?.step();
         default:
