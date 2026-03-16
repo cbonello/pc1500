@@ -18,12 +18,12 @@ dependencies:
     path: ../lcd
   lh5811:
     path: ../lh5811
-  roms:
-    path: ../roms
   lh5801:
     git:
       url: https://github.com/cbonello/lh5801.git
   meta: any
+  roms:
+    path: ../roms
 
 dev_dependencies:
   lint: ^2.8.0

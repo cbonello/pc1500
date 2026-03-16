@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
-import 'pc1500_a03.dart' as pc1500_a03;
-import 'pc1500_a03_annotations.dart' as pc1500_a03_annotations;
-import 'rom_base.dart';
+import 'package:roms/src/pc1500_a03.dart' as pc1500_a03;
+import 'package:roms/src/pc1500_a03_annotations.dart' as pc1500_a03_annotations;
+import 'package:roms/src/rom_base.dart';
 
 enum PC1500RomType { a01, a03, a04 }
 
@@ -29,8 +29,7 @@ class PC1500Rom implements RomBase {
     final String? annotationsStr = _annotationsJson[type];
     if (annotationsStr != null) {
       try {
-        _annotations =
-            jsonDecode(annotationsStr) as Map<String, dynamic>;
+        _annotations = jsonDecode(annotationsStr) as Map<String, dynamic>;
       } catch (_) {
         _annotations = <String, dynamic>{};
       }

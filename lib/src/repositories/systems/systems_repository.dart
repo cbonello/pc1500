@@ -3,18 +3,18 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'models/models.dart';
+import 'package:pc1500/src/repositories/systems/models/models.dart';
 
 enum DeviceType { pc1500, pc2, pc1500A }
 
 final FutureProvider<SystemsRepository> systemsRepositoryProvider =
     FutureProvider<SystemsRepository>(
-  (Ref ref) => SystemsRepository.getInstance(),
-);
+      (Ref ref) => SystemsRepository.getInstance(),
+    );
 
 class SystemsRepository {
   SystemsRepository._({required Map<DeviceType, SkinModel> skins})
-      : _skins = skins;
+    : _skins = skins;
 
   static Future<SystemsRepository>? _instanceFuture;
   static Future<SystemsRepository> getInstance() {
@@ -25,9 +25,7 @@ class SystemsRepository {
     final Map<DeviceType, SkinModel> skins = <DeviceType, SkinModel>{};
     skins[DeviceType.pc2] = await _readSkin('assets/systems/pc2.json');
     skins[DeviceType.pc1500] = await _readSkin('assets/systems/pc1500.json');
-    skins[DeviceType.pc1500A] = await _readSkin(
-      'assets/systems/pc1500a.json',
-    );
+    skins[DeviceType.pc1500A] = await _readSkin('assets/systems/pc1500a.json');
 
     return SystemsRepository._(skins: skins);
   }

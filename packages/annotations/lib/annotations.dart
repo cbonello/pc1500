@@ -1,4 +1,4 @@
-library annotations;
+library;
 
 export 'src/address_space.dart';
 export 'src/annotated_area.dart';

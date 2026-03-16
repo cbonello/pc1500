@@ -1,10 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'json_converters.dart';
-import 'lcd_colors_model.dart';
-import 'lcd_margin_model.dart';
-import 'lcd_pixels_model.dart';
-import 'lcd_symbols_model.dart';
+import 'package:pc1500/src/repositories/systems/models/json_converters.dart';
+import 'package:pc1500/src/repositories/systems/models/lcd_colors_model.dart';
+import 'package:pc1500/src/repositories/systems/models/lcd_margin_model.dart';
+import 'package:pc1500/src/repositories/systems/models/lcd_pixels_model.dart';
+import 'package:pc1500/src/repositories/systems/models/lcd_symbols_model.dart';
 
 part 'lcd_model.g.dart';
 

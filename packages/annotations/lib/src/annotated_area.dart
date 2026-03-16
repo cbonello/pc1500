@@ -8,15 +8,14 @@ import 'package:equatable/equatable.dart';
 class AnnotatedArea extends AnnotationBase with EquatableMixin {
   AnnotatedArea._({
     this.parent,
-    required AddressSpace addressSpace,
+    required super.addressSpace,
     required this.name,
     required List<AnnotatedArea> subAreas,
     required List<CodeAnnotation> codeAnnotations,
     required List<DataAnnotation> dataAnnotations,
   }) : subAreas = List.unmodifiable(subAreas),
        codeAnnotations = List.unmodifiable(codeAnnotations),
-       dataAnnotations = List.unmodifiable(dataAnnotations),
-       super(addressSpace: addressSpace);
+       dataAnnotations = List.unmodifiable(dataAnnotations);
 
   factory AnnotatedArea.empty({
     AnnotatedArea? parent,

@@ -1,10 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'models.dart';
+import 'package:pc1500/src/repositories/systems/models/models.dart';
 
 part 'skin_model.g.dart';
 
-@JsonSerializable(createFactory: true, createToJson: false, explicitToJson: true)
+@JsonSerializable(
+  createFactory: true,
+  createToJson: false,
+  explicitToJson: true,
+)
 class SkinModel {
   const SkinModel({
     required this.image,

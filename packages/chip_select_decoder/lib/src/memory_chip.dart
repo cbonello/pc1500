@@ -160,11 +160,11 @@ class MemoryChipRom extends MemoryChipBase {
       );
 
   MemoryChipRom._({
-    required int start,
-    required int length,
+    required super.start,
+    required super.length,
     required Digest hash,
   }) : _hash = hash,
-       super._(start: start, length: length, data: Uint8ClampedList(length));
+       super._(data: Uint8ClampedList(length));
 
   final Digest _hash;
 

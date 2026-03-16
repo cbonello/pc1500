@@ -8,10 +8,10 @@ import 'package:meta/meta.dart';
 class CodeAnnotation extends AnnotationBase {
   const CodeAnnotation._({
     required this.area,
-    required AddressSpace addressSpace,
-    String? label,
-    String? comment,
-  }) : super(label: label, addressSpace: addressSpace, comment: comment);
+    required super.addressSpace,
+    super.label,
+    super.comment,
+  });
 
   factory CodeAnnotation.fromJson(
     AnnotatedArea area,

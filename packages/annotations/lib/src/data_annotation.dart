@@ -15,11 +15,11 @@ enum DataAnnotationType {
 class DataAnnotation extends AnnotationBase {
   const DataAnnotation._({
     required this.area,
-    required AddressSpace addressSpace,
-    String? label,
+    required super.addressSpace,
+    super.label,
     required String comment,
     this.type,
-  }) : super(label: label, addressSpace: addressSpace, comment: comment);
+  }) : super(comment: comment);
 
   factory DataAnnotation.fromJson(
     AnnotatedArea area,

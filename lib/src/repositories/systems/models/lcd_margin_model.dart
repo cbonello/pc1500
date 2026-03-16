@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'json_converters.dart';
+import 'package:pc1500/src/repositories/systems/models/json_converters.dart';
 
 part 'lcd_margin_model.g.dart';
 
