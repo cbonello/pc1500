@@ -5,8 +5,11 @@ import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-const int _dispBuf1Start = 0x07600;
-const int _dispBuf2Start = 0x07700;
+// Display chip RAM: chips 3 & 4 (9-bit address) at 0x7400/0x7500,
+// chips 1 & 2 (8-bit address) at 0x7600/0x7700.
+// The ROM writes pixel data to 0x7400-0x744D and 0x7500-0x754D.
+const int _dispBuf1Start = 0x07400;
+const int _dispBuf2Start = 0x07500;
 const int _dispBufLen = 0x4E;
 const int _symBufStart = 0x0764E;
 const int _symBufLen = 2;

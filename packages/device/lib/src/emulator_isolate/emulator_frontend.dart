@@ -72,9 +72,10 @@ class EmulatorFrontEnd {
         case EmulatorMessageId.keyDown:
           final KeyEventMessage msg =
               KeyEventMessageSerializer().deserialize(data);
-          // Start the emulation on first ON key press (power on).
-          if (msg.keyName == 'on' && emulator?.isRunning == false) {
-            emulator?.run();
+          // ON key: triggers CPU reset (like real hardware).
+          // First press = cold start. Subsequent = warm start (shows > prompt).
+          if (msg.keyName == 'on') {
+            emulator?.powerOn();
           }
           // OFF key: stop emulation and clear display.
           if (msg.keyName == 'off') {

@@ -47,7 +47,15 @@ class Emulator {
        keyboard = Keyboard() {
     _clock = Clock(freq: 1300000, fps: 50);
 
-    // Standard users system RAM (1.5KB).
+    // Display chip RAM (SC-882G chips 3 & 4 use 9-bit addresses,
+    // responding at 0x7400-0x75FF in addition to 0x7600-0x77FF).
+    final MemoryChipBase displayRam = _csd.appendRAM(
+      MemoryBank.me0,
+      0x7400,
+      0x0200,
+    );
+
+    // Standard users system RAM and display chip area (0x7600-0x7BFF).
     final MemoryChipBase stdUserRam = _csd.appendRAM(
       MemoryBank.me0,
       0x7600,
@@ -98,13 +106,6 @@ class Emulator {
     );
 
     _ce153IO = LH5811(
-      onPortARead: () {
-        // Keyboard rows 8-F: CE-153 PA inputs driven by PC-1500 I/O PA strobes.
-        return keyboard.scanCE153(
-          _pc1500IO.read(0x0C), // DDA — port A direction register.
-          _pc1500IO.read(0x0E), // OPA — port A output register.
-        );
-      },
       onInterrupt: () {
         // CE-153 interrupt → CPU IR0.
       },
@@ -128,6 +129,7 @@ class Emulator {
     _cpu.cpu.tm.value = 1;
 
     _lcd = Lcd(memRead: _csd.readAt);
+    displayRam.registerObserver(MemoryAccessType.write, _lcd);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
     _lcd.events.listen((LcdEvent event) {
       outPort.send(LcdEventSerializer().serialize(event));
@@ -240,6 +242,23 @@ class Emulator {
     _clock.updateFps(_clock.fps);
     _running = true;
     _scheduleFrame();
+  }
+
+  /// Powers on the emulator: resets CPU and starts execution.
+  /// First call = cold start. Subsequent calls = warm start (RAM preserved).
+  void powerOn() {
+    if (_running) {
+      // Already running — reset the CPU for a warm start.
+      _cpu.pins.resetPin = true;
+      _cpu.step();
+      _cpu.pins.resetPin = false;
+      _cpu.cpu.hlt = false;
+      _cpu.pins.inputPorts = 0xFF;
+      _cpu.cpu.tm.value = 1;
+    } else {
+      // First power-on — start the emulation loop (cold start).
+      run();
+    }
   }
 
   /// Powers off the emulator: stops CPU, turns display off.

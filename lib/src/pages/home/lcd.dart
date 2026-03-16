@@ -160,7 +160,6 @@ class _Screen extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _Screen oldDelegate) {
-    return lcdEvent != oldDelegate.lcdEvent;
-  }
+  bool shouldRepaint(covariant _Screen oldDelegate) =>
+      lcdEvent != oldDelegate.lcdEvent;
 }
