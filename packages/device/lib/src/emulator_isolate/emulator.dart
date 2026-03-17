@@ -262,6 +262,29 @@ class Emulator {
     }
   }
 
+  /// Toggles SHIFT mode (bit 1 of $764E).
+  /// The ROM's SHIFT handler (code 0x01) toggles this bit and restarts
+  /// the scan, which would re-detect the held key and toggle it back.
+  /// We bypass the matrix and toggle directly to avoid the rapid loop.
+  void toggleShift() {
+    final int flags = _csd.readByteAt(0x764E);
+    _csd.writeByteAt(0x764E, flags ^ 0x02);
+  }
+
+  /// Cycles between RUN and PRO modes.
+  /// On the real PC-1500, MODE is a physical slide switch.
+  /// $764F bits 6:4 = LCD symbols (bit 6=RUN, bit 5=PRO)
+  /// $764F bits 2:0 = angle mode (preserved across mode changes)
+  void cycleMode() {
+    final int current = _csd.readByteAt(0x764F);
+    final bool isRun = (current & 0x40) != 0;
+    // Toggle RUN ↔ PRO, preserving angle mode bits and other state.
+    final int next = isRun
+        ? (current & ~0x40) | 0x20 // RUN → PRO
+        : (current & ~0x20) | 0x40; // PRO → RUN
+    _csd.writeByteAt(0x764F, next);
+  }
+
   /// Powers off the emulator: stops CPU, turns display off.
   void powerOff() {
     stop();

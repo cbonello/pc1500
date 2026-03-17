@@ -81,6 +81,16 @@ class EmulatorFrontEnd {
           if (msg.keyName == 'off') {
             emulator?.powerOff();
           }
+          // MODE: physical slide switch on real hardware, cycles RUN/PRO.
+          if (msg.keyName == 'mode') {
+            emulator?.cycleMode();
+            break;
+          }
+          // SHIFT: toggle key — bypass matrix to avoid rapid re-toggle loop.
+          if (msg.keyName == 'shift') {
+            emulator?.toggleShift();
+            break;
+          }
           emulator?.keyboard.keyDown(msg.keyName);
           emulator?.updateKeyboardInput();
         case EmulatorMessageId.keyUp:

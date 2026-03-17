@@ -125,15 +125,15 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '.': _KeyPosition(1, 0), // PA1, IN0
   '=': _KeyPosition(5, 0), // PA5, IN0
 
+  // SHIFT is handled directly via toggleShift() — not a matrix key.
   // Function/control keys
-  'shift': _KeyPosition(0, 4), // PA0, IN4 → 0x01 (SHIFT toggle)
   'recall': _KeyPosition(4, 7), // PA4, IN7 → RCL
   'def': _KeyPosition(1, 4), // PA1, IN4 → DEF
   'small': _KeyPosition(6, 7), // PA6, IN7 → 0x02 (MODE toggles SMALL on export)
   'up-down': _KeyPosition(3, 4), // PA3, IN4 → 0x16
   'clear': _KeyPosition(6, 2), // PA6, IN2 → CL (0x18)
-  // MODE (RUN/PRO toggle) may use a hardware switch rather than matrix key.
-  // TODO: investigate MODE mechanism on export model.
+  // MODE is a physical slide switch on the real PC-1500, handled
+  // by cycleMode() in the emulator — not a keyboard matrix key.
 
   // Navigation
   'right': _KeyPosition(1, 2), // PA1, IN2 → 0x0F (→)
