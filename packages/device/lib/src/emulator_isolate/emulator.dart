@@ -245,21 +245,32 @@ class Emulator {
     _scheduleFrame();
   }
 
+  bool _coldStartDone = false;
+
   /// Powers on the emulator: resets CPU and starts execution.
-  /// First call = cold start. Subsequent calls = warm start (RAM preserved).
+  /// First call = cold start + automatic warm start.
+  /// Subsequent calls = warm start (RAM preserved).
   void powerOn() {
     if (_running) {
       // Already running — reset the CPU for a warm start.
-      _cpu.pins.resetPin = true;
-      _cpu.step();
-      _cpu.pins.resetPin = false;
-      _cpu.cpu.hlt = false;
-      _cpu.pins.inputPorts = 0xFF;
-      _cpu.cpu.tm.value = 1;
+      _resetCpu();
     } else {
-      // First power-on — start the emulation loop (cold start).
+      // First power-on: run cold start, then schedule a warm start
+      // after the cold start completes (enters HLT).
+      // On real hardware: battery → cold start → standby → ON → warm start.
+      _coldStartDone = false;
       run();
     }
+  }
+
+  /// Resets the CPU for a warm start (RAM preserved).
+  void _resetCpu() {
+    _cpu.pins.resetPin = true;
+    _cpu.step();
+    _cpu.pins.resetPin = false;
+    _cpu.cpu.hlt = false;
+    _cpu.pins.inputPorts = 0xFF;
+    _cpu.cpu.tm.value = 1;
   }
 
   /// Toggles SHIFT mode (bit 1 of $764E).
@@ -307,6 +318,15 @@ class Emulator {
 
   void _executeFrame() {
     if (!_running) return;
+
+    // After cold start completes (ROM enters HLT), trigger a warm start.
+    // On real hardware: battery → cold start → standby → ON press → warm start.
+    // The cold start initializes RAM signatures but not all BASIC pointers.
+    // The warm start (reset with RAM preserved) completes initialization.
+    if (!_coldStartDone && _cpu.cpu.hlt) {
+      _coldStartDone = true;
+      _resetCpu();
+    }
 
     // Simulate LH5811 timer: generate a periodic IRQ each frame (~50Hz)
     // to drive the ROM's main loop (keyboard scan, display refresh).
