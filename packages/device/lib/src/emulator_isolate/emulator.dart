@@ -93,6 +93,7 @@ class Emulator {
     // LH5811 I/O port controllers.
     _pc1500IO = LH5811(
       onPortBRead: () {
+        // PB3 = VCC (export model) or GND (domestic). Always 1 for export.
         // PB7 = ON key input (active low).
         return keyboard.isOnKeyPressed ? 0x7F : 0xFF;
       },

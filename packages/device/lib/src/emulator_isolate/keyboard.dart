@@ -129,10 +129,11 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'shift': _KeyPosition(0, 4), // PA0, IN4 → 0x01 (SHIFT toggle)
   'recall': _KeyPosition(4, 7), // PA4, IN7 → RCL
   'def': _KeyPosition(1, 4), // PA1, IN4 → DEF
-  'small': _KeyPosition(2, 4), // PA2, IN4 → SML (0x15)
+  'small': _KeyPosition(6, 7), // PA6, IN7 → 0x02 (MODE toggles SMALL on export)
   'up-down': _KeyPosition(3, 4), // PA3, IN4 → 0x16
   'clear': _KeyPosition(6, 2), // PA6, IN2 → CL (0x18)
-  'mode': _KeyPosition(6, 1), // PA6, IN1 → MODE (0x1F)
+  // MODE (RUN/PRO toggle) may use a hardware switch rather than matrix key.
+  // TODO: investigate MODE mechanism on export model.
 
   // Navigation
   'right': _KeyPosition(1, 2), // PA1, IN2 → 0x0F (→)
