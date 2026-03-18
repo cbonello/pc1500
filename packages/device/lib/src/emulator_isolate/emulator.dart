@@ -223,6 +223,14 @@ class Emulator {
       }
     }
     _csd.writeByteAt(address, value);
+    // Mirror display chip writes: chips 3 & 4 (9-bit addr, 0x7400/0x7500)
+    // share the same physical RAM as chips 1 & 2 (8-bit addr, 0x7600/0x7700).
+    // Writes to either range must appear in both.
+    if (address >= 0x7400 && address < 0x7600) {
+      _csd.writeByteAt(address + 0x0200, value);
+    } else if (address >= 0x7600 && address < 0x7800) {
+      _csd.writeByteAt(address - 0x0200, value);
+    }
   }
 
   bool get isRunning => _running;

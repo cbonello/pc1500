@@ -5,11 +5,15 @@ import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-// Display chip RAM: chips 3 & 4 (9-bit address) at 0x7400/0x7500,
-// chips 1 & 2 (8-bit address) at 0x7600/0x7700.
-// The ROM writes pixel data to 0x7400-0x744D and 0x7500-0x754D.
-const int _dispBuf1Start = 0x07400;
-const int _dispBuf2Start = 0x07500;
+// Display buffer addresses per TRM p.96 Memory Map IV.
+// Left half:  0x7600-0x764D (chip 1, 8-bit addr, V2).
+// Right half: 0x7700-0x774D (chip 2, 8-bit addr, V3).
+// Symbols:    0x764E-0x764F.
+// Note: Chips 3 & 4 (9-bit addr) at 0x7400/0x7500 share the same
+// physical display RAM. Writes to 0x7400 must be mirrored to 0x7600,
+// and 0x7500 to 0x7700, in the emulator.
+const int _dispBuf1Start = 0x07600;
+const int _dispBuf2Start = 0x07700;
 const int _dispBufLen = 0x4E;
 const int _symBufStart = 0x0764E;
 const int _symBufLen = 2;
