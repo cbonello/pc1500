@@ -199,6 +199,10 @@ class Emulator {
       if (io != null) {
         return io.read(me1Addr & 0x0F);
       }
+      // ME1 reads from display chip addresses: route to ME0 display RAM.
+      if (me1Addr >= 0x7400 && me1Addr < 0x7800) {
+        return _csd.readByteAt(me1Addr);
+      }
     }
     return _csd.readByteAt(address);
   }
@@ -221,6 +225,14 @@ class Emulator {
         }
         return;
       }
+      // ME1 writes to display chip addresses: route to ME0 display RAM.
+      // The ROM's display routines use ME1 addressing (ANI #(X), ORI #(X))
+      // to access the display chips. On real hardware ME0 and ME1 reach the
+      // same physical display RAM. In the emulator we mirror to ME0.
+      if (me1Addr >= 0x7400 && me1Addr < 0x7800) {
+        _memWrite(me1Addr, value);
+        return;
+      }
     }
     _csd.writeByteAt(address, value);
     // Mirror display chip writes: chips 3 & 4 (9-bit addr, 0x7400/0x7500)
@@ -234,6 +246,7 @@ class Emulator {
   }
 
   bool get isRunning => _running;
+
 
   /// Executes a single CPU instruction. Returns the number of cycles consumed.
   int step() {
@@ -348,7 +361,7 @@ class Emulator {
     final Duration frameBudget = _clock.frameDuration;
 
     while (_running) {
-      final int cycles = _cpu.step();
+      final int cycles = step();
       if (_clock.increment(cycles)) {
         break;
       }
