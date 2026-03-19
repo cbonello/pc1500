@@ -248,6 +248,10 @@ class Emulator {
       // Unhandled ME1 addresses: silently drop (no hardware responds).
       return;
     }
+    // Guard: silently drop writes to ROM ($C000+) and unmapped gaps.
+    if (address >= 0xC000 || (address >= 0x5800 && address < 0x7400)) {
+      return;
+    }
     _csd.writeByteAt(address, value);
     // Mirror display chip writes: chips 3 & 4 (9-bit addr, 0x7400/0x7500)
     // share the same physical RAM as chips 1 & 2 (8-bit addr, 0x7600/0x7700).
@@ -261,7 +265,25 @@ class Emulator {
 
   bool get isRunning => _running;
 
+  // ── Test helpers ──────────────────────────────────────────────────────
 
+  /// Exposes [_memRead] for unit tests.
+  int memReadForTest(int address) => _memRead(address);
+
+  /// Exposes [_memWrite] for unit tests.
+  void memWriteForTest(int address, int value) => _memWrite(address, value);
+
+  /// Simulates the cold-start-done state (ROM entered HLT for the first time).
+  void simulateColdStartDone() => _coldStartDone = true;
+
+  /// Simulates the warm-start-done state and runs the BASIC init that
+  /// normally triggers in [_executeFrame].
+  void simulateWarmStartDone() {
+    _warmStartDone = true;
+    _csd.writeByteAt(0x4000, 0xFF);
+    final int ramTop = type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
+    _csd.writeByteAt(0x7899, ramTop);
+  }
 
 
   /// Executes a single CPU instruction. Returns the number of cycles consumed.
@@ -372,8 +394,13 @@ class Emulator {
     // (start of user RAM) so NEW and BASIC line storage work correctly.
     if (_coldStartDone && !_warmStartDone && _cpu.cpu.hlt) {
       _warmStartDone = true;
-      _csd.writeByteAt(0x786A, 0x40); // high byte
-      _csd.writeByteAt(0x786B, 0x00); // low byte → $4000
+      // Initialize BASIC program area (equivalent to what NEW does).
+      // The ROM uses ME1 $0000 for program storage, which our ME1→ME0
+      // routing maps to $4000 (user RAM).
+      _csd.writeByteAt(0x4000, 0xFF); // End-of-program marker.
+      // $7899 = high byte of user RAM top ($5800 for PC-1500A 6KB).
+      final int ramTop = type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
+      _csd.writeByteAt(0x7899, ramTop);
     }
 
 
