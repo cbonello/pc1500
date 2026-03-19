@@ -343,10 +343,14 @@ class Emulator {
     _csd.writeByteAt(0x764E, flags ^ 0x02);
   }
 
+  // BASINPUT entry points (from ROM annotations).
+  static const int _basinput1 = 0xCA58; // RUN mode: input with '>' prompt.
+  static const int _basinput3 = 0xCA80; // PRO mode: input without prompt.
+
   /// Cycles between RUN and PRO modes.
-  /// On the real PC-1500, MODE is a physical slide switch.
-  /// $764F bits 6:4 = LCD symbols (bit 6=RUN, bit 5=PRO)
-  /// $764F bits 2:0 = angle mode (preserved across mode changes)
+  /// On the real PC-1500, MODE is a physical slide switch that triggers a
+  /// hardware restart of the main loop. We emulate this by updating the LCD
+  /// symbol in $764F and redirecting the CPU to the correct BASINPUT entry.
   void cycleMode() {
     final int current = _csd.readByteAt(0x764F);
     final bool isRun = (current & 0x40) != 0;
@@ -355,6 +359,10 @@ class Emulator {
         ? (current & ~0x40) | 0x20 // RUN → PRO
         : (current & ~0x20) | 0x40; // PRO → RUN
     _csd.writeByteAt(0x764F, next);
+    // Redirect the CPU to the correct BASINPUT entry point.
+    // The main loop's BASINPUT entry determines RUN vs PRO behavior.
+    _cpu.cpu.p.value = isRun ? _basinput3 : _basinput1;
+    _cpu.cpu.hlt = false;
   }
 
   /// Powers off the emulator: stops CPU, turns display off.
