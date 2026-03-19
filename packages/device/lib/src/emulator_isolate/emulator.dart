@@ -199,8 +199,8 @@ class Emulator {
       if (io != null) {
         return io.read(me1Addr & 0x0F);
       }
-      // ME1 reads from display chip addresses: route to ME0 display RAM.
-      if (me1Addr >= 0x7400 && me1Addr < 0x7800) {
+      // ME1 reads from RAM addresses: route to ME0.
+      if (me1Addr >= 0x4000 && me1Addr < 0x7C00) {
         return _csd.readByteAt(me1Addr);
       }
     }
@@ -225,12 +225,13 @@ class Emulator {
         }
         return;
       }
-      // ME1 writes to display chip addresses: route to ME0 display RAM.
-      // The ROM's display routines use ME1 addressing (ANI #(X), ORI #(X))
-      // to access the display chips. On real hardware, display chips respond
-      // to both ME0 and ME1 via DME0 signal. Regular RAM does NOT respond
-      // to ME1 — only display chips at $7400-$77FF do.
-      if (me1Addr >= 0x7400 && me1Addr < 0x7800) {
+      // ME1 writes to RAM addresses: route to ME0.
+      // On real hardware, RAM chips respond to both ME0 and ME1 via chip
+      // select signals. The ROM uses ME1 addressing (FD-prefixed instructions)
+      // for both display and program data writes.
+      // Route user RAM ($4000-$57FF), display ($7400-$77FF), and
+      // system RAM ($7600-$7BFF) to ME0. Skip I/O ($8000+) and ROM ($C000+).
+      if (me1Addr >= 0x4000 && me1Addr < 0x7C00) {
         _memWrite(me1Addr, value);
         return;
       }
@@ -349,23 +350,13 @@ class Emulator {
     // The warm start (reset with RAM preserved) completes initialization.
     if (!_coldStartDone && _cpu.cpu.hlt) {
       _coldStartDone = true;
-      // Initialize BASIC program area pointers if not set by cold start.
-      // On real hardware these are set during the NEW0?:CHECK sequence.
-      // Program area starts at $4058, user RAM ends at $57FF (PC-1500A).
-      final int progStart = (_csd.readByteAt(0x7863) << 8) | _csd.readByteAt(0x7864);
-      if (progStart > 0 && _csd.readByteAt(0x7866) == 0) {
-        // Set end-of-program = start (empty program)
-        _csd.writeByteAt(0x7866, progStart >> 8);
-        _csd.writeByteAt(0x7867, progStart & 0xFF);
-        // Set variable area start = program start
-        _csd.writeByteAt(0x7868, progStart >> 8);
-        _csd.writeByteAt(0x7869, progStart & 0xFF);
-        // Set string area end = top of user RAM ($57FF for PC-1500A)
-        _csd.writeByteAt(0x786A, 0x58);
-        _csd.writeByteAt(0x786B, 0x00);
-      }
       _resetCpu();
+      // Queue auto-NEW after warm start completes.
+      // On real hardware, the NEW0?:CHECK sequence initializes the BASIC
+      // program area. Our warm start doesn't complete this, so we inject
+      // NEW + ENTER key presses to initialize the program area.
     }
+
 
     // Simulate LH5811 timer: generate a periodic IRQ each frame (~50Hz)
     // to drive the ROM's main loop (keyboard scan, display refresh).
