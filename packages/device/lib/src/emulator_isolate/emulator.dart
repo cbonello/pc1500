@@ -199,8 +199,13 @@ class Emulator {
       if (io != null) {
         return io.read(me1Addr & 0x0F);
       }
-      // ME1 reads from RAM addresses: route to ME0.
-      if (me1Addr >= 0x4000 && me1Addr < 0x7C00) {
+      // ME1 reads from RAM/display addresses: route to ME0.
+      // ME1 $0000-$1FFF → ME0 $4000-$5FFF (user RAM, offset by $4000).
+      if (me1Addr < 0x2000) {
+        return _csd.readByteAt(me1Addr + 0x4000);
+      }
+      // ME1 $7400-$7BFF → ME0 same address (display + system RAM).
+      if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
         return _csd.readByteAt(me1Addr);
       }
     }
@@ -225,13 +230,16 @@ class Emulator {
         }
         return;
       }
-      // ME1 writes to RAM addresses: route to ME0.
-      // On real hardware, RAM chips respond to both ME0 and ME1 via chip
-      // select signals. The ROM uses ME1 addressing (FD-prefixed instructions)
-      // for both display and program data writes.
-      // Route user RAM ($4000-$57FF), display ($7400-$77FF), and
-      // system RAM ($7600-$7BFF) to ME0. Skip I/O ($8000+) and ROM ($C000+).
-      if (me1Addr >= 0x4000 && me1Addr < 0x7C00) {
+      // ME1 writes to RAM/display addresses: route to ME0.
+      // On real hardware, RAM chips respond to both ME0 and ME1. The chip
+      // select circuit maps ME1 addresses differently:
+      //   ME1 $0000-$1FFF → ME0 $4000-$5FFF (user RAM, offset by $4000)
+      //   ME1 $7400-$7BFF → ME0 $7400-$7BFF (display + system RAM, same addr)
+      if (me1Addr < 0x2000) {
+        _memWrite(me1Addr + 0x4000, value);
+        return;
+      }
+      if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
         _memWrite(me1Addr, value);
         return;
       }
@@ -271,6 +279,7 @@ class Emulator {
   }
 
   bool _coldStartDone = false;
+  bool _warmStartDone = false;
 
   /// Powers on the emulator: resets CPU and starts execution.
   /// First call = cold start + automatic warm start.
@@ -284,6 +293,7 @@ class Emulator {
       // after the cold start completes (enters HLT).
       // On real hardware: battery → cold start → standby → ON → warm start.
       _coldStartDone = false;
+      _warmStartDone = false;
       run();
     }
   }
@@ -351,10 +361,15 @@ class Emulator {
     if (!_coldStartDone && _cpu.cpu.hlt) {
       _coldStartDone = true;
       _resetCpu();
-      // Queue auto-NEW after warm start completes.
-      // On real hardware, the NEW0?:CHECK sequence initializes the BASIC
-      // program area. Our warm start doesn't complete this, so we inject
-      // NEW + ENTER key presses to initialize the program area.
+    }
+    // After warm start completes (second HLT), initialize BASIC pointers.
+    // The ROM's warm start NEW0?:CHECK doesn't fully complete in the emulator,
+    // leaving $786A-$786B (program area base) at $0000. Set it to $4000
+    // (start of user RAM) so NEW and BASIC line storage work correctly.
+    if (_coldStartDone && !_warmStartDone && _cpu.cpu.hlt) {
+      _warmStartDone = true;
+      _csd.writeByteAt(0x786A, 0x40); // high byte
+      _csd.writeByteAt(0x786B, 0x00); // low byte → $4000
     }
 
 
