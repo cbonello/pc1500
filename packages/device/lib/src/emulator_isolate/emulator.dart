@@ -243,6 +243,8 @@ class Emulator {
         _memWrite(me1Addr, value);
         return;
       }
+      // Unhandled ME1 addresses: silently drop (no hardware responds).
+      return;
     }
     _csd.writeByteAt(address, value);
     // Mirror display chip writes: chips 3 & 4 (9-bit addr, 0x7400/0x7500)
