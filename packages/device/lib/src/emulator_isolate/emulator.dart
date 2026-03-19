@@ -208,6 +208,8 @@ class Emulator {
       if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
         return _csd.readByteAt(me1Addr);
       }
+      // Unhandled ME1 addresses: return 0xFF (open bus).
+      return 0xFF;
     }
     return _csd.readByteAt(address);
   }
