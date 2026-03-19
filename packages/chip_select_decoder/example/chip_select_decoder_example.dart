@@ -15,10 +15,7 @@ void main() {
   final int after = csd.readByteAt(0x7600);
   print('Value before: $before - Value after: $after');
 
-  // Write to unmapped memory.
-  try {
-    csd.writeByteAt(0x0000, 0xFF);
-  } on ChipSelectDecoderError catch (e) {
-    print('error: ${e.message}');
-  }
+  // Write to unmapped memory — silently ignored (no hardware responds).
+  csd.writeByteAt(0x0000, 0xFF);
+  print('Unmapped read: ${csd.readByteAt(0x0000)}'); // 0xFF (floating bus)
 }
