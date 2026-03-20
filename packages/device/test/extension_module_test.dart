@@ -12,17 +12,27 @@ void main() {
     });
 
     group('addModule()', () {
-      test('should detect invalid arguments', () {
+      test('should reject empty name', () {
         final ExtensionModule extensionModule = ExtensionModule();
-
         expect(
-          () => extensionModule.addModule('', 0),
-          throwsA(const TypeMatcher<AssertionError>()),
+          () => extensionModule.addModule('', 0x1000),
+          throwsA(isA<ArgumentError>()),
         );
+      });
 
+      test('should reject capacity below 2KB', () {
+        final ExtensionModule extensionModule = ExtensionModule();
         expect(
-          () => extensionModule.addModule('abc', 0),
-          throwsA(const TypeMatcher<AssertionError>()),
+          () => extensionModule.addModule('CE151', 0),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('should reject capacity above 16KB', () {
+        final ExtensionModule extensionModule = ExtensionModule();
+        expect(
+          () => extensionModule.addModule('CE151', 32 * 1024),
+          throwsA(isA<ArgumentError>()),
         );
       });
 
