@@ -5,6 +5,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pc1500/src/pages/home/lcd.dart';
 import 'package:pc1500/src/repositories/systems/models/models.dart';
 
+// Native pixel dimensions of the skin image.
+const double _skinWidth = 1506;
+const double _skinHeight = 628;
+
+/// The full PC-1500 skin: LCD display, keyboard buttons, and background image.
+///
+/// Handles both physical keyboard input (via [KeyboardListener]) and
+/// on-screen button presses (via [_KeyButton]).
 class Skin extends StatefulWidget {
   const Skin({
     super.key,
@@ -23,6 +31,8 @@ class Skin extends StatefulWidget {
 
 class _SkinState extends State<Skin> {
   late final FocusNode _focusNode;
+
+  /// Tracks which on-screen buttons appear visually pressed.
   final Set<String> _pressedKeys = <String>{};
 
   @override
@@ -38,6 +48,8 @@ class _SkinState extends State<Skin> {
   }
 
   void _onKeyDown(String keyName) {
+    // Skip if already pressed (OS auto-repeat sends duplicate KeyDownEvents).
+    if (_pressedKeys.contains(keyName)) return;
     widget.device.sendKeyDown(keyName);
     setState(() => _pressedKeys.add(keyName));
   }
@@ -53,6 +65,9 @@ class _SkinState extends State<Skin> {
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: (KeyEvent event) {
+        // Ignore KeyRepeatEvent — only act on initial press and release.
+        if (event is! KeyDownEvent && event is! KeyUpEvent) return;
+
         final String? keyName = _physicalKeyMap[event.logicalKey];
         if (keyName != null) {
           if (event is KeyDownEvent) {
@@ -62,13 +77,13 @@ class _SkinState extends State<Skin> {
           }
         }
       },
-      // FittedBox scales from native pixel space (1506x628) to the
+      // FittedBox scales from the skin's native pixel space to the
       // available window size. All Positioned coordinates are in the
       // image's native pixel space — no device-pixel-ratio issues.
       child: FittedBox(
         child: SizedBox(
-          width: 1506,
-          height: 628,
+          width: _skinWidth,
+          height: _skinHeight,
           child: Stack(
             children: <Widget>[
               Positioned(
@@ -100,6 +115,7 @@ class _SkinState extends State<Skin> {
     );
   }
 
+  /// Maps physical keyboard keys to emulator key names.
   static final Map<LogicalKeyboardKey, String> _physicalKeyMap =
       <LogicalKeyboardKey, String>{
         LogicalKeyboardKey.f1: 'f1',
@@ -166,8 +182,6 @@ class _SkinState extends State<Skin> {
         LogicalKeyboardKey.equal: '=',
         LogicalKeyboardKey.slash: '/',
         LogicalKeyboardKey.minus: '-',
-        LogicalKeyboardKey.arrowUp: 'up',
-        LogicalKeyboardKey.arrowDown: 'down',
         LogicalKeyboardKey.arrowLeft: 'left',
         LogicalKeyboardKey.arrowRight: 'right',
         LogicalKeyboardKey.delete: 'clear',
@@ -175,6 +189,7 @@ class _SkinState extends State<Skin> {
       };
 }
 
+/// A single key button on the skin, with press/release visual feedback.
 class _KeyButton extends StatelessWidget {
   const _KeyButton({
     required this.keyboardKey,
