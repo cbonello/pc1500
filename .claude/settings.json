@@ -1,0 +1,45 @@
+{
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "Bash(dart -e:*)",
+      "Bash(for i:*)",
+      "Bash(grep -c \"case 0x$i:\" /Users/christophebonello/.pub-cache/git/lh5801-4d1746ccdba02ae99397b0c76febfb9dd8c3916d/lib/src/emulator/cpu.dart)",
+      "Bash(done)",
+      "Bash(if ! grep -q \"case 0x$i:\" /Users/christophebonello/.pub-cache/git/lh5801-4d1746ccdba02ae99397b0c76febfb9dd8c3916d/lib/src/emulator/cpu.dart)",
+      "Bash(echo \"Regular instruction missing: 0x$i\")",
+      "Bash(fi)",
+      "Bash(find /Users/christophebonello/Projects/Flutter -name *pc1500* -o -name *PC1500*)",
+      "Bash(xxd -s 0x272F -l 18 /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/assets/pc1500rom.bin)",
+      "Bash(xxd -s 0x26C1 -l 48 /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/assets/pc1500rom.bin)",
+      "Bash(xxd -s 0x2CAE -l 9 /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/assets/pc1500rom.bin)",
+      "Bash(xxd -s 0x2E07 -l 26 /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/assets/pc1500rom.bin)",
+      "Bash(xxd -s 0x2D1E -l 95 /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/assets/pc1500rom.bin)",
+      "Bash(xxd -s 0x0A80 -l 17 /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/assets/pc1500rom.bin)",
+      "Bash(ls /Users/christophebonello/Projects/Flutter/pc1500/packages/roms/lib/src/*.dart)",
+      "Bash(ls ~/.pub-cache/git/lh5801-*/lib/src/emulator/cpu.dart)",
+      "Bash(grep -n \"case 0xBA\" ~/.pub-cache/git/lh5801-*/lib/src/emulator/cpu.dart)",
+      "Bash(for dir:*)",
+      "Read(//Users/christophebonello/Projects/Flutter/pc1500/**)",
+      "Bash(curl -s https://pub.dev/api/packages/dap)",
+      "Bash(grep -r \"dap\\\\|debug_adapter\\\\|Debug.*Protocol\" /Users/christophebonello/Projects/Flutter/pc1500 --include=*.yaml --include=*.dart)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(find /Users/christophebonello/.pub-cache/hosted/pub.dev -maxdepth 1 -name dap-*)",
+      "Bash(ls ~/.pub-cache/hosted/pub.dev/dap-*/lib/)",
+      "Bash(ls ~/.pub-cache/hosted/pub.dev/dap-*/lib/src/)",
+      "Bash(head -80 ~/.pub-cache/hosted/pub.dev/dap-*/lib/src/protocol_common.dart)",
+      "Bash(grep '^class ' ~/.pub-cache/hosted/pub.dev/dap-*/lib/src/protocol_generated.dart)",
+      "Bash(grep -A 20 \"^class Response \" ~/.pub-cache/hosted/pub.dev/dap-*/lib/src/protocol_special.dart)",
+      "Bash(grep -B2 -A20 '^class Response ' ~/.pub-cache/hosted/pub.dev/dap-*/lib/src/protocol_generated.dart)",
+      "Bash(grep -B2 -A30 \"^class ProtocolMessage \" ~/.pub-cache/hosted/pub.dev/dap-*/lib/src/protocol_generated.dart)",
+      "Bash(grep -n \"class Instruction\" ~/.pub-cache/git/lh5801-*/lib/src/dasm/dasm.dart)",
+      "Bash(grep \"class InstructionDescriptor\" ~/.pub-cache/git/lh5801-d5d3dd149d2a70b95ac6e78e09bac5ff01dcfd8a/lib/src/dasm/*.dart)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find ~/.pub-cache -path */dart_mcp*/lib -maxdepth 5)"
+    ],
+    "additionalDirectories": [
+      "/Users/christophebonello/.pub-cache/git"
+    ]
+  }
+}

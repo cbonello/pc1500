@@ -1,0 +1,14 @@
+name: pc1500_mcp_server
+description: MCP server bridging Claude to the PC-1500 emulator via DAP.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  dart_mcp:
+    git:
+      url: https://github.com/dart-lang/ai.git
+      path: pkgs/dart_mcp
+  stream_channel: any

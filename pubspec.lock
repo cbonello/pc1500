@@ -175,6 +175,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1+1"
+  dap:
+    dependency: transitive
+    description:
+      name: dap
+      sha256: "42b0b083a09c59a118741769e218fc3738980ab591114f09d1026241d2b9c290"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
   dart_style:
     dependency: transitive
     description:
@@ -361,7 +369,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "4d1746ccdba02ae99397b0c76febfb9dd8c3916d"
+      resolved-ref: d5d3dd149d2a70b95ac6e78e09bac5ff01dcfd8a
       url: "https://github.com/cbonello/lh5801.git"
     source: git
     version: "0.3.0"

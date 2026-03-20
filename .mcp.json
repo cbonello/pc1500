@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pc1500": {
+      "command": "/Users/christophebonello/Projects/Flutter/pc1500/tools/mcp_server/bin/start.sh",
+      "args": []
+    }
+  }
+}
