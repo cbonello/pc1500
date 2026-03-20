@@ -7,8 +7,13 @@ import 'package:device/src/messages/messages.dart';
 import 'package:device/src/messages/messages_base.dart';
 import 'package:lcd/lcd.dart';
 
+/// Hardware model variants.
 enum HardwareDeviceType { pc1500, pc1500A }
 
+/// Main-isolate handle to the PC-1500 emulator.
+///
+/// Manages the emulator isolate lifecycle, forwards key events, and
+/// exposes an LCD event stream for the UI to render.
 class Device {
   Device({required HardwareDeviceType type, required int debugPort})
     : _type = type,
@@ -25,48 +30,53 @@ class Device {
   SendPort? _toEmulatorPort;
   StreamSubscription<dynamic>? _fromEmulatorSub;
 
+  /// The current hardware model.
   HardwareDeviceType get hardwareDeviceType => _type;
-  set hardwareDeviceType(HardwareDeviceType newType) {
+
+  /// Changes the hardware model, restarting the emulator if needed.
+  ///
+  /// Returns a [Future] that completes when the new emulator is ready.
+  Future<void> updateHardwareDeviceType(HardwareDeviceType newType) async {
     if (newType != _type) {
       _type = newType;
-      if (_isEmulatorRunning) {
-        kill();
-      }
-      run();
+      kill();
+      await run();
     }
   }
 
+  /// Stream of LCD display events from the emulator.
   Stream<LcdEvent> get lcdEvents => _outEventCtrl.stream;
 
   bool get _isEmulatorRunning => _isolate != null;
 
+  /// Spawns the emulator isolate and sends the start configuration.
+  ///
+  /// Does nothing if the emulator is already running.
   Future<void> run() async {
-    if (_isEmulatorRunning == false) {
+    if (!_isEmulatorRunning) {
       _toEmulatorPort = await _initIsolate();
-
       _send(
         StartEmulatorMessage(type: _type, debugPort: _debugPort),
-        StartEmulatorMessageSerializer(),
+        _startSerializer,
       );
     }
   }
 
+  /// Terminates the emulator isolate and cleans up resources.
   void kill() {
     if (_isEmulatorRunning) {
       _fromEmulatorSub?.cancel();
       _fromEmulatorSub = null;
-      killEmulator();
       _isolate!.kill(priority: Isolate.immediate);
       _isolate = null;
+      _toEmulatorPort = null;
     }
   }
 
-  void updateHardwareDeviceType(HardwareDeviceType type) {
-    if (type != _type) {
-      _type = type;
-      kill();
-      run();
-    }
+  /// Releases all resources. Call when the [Device] is no longer needed.
+  void dispose() {
+    kill();
+    _outEventCtrl.close();
   }
 
   Future<SendPort> _initIsolate() async {
@@ -97,33 +107,50 @@ class Device {
     }
   }
 
+  /// Sends a key-down event to the emulator.
   void sendKeyDown(String keyName) {
     _send(
       KeyEventMessage(keyName: keyName, isDown: true),
-      KeyEventMessageSerializer(),
+      _keySerializer,
     );
   }
 
+  /// Sends a key-up event to the emulator.
   void sendKeyUp(String keyName) {
     _send(
       KeyEventMessage(keyName: keyName, isDown: false),
-      KeyEventMessageSerializer(),
+      _keySerializer,
     );
   }
 
   void _messageHandler(Uint8List data) {
-    final EmulatorMessageId messageId = EmulatorMessageId.values[data[0]];
+    if (data.isEmpty) return;
+
+    final int id = data[0];
+    if (id < 0 || id >= EmulatorMessageId.values.length) return;
+
+    final EmulatorMessageId messageId = EmulatorMessageId.values[id];
 
     switch (messageId) {
       case EmulatorMessageId.isDebugClientConnected:
         final IsDebugClientConnectedMessage message =
-            IsDebugClientConnectedMessageSerializer().deserialize(data);
+            _debugSerializer.deserialize(data);
         isDebugClientConnected = message.status;
       case EmulatorMessageId.lcdEvent:
-        final LcdEvent event = LcdEventSerializer().deserialize(data);
+        final LcdEvent event = _lcdSerializer.deserialize(data);
         _outEventCtrl.add(event);
       default:
-        throw Exception('Unknown message: $messageId');
+        assert(() {
+          // ignore: avoid_print
+          print('Device: unexpected message $messageId');
+          return true;
+        }());
     }
   }
 }
+
+// Reusable stateless serializer instances.
+final _startSerializer = StartEmulatorMessageSerializer();
+final _keySerializer = KeyEventMessageSerializer();
+final _lcdSerializer = LcdEventSerializer();
+final _debugSerializer = IsDebugClientConnectedMessageSerializer();
