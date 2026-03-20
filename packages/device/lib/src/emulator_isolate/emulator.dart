@@ -9,7 +9,7 @@ import 'package:device/src/emulator_isolate/clock.dart';
 import 'package:device/src/emulator_isolate/dasm.dart';
 import 'package:device/src/emulator_isolate/extension_module.dart';
 import 'package:device/src/emulator_isolate/keyboard.dart';
-import 'package:device/src/messages/messages.dart';
+import 'package:device/src/messages.dart';
 import 'package:lcd/lcd.dart';
 import 'package:lh5801/lh5801.dart';
 import 'package:lh5811/lh5811.dart';
@@ -161,7 +161,7 @@ class Emulator {
     displayRam.registerObserver(MemoryAccessType.write, _lcd);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
     _lcdSub = _lcd.events.listen((LcdEvent event) {
-      outPort.send(LcdEventSerializer().serialize(event));
+      outPort.send(LcdEventMsg(event));
     });
     _lcd.emitInitialState();
 

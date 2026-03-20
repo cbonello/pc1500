@@ -1,30 +1,21 @@
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:device/src/device.dart';
 import 'package:device/src/emulator_isolate/emulator_frontend.dart';
-import 'package:device/src/messages/messages.dart';
+import 'package:device/src/messages.dart';
 import 'package:test/test.dart';
 
-Uint8List _startMsg({
+StartEmulatorMsg _startMsg({
   HardwareDeviceType type = HardwareDeviceType.pc1500A,
   int debugPort = 0,
-}) => StartEmulatorMessageSerializer().serialize(
-  StartEmulatorMessage(type: type, debugPort: debugPort),
-);
+}) => StartEmulatorMsg(type: type, debugPort: debugPort);
 
-Uint8List _keyDownMsg(String keyName) => KeyEventMessageSerializer().serialize(
-  KeyEventMessage(keyName: keyName, isDown: true),
-);
+KeyDownMsg _keyDownMsg(String keyName) => KeyDownMsg(keyName);
 
-Uint8List _keyUpMsg(String keyName) => KeyEventMessageSerializer().serialize(
-  KeyEventMessage(keyName: keyName, isDown: false),
-);
+KeyUpMsg _keyUpMsg(String keyName) => KeyUpMsg(keyName);
 
-Uint8List _updateTypeMsg(HardwareDeviceType type) =>
-    UpdateDeviceTypeMessageSerializer().serialize(
-      UpdateDeviceTypeMessage(type: type),
-    );
+UpdateDeviceTypeMsg _updateTypeMsg(HardwareDeviceType type) =>
+    UpdateDeviceTypeMsg(type: type);
 
 /// Creates an [EmulatorFrontEnd] with the emulator already started.
 EmulatorFrontEnd _started() {
@@ -110,9 +101,9 @@ void main() {
     });
 
     group('error handling', () {
-      test('malformed message should not crash the frontend', () {
+      test('unrecognized message should not crash the frontend', () {
         final EmulatorFrontEnd fe = _started();
-        fe.handleMessageForTest(Uint8List.fromList([255]));
+        fe.handleMessageForTest('garbage');
         expect(fe.emulator, isNotNull);
       });
     });

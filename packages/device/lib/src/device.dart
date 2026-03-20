@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:device/src/emulator_isolate/emulator_frontend.dart';
-import 'package:device/src/messages/messages.dart';
-import 'package:device/src/messages/messages_base.dart';
+import 'package:device/src/messages.dart';
 import 'package:lcd/lcd.dart';
 
 /// Hardware model variants.
@@ -55,9 +53,8 @@ class Device {
   Future<void> run() async {
     if (!_isEmulatorRunning) {
       _toEmulatorPort = await _initIsolate();
-      _send(
-        StartEmulatorMessage(type: _type, debugPort: _debugPort),
-        _startSerializer,
+      _toEmulatorPort!.send(
+        StartEmulatorMsg(type: _type, debugPort: _debugPort),
       );
     }
   }
@@ -87,8 +84,7 @@ class Device {
       if (data is SendPort) {
         completer.complete(data);
       } else {
-        assert(data is Uint8List);
-        _messageHandler(data as Uint8List);
+        _messageHandler(data);
       }
     });
 
@@ -101,56 +97,32 @@ class Device {
     return completer.future;
   }
 
-  void _send<T>(T message, EmulatorMessageSerializer<T> serializer) {
-    if (_isEmulatorRunning) {
-      _toEmulatorPort!.send(serializer.serialize(message));
-    }
-  }
-
   /// Sends a key-down event to the emulator.
   void sendKeyDown(String keyName) {
-    _send(
-      KeyEventMessage(keyName: keyName, isDown: true),
-      _keySerializer,
-    );
+    if (_isEmulatorRunning) {
+      _toEmulatorPort!.send(KeyDownMsg(keyName));
+    }
   }
 
   /// Sends a key-up event to the emulator.
   void sendKeyUp(String keyName) {
-    _send(
-      KeyEventMessage(keyName: keyName, isDown: false),
-      _keySerializer,
-    );
+    if (_isEmulatorRunning) {
+      _toEmulatorPort!.send(KeyUpMsg(keyName));
+    }
   }
 
-  void _messageHandler(Uint8List data) {
-    if (data.isEmpty) return;
-
-    final int id = data[0];
-    if (id < 0 || id >= EmulatorMessageId.values.length) return;
-
-    final EmulatorMessageId messageId = EmulatorMessageId.values[id];
-
-    switch (messageId) {
-      case EmulatorMessageId.isDebugClientConnected:
-        final IsDebugClientConnectedMessage message =
-            _debugSerializer.deserialize(data);
-        isDebugClientConnected = message.status;
-      case EmulatorMessageId.lcdEvent:
-        final LcdEvent event = _lcdSerializer.deserialize(data);
+  void _messageHandler(dynamic data) {
+    switch (data) {
+      case LcdEventMsg(:final event):
         _outEventCtrl.add(event);
+      case DebugClientStatusMsg(:final connected):
+        isDebugClientConnected = connected;
       default:
         assert(() {
           // ignore: avoid_print
-          print('Device: unexpected message $messageId');
+          print('Device: unexpected message ${data.runtimeType}');
           return true;
         }());
     }
   }
 }
-
-// Reusable stateless serializer instances.
-final _startSerializer = StartEmulatorMessageSerializer();
-final _keySerializer = KeyEventMessageSerializer();
-final _lcdSerializer = LcdEventSerializer();
-final _debugSerializer = IsDebugClientConnectedMessageSerializer();

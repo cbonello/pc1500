@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:device/src/device.dart';
 import 'package:device/src/emulator_isolate/emulator.dart';
-import 'package:device/src/messages/messages.dart';
-import 'package:device/src/messages/messages_base.dart';
+import 'package:device/src/messages.dart';
 import 'package:meta/meta.dart';
 
 EmulatorFrontEnd? _frontEnd;
@@ -26,7 +24,7 @@ class EmulatorFrontEnd {
     outPort.send(inStream.sendPort);
 
     inStreamSub = inStream.listen((dynamic data) {
-      _messageHandler(data as Uint8List);
+      _messageHandler(data);
     });
 
     isDebugClientConnected = false;
@@ -50,66 +48,54 @@ class EmulatorFrontEnd {
     _stopDebuggerServer();
   }
 
-  /// Exposed for unit tests — processes a serialized emulator message.
+  /// Exposed for unit tests — processes an emulator message.
   @visibleForTesting
-  void handleMessageForTest(Uint8List data) => _messageHandler(data);
+  void handleMessageForTest(dynamic data) => _messageHandler(data);
 
-  void _messageHandler(Uint8List data) {
+  void _messageHandler(dynamic data) {
     try {
-      final EmulatorMessageId emulatorMessageId =
-          EmulatorMessageId.values[data[0]];
-
-      switch (emulatorMessageId) {
-        case EmulatorMessageId.startEmulator:
-          final message = StartEmulatorMessageSerializer().deserialize(data);
+      switch (data) {
+        case StartEmulatorMsg(:final type, :final debugPort):
           assert(emulator == null);
-          type = message.type;
+          this.type = type;
           emulator = Emulator(type, outPort);
-          debugPort = message.debugPort;
+          this.debugPort = debugPort;
           _startDebugServer(debugPort);
         // Don't start the CPU yet — the real PC-1500 stays powered off
         // until the ON key is pressed. run() is called on first ON key.
-        case EmulatorMessageId.updateDeviceType:
-          final UpdateDeviceTypeMessage message =
-              UpdateDeviceTypeMessageSerializer().deserialize(data);
-          if (message.type != type) {
-            type = message.type;
+        case UpdateDeviceTypeMsg(:final type):
+          if (type != this.type) {
+            this.type = type;
             // Recreate the emulator with the new hardware type.
             // This changes RAM size, memory layout, etc.
             emulator?.stop();
             emulator = Emulator(type, outPort);
           }
-        case EmulatorMessageId.keyDown:
-          final KeyEventMessage msg = KeyEventMessageSerializer().deserialize(
-            data,
-          );
+        case KeyDownMsg(:final keyName):
           // Keys handled outside the keyboard matrix.
-          if (msg.keyName == 'on') {
+          if (keyName == 'on') {
             emulator?.powerOn();
             break;
           }
-          if (msg.keyName == 'off') {
+          if (keyName == 'off') {
             emulator?.powerOff();
             break;
           }
-          if (msg.keyName == 'mode') {
+          if (keyName == 'mode') {
             emulator?.cycleMode();
             break;
           }
-          if (msg.keyName == 'shift') {
+          if (keyName == 'shift') {
             emulator?.toggleShift();
             break;
           }
-          emulator?.keyboard.keyDown(msg.keyName);
+          emulator?.keyboard.keyDown(keyName);
           emulator?.updateKeyboardInput();
-        case EmulatorMessageId.keyUp:
-          final KeyEventMessage msg = KeyEventMessageSerializer().deserialize(
-            data,
-          );
-          emulator?.keyboard.keyUp(msg.keyName);
-          // No updateKeyboardInput() — the release is deferred until the
-          // next frame via flushPendingReleases() to avoid lost keystrokes.
-        case EmulatorMessageId.step:
+        case KeyUpMsg(:final keyName):
+          emulator?.keyboard.keyUp(keyName);
+        // No updateKeyboardInput() — the release is deferred until the
+        // next frame via the keyboard queue to avoid lost keystrokes.
+        case StepMsg():
           emulator?.step();
         default:
           break;
@@ -148,7 +134,8 @@ class EmulatorFrontEnd {
         }
         _updateDebuggerStatus(true);
         client.listen(
-          _messageHandler,
+          // Debug client still uses binary protocol for now.
+          (_) {},
           onError: (Object error) {
             _updateDebuggerStatus(false);
             client.close();
@@ -166,11 +153,7 @@ class EmulatorFrontEnd {
 
   void _updateDebuggerStatus(bool debugClientStatus) {
     isDebugClientConnected = debugClientStatus;
-
-    final IsDebugClientConnectedMessage idc = IsDebugClientConnectedMessage(
-      status: isDebugClientConnected,
-    );
-    outPort.send(IsDebugClientConnectedMessageSerializer().serialize(idc));
+    outPort.send(DebugClientStatusMsg(isDebugClientConnected));
   }
 
   void _stopDebuggerServer() {
