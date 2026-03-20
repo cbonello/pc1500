@@ -25,11 +25,35 @@ class EmulatorError extends Error {
   String toString() => 'Device: $message';
 }
 
-// I/O port base addresses in ME1 (accessed as 0x10000 + base from CPU).
+// ── I/O port base addresses (ME1, accessed as 0x10000 + base from CPU) ──
+
 const int _ce153Base = 0x8000; // CE-153 (keyboard)
 const int _ce150Base = 0xB000; // CE-150 (printer)
 const int _ce158Base = 0xD000; // CE-158 (RS-232C)
 const int _pc1500Base = 0xF000; // PC-1500 main I/O
+
+// ── System RAM addresses ────────────────────────────────────────────────
+
+/// LCD symbol byte 0 (BUSY, SHIFT, SML, SMALL, I/II/III, DEF).
+const int _symByte0 = 0x764E;
+
+/// LCD symbol byte 1 (RUN, PRO, RESERVE, DEG/RAD/GRAD).
+const int _symByte1 = 0x764F;
+
+/// High byte of user RAM top. The ROM reads this to determine the
+/// available program storage. $58 for PC-1500A (6KB), $48 for PC-1500 (2KB).
+const int _ramTopPtr = 0x7899;
+
+/// Start of user RAM (program area base for BASIC storage).
+const int _userRamStart = 0x4000;
+
+/// Default ME1 user RAM routing limit (standard 8KB window: $4000-$5FFF).
+const int _defaultMe1UserRamLimit = 0x2000;
+
+// ── BASINPUT entry points (from ROM annotations) ────────────────────────
+
+const int _basinput1 = 0xCA58; // RUN mode: input with '>' prompt.
+const int _basinput3 = 0xCA80; // PRO mode: input without prompt.
 
 class Emulator {
   Emulator(
@@ -69,17 +93,24 @@ class Emulator {
 
     // Standard users RAM.
     if (type == HardwareDeviceType.pc1500A) {
-      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x1800); // 6KB.
+      _csd.appendRAM(MemoryBank.me0, _userRamStart, 0x1800); // 6KB.
     } else {
-      _csd.appendRAM(MemoryBank.me0, 0x4000, 0x0800); // 2KB.
+      _csd.appendRAM(MemoryBank.me0, _userRamStart, 0x0800); // 2KB.
     }
 
     try {
-      final Map<String, dynamic> json =
+      final json =
           jsonDecode(std_users_ram.me0RamAnnotationsJson)
               as Map<String, dynamic>;
       _annotations.load(json);
-    } catch (_) {}
+    } catch (e) {
+      assert(() {
+        // ignore: avoid_print
+        print('Failed to load RAM annotations: $e');
+
+        return true;
+      }());
+    }
 
     // I/O ports — mapped as RAM placeholders covering the full chip-select
     // decoded range. Each LH5811 only uses 16 registers (AD0-AD3), but the
@@ -123,16 +154,13 @@ class Emulator {
       subroutineEnter: subroutineEnter,
       subroutineExit: subroutineExit,
     )..reset();
-    _cpu.pins.resetPin = true;
-    _cpu.pins.inputPorts = 0xFF; // No keys pressed (active low).
-    // Seed the timer LFSR with a non-zero value so it can generate
-    // periodic IR1 interrupts. An all-zero LFSR never advances.
-    _cpu.cpu.tm.value = 1;
+    _initCpuPins();
+    _updateRamTop();
 
     _lcd = Lcd(memRead: _csd.readAt);
     displayRam.registerObserver(MemoryAccessType.write, _lcd);
     stdUserRam.registerObserver(MemoryAccessType.write, _lcd);
-    _lcd.events.listen((LcdEvent event) {
+    _lcdSub = _lcd.events.listen((LcdEvent event) {
       outPort.send(LcdEventSerializer().serialize(event));
     });
     _lcd.emitInitialState();
@@ -146,6 +174,7 @@ class Emulator {
   late LH5801 _cpu;
   final ChipSelectDecoder _csd;
   late Lcd _lcd;
+  late StreamSubscription<LcdEvent> _lcdSub;
   final ExtensionModule _connector40Pins;
   late final LH5801DASM _dasm;
   final MemoryBanksAnnotations _annotations;
@@ -160,6 +189,31 @@ class Emulator {
   final Keyboard keyboard;
   late final LH5811 _pc1500IO;
   late final LH5811 _ce153IO;
+
+  /// ME1 user RAM routing limit. ME1 $0000–(_me1UserRamLimit-1) is mapped
+  /// to ME0 $4000+. Updated by [addCE155] when expansion RAM is installed.
+  int _me1UserRamLimit = _defaultMe1UserRamLimit;
+
+  /// High byte of user RAM top, depends on model and expansion modules.
+  int _ramTopHighByte = 0;
+
+  /// Computes [_ramTopHighByte] from the model and installed expansion RAM.
+  void _updateRamTop() {
+    int top = type == HardwareDeviceType.pc1500A ? 0x5800 : 0x4800;
+    if (_connector40Pins.isUsed) {
+      top += _connector40Pins.capacity;
+    }
+    _ramTopHighByte = top >> 8;
+  }
+
+  /// Initializes CPU pins to their power-on state.
+  void _initCpuPins() {
+    _cpu.pins.resetPin = true;
+    _cpu.pins.inputPorts = 0xFF; // No keys pressed (active low).
+    // Seed the timer LFSR with a non-zero value so it can generate
+    // periodic IR1 interrupts. An all-zero LFSR never advances.
+    _cpu.cpu.tm.value = 1;
+  }
 
   /// Updates CPU IN0-IN7 based on current keyboard and strobe state.
   void updateKeyboardInput() {
@@ -184,8 +238,13 @@ class Emulator {
   /// The chip select circuit decodes 4KB blocks, so we mask to the base.
   LH5811? _ioForAddress(int address) {
     final int base = address & 0xF000;
-    if (base == _pc1500Base) return _pc1500IO;
-    if (base == _ce153Base) return _ce153IO;
+    if (base == _pc1500Base) {
+      return _pc1500IO;
+    }
+    if (base == _ce153Base) {
+      return _ce153IO;
+    }
+
     // CE-150 and CE-158 not yet implemented as LH5811 — fall through to
     // the ROM placeholder which returns 0xFF.
     return null;
@@ -200,9 +259,9 @@ class Emulator {
         return io.read(me1Addr & 0x0F);
       }
       // ME1 reads from RAM/display addresses: route to ME0.
-      // ME1 $0000-$1FFF → ME0 $4000-$5FFF (user RAM, offset by $4000).
-      if (me1Addr < 0x2000) {
-        return _csd.readByteAt(me1Addr + 0x4000);
+      // ME1 $0000-$xxxx → ME0 $4000+ (user RAM, offset by $4000).
+      if (me1Addr < _me1UserRamLimit) {
+        return _csd.readByteAt(me1Addr + _userRamStart);
       }
       // ME1 $7400-$7BFF → ME0 same address (display + system RAM).
       if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
@@ -211,6 +270,7 @@ class Emulator {
       // Unhandled ME1 addresses: return 0xFF (open bus).
       return 0xFF;
     }
+
     return _csd.readByteAt(address);
   }
 
@@ -230,26 +290,31 @@ class Emulator {
           final int scanResult = keyboard.scanIN(dda, opa);
           _cpu.pins.inputPorts = scanResult;
         }
+
         return;
       }
       // ME1 writes to RAM/display addresses: route to ME0.
       // On real hardware, RAM chips respond to both ME0 and ME1. The chip
       // select circuit maps ME1 addresses differently:
-      //   ME1 $0000-$1FFF → ME0 $4000-$5FFF (user RAM, offset by $4000)
-      //   ME1 $7400-$7BFF → ME0 $7400-$7BFF (display + system RAM, same addr)
-      if (me1Addr < 0x2000) {
-        _memWrite(me1Addr + 0x4000, value);
+      //   ME1 $0000-$xxxx → ME0 $4000+ (user RAM, offset by $4000)
+      //   ME1 $7400-$7BFF → ME0 $7400-$7BFF (display + system RAM)
+      if (me1Addr < _me1UserRamLimit) {
+        _memWrite(me1Addr + _userRamStart, value);
+
         return;
       }
       if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
         _memWrite(me1Addr, value);
+
         return;
       }
+
       // Unhandled ME1 addresses: silently drop (no hardware responds).
       return;
     }
-    // Guard: silently drop writes to ROM ($C000+) and unmapped gaps.
-    if (address >= 0xC000 || (address >= 0x5800 && address < 0x7400)) {
+    // Guard: silently drop writes to ROM ($C000+).
+    // Writes to unmapped RAM gaps are handled by the CSD (silently ignored).
+    if (address >= 0xC000) {
       return;
     }
     _csd.writeByteAt(address, value);
@@ -280,11 +345,8 @@ class Emulator {
   /// normally triggers in [_executeFrame].
   void simulateWarmStartDone() {
     _warmStartDone = true;
-    _csd.writeByteAt(0x4000, 0xFF);
-    final int ramTop = type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
-    _csd.writeByteAt(0x7899, ramTop);
+    _initBasicArea();
   }
-
 
   /// Executes a single CPU instruction. Returns the number of cycles consumed.
   int step() {
@@ -294,12 +356,12 @@ class Emulator {
     if (_cpu.cpu.hlt && _cpu.cpu.t.ie && _cpu.cpu.tm.isInterruptRaised) {
       _cpu.cpu.hlt = false;
     }
+
     return _cpu.step();
   }
 
   /// Starts the emulation loop.
   void run() {
-    _clock.updateFps(_clock.fps);
     _running = true;
     _scheduleFrame();
   }
@@ -327,11 +389,21 @@ class Emulator {
   /// Resets the CPU for a warm start (RAM preserved).
   void _resetCpu() {
     _cpu.pins.resetPin = true;
-    _cpu.step();
+    step(); // Use wrapper, not _cpu.step() directly.
     _cpu.pins.resetPin = false;
     _cpu.cpu.hlt = false;
     _cpu.pins.inputPorts = 0xFF;
     _cpu.cpu.tm.value = 1;
+    // Allow BASIC area re-initialization after the warm start completes.
+    _warmStartDone = false;
+  }
+
+  /// Initializes the BASIC program area (equivalent to what NEW does).
+  /// The ROM uses ME1 $0000 for program storage, which our ME1→ME0
+  /// routing maps to $4000 (user RAM).
+  void _initBasicArea() {
+    _csd.writeByteAt(_userRamStart, 0xFF); // End-of-program marker.
+    _csd.writeByteAt(_ramTopPtr, _ramTopHighByte);
   }
 
   /// Toggles SHIFT mode (bit 1 of $764E).
@@ -339,26 +411,23 @@ class Emulator {
   /// the scan, which would re-detect the held key and toggle it back.
   /// We bypass the matrix and toggle directly to avoid the rapid loop.
   void toggleShift() {
-    final int flags = _csd.readByteAt(0x764E);
-    _csd.writeByteAt(0x764E, flags ^ 0x02);
+    final int flags = _csd.readByteAt(_symByte0);
+    _csd.writeByteAt(_symByte0, flags ^ 0x02);
   }
-
-  // BASINPUT entry points (from ROM annotations).
-  static const int _basinput1 = 0xCA58; // RUN mode: input with '>' prompt.
-  static const int _basinput3 = 0xCA80; // PRO mode: input without prompt.
 
   /// Cycles between RUN and PRO modes.
   /// On the real PC-1500, MODE is a physical slide switch that triggers a
   /// hardware restart of the main loop. We emulate this by updating the LCD
   /// symbol in $764F and redirecting the CPU to the correct BASINPUT entry.
   void cycleMode() {
-    final int current = _csd.readByteAt(0x764F);
+    final int current = _csd.readByteAt(_symByte1);
     final bool isRun = (current & 0x40) != 0;
     // Toggle RUN ↔ PRO, preserving angle mode bits and other state.
     final int next = isRun
-        ? (current & ~0x40) | 0x20 // RUN → PRO
+        ? (current & ~0x40) |
+              0x20 // RUN → PRO
         : (current & ~0x20) | 0x40; // PRO → RUN
-    _csd.writeByteAt(0x764F, next);
+    _csd.writeByteAt(_symByte1, next);
     // Redirect the CPU to the correct BASINPUT entry point.
     // The main loop's BASINPUT entry determines RUN vs PRO behavior.
     _cpu.cpu.p.value = isRun ? _basinput3 : _basinput1;
@@ -398,19 +467,11 @@ class Emulator {
     }
     // After warm start completes (second HLT), initialize BASIC pointers.
     // The ROM's warm start NEW0?:CHECK doesn't fully complete in the emulator,
-    // leaving $786A-$786B (program area base) at $0000. Set it to $4000
-    // (start of user RAM) so NEW and BASIC line storage work correctly.
+    // leaving the program area uninitialized.
     if (_coldStartDone && !_warmStartDone && _cpu.cpu.hlt) {
       _warmStartDone = true;
-      // Initialize BASIC program area (equivalent to what NEW does).
-      // The ROM uses ME1 $0000 for program storage, which our ME1→ME0
-      // routing maps to $4000 (user RAM).
-      _csd.writeByteAt(0x4000, 0xFF); // End-of-program marker.
-      // $7899 = high byte of user RAM top ($5800 for PC-1500A 6KB).
-      final int ramTop = type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
-      _csd.writeByteAt(0x7899, ramTop);
+      _initBasicArea();
     }
-
 
     // Simulate LH5811 timer: generate a periodic IRQ each frame (~50Hz)
     // to drive the ROM's main loop (keyboard scan, display refresh).
@@ -433,7 +494,14 @@ class Emulator {
     // Sync DISP flip-flop state to the LCD each frame.
     _lcd.setDisplayOn(_cpu.pins.dispFlipflop);
 
-    if (!_running) return;
+    // Advance the key queue AFTER the ROM has scanned the keyboard.
+    // This injects one queued key per frame, holding it long enough for
+    // the ROM's scan to detect it reliably.
+    keyboard.tickKeyQueue();
+
+    if (!_running) {
+      return;
+    }
 
     final Duration elapsed = DateTime.now().difference(frameStart);
     final Duration remaining = frameBudget - elapsed;
@@ -459,8 +527,9 @@ class Emulator {
     String comment = '';
 
     if (_annotations.isAnnotated(address)) {
-      final AnnotationBase? annotation =
-          _annotations.getAnnotationFromAddress(address);
+      final AnnotationBase? annotation = _annotations.getAnnotationFromAddress(
+        address,
+      );
       label = annotation?.label ?? '';
       comment = annotation?.comment ?? '';
     }
@@ -481,6 +550,8 @@ class Emulator {
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
     }
+    // CE-151 adds 4KB — ME1 routing already covers up to $2000 (8KB window).
+    _updateRamTop();
   }
 
   void addCE155() {
@@ -498,11 +569,17 @@ class Emulator {
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1800);
     }
+    // CE-155 extends RAM beyond the default 8KB ME1 window.
+    // Expand ME1 routing to cover the full expansion range.
+    _me1UserRamLimit = 0x3000; // ME1 $0000-$2FFF → ME0 $4000-$6FFF.
+    _updateRamTop();
   }
 
   void dispose() {
     stop();
+    _lcdSub.cancel();
     _lcd.dispose();
+    _connector40Pins.removeModule();
   }
 }
 
@@ -522,8 +599,7 @@ class PC1500Traced extends Emulator {
       memRead: _memRead,
       memWrite: _memWrite,
     )..reset();
-
-    _cpu.pins.resetPin = true;
+    _initCpuPins();
   }
 
   List<Trace> get traces => (_cpu as LH5801Traced).traces;
