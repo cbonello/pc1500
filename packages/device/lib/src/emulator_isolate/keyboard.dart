@@ -11,20 +11,71 @@
 /// The ON key is NOT in the keyboard matrix. It connects to PB7 of the
 /// PC-1500 main I/O at 0xF000 (see p.105).
 class Keyboard {
-  /// Set of currently pressed key names.
+  /// Set of currently pressed key names (active during ROM scan).
   final Set<String> _pressedKeys = <String>{};
 
+  /// Queue of keys waiting to be injected. When the user types faster than
+  /// the frame rate, key presses pile up. The ROM expects single-key presses,
+  /// so we inject one queued key per frame to avoid confusing the scan.
+  final List<String> _keyQueue = <String>[];
+
+  /// The key currently being held by the queue (if any).
+  String? _heldKey;
+
+  /// Remaining frames to hold the currently injected key.
+  int _holdFrames = 0;
+
+  /// Minimum frames to hold each injected key (must be seen by ROM scan).
+  static const int _minHoldFrames = 2;
+
+  /// Maximum queue depth. Prevents unbounded growth from OS auto-repeat.
+  static const int _maxQueueSize = 16;
+
   /// Press a key by name (e.g. 'a', 'enter', 'f1').
-  void keyDown(String keyName) => _pressedKeys.add(keyName);
+  void keyDown(String keyName) {
+    _pressedKeys.add(keyName);
+    // Queue the key for guaranteed scan time, but skip duplicates of the
+    // most recent entry (OS auto-repeat fires many keyDown events).
+    if (_keyQueue.length < _maxQueueSize &&
+        (_keyQueue.isEmpty || _keyQueue.last != keyName)) {
+      _keyQueue.add(keyName);
+    }
+  }
 
   /// Release a key by name.
-  void keyUp(String keyName) => _pressedKeys.remove(keyName);
+  ///
+  /// The key is removed from the immediate pressed set but NOT from the
+  /// queue. Queued keystrokes still need to be injected so the ROM sees them.
+  void keyUp(String keyName) {
+    _pressedKeys.remove(keyName);
+  }
+
+  /// Called once per frame AFTER the ROM has scanned the keyboard.
+  /// Manages the key queue: injects one key at a time, holds it for
+  /// [_minHoldFrames], then moves to the next queued key.
+  void tickKeyQueue() {
+    if (_holdFrames > 0) {
+      _holdFrames--;
+      return; // Still holding the current key.
+    }
+    // Release the previously held key now that its hold time expired.
+    if (_heldKey != null) {
+      _pressedKeys.remove(_heldKey);
+      _heldKey = null;
+    }
+    // Dequeue the next key if available.
+    if (_keyQueue.isNotEmpty) {
+      _heldKey = _keyQueue.removeAt(0);
+      _pressedKeys.add(_heldKey!); // Ensure it's in the pressed set.
+      _holdFrames = _minHoldFrames;
+    }
+  }
 
   /// Returns true if the ON key is currently pressed.
   bool get isOnKeyPressed => _pressedKeys.contains('on');
 
-  /// Debug: returns the set of currently pressed key names.
-  Set<String> get debugPressedKeys => _pressedKeys;
+  /// Debug: returns an unmodifiable view of the currently pressed key names.
+  Set<String> get debugPressedKeys => Set<String>.unmodifiable(_pressedKeys);
 
   /// Returns the CPU IN0-IN7 response for the keyboard matrix.
   ///
@@ -39,7 +90,9 @@ class Keyboard {
 
     for (final String key in _pressedKeys) {
       final _KeyPosition? pos = _keyMap[key];
-      if (pos == null) continue;
+      if (pos == null) {
+        continue;
+      }
 
       if ((activeStrobes & (1 << pos.column)) != 0) {
         result &= ~(1 << pos.row);
@@ -70,7 +123,7 @@ class _KeyPosition {
 /// PA3:   ENTER    (        I        SHIFT    K        O        L        )
 /// PA4:   RCL      C        E        (mode?)  D        /        *        +
 /// PA5:   SPACE    V        R        (mode?)  F        P        ←        =
-/// PA6:   BRK      Z        Q        (mode?)  A        CL       MODE     (ctrl)
+/// PA6:   SML/BRK  Z        Q        (mode?)  A        CL       MODE     (ctrl)
 /// PA7:   LF       B        T        (mode?)  G        9        6        3
 const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   // Digits
@@ -84,7 +137,6 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '7': _KeyPosition(2, 2), // PA2, IN2
   '8': _KeyPosition(0, 2), // PA0, IN2
   '9': _KeyPosition(7, 2), // PA7, IN2
-
   // Letters
   'a': _KeyPosition(6, 3), // PA6, IN3
   'b': _KeyPosition(7, 6), // PA7, IN6
@@ -112,7 +164,6 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'x': _KeyPosition(1, 6), // PA1, IN6
   'y': _KeyPosition(0, 5), // PA0, IN5
   'z': _KeyPosition(6, 6), // PA6, IN6
-
   // Special keys
   'enter': _KeyPosition(3, 7), // PA3, IN7 → 0x0D
   ' ': _KeyPosition(5, 7), // PA5, IN7 → SPACE
@@ -124,12 +175,14 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '/': _KeyPosition(4, 2), // PA4, IN2
   '.': _KeyPosition(1, 0), // PA1, IN0
   '=': _KeyPosition(5, 0), // PA5, IN0
-
   // SHIFT is handled directly via toggleShift() — not a matrix key.
   // Function/control keys
   'recall': _KeyPosition(4, 7), // PA4, IN7 → RCL
   'def': _KeyPosition(1, 4), // PA1, IN4 → DEF
-  'small': _KeyPosition(6, 7), // PA6, IN7 → 0x02 (MODE toggles SMALL on export)
+  // SML and BREAK share PA6/IN7 — same physical matrix position.
+  // On export models, code 0x02 toggles SMALL mode.
+  'small': _KeyPosition(6, 7), // PA6, IN7 → 0x02
+  'break': _KeyPosition(6, 7), // PA6, IN7 → 0x02 (same as SML)
   'up-down': _KeyPosition(3, 4), // PA3, IN4 → 0x16
   'clear': _KeyPosition(6, 2), // PA6, IN2 → CL (0x18)
   // MODE is a physical slide switch on the real PC-1500, handled
@@ -138,4 +191,8 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   // Navigation
   'right': _KeyPosition(1, 2), // PA1, IN2 → 0x0F (→)
   'left': _KeyPosition(5, 1), // PA5, IN1 → 0x08 (← / BS)
+  // Additional function keys
+  'cls': _KeyPosition(0, 7), // PA0, IN7 → 0x0B (CLS)
+  'tab': _KeyPosition(1, 7), // PA1, IN7 → 0x09 (TAB)
+  'lf': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (LF)
 };
