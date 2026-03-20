@@ -100,7 +100,7 @@ void main() {
         expect(fe.emulator!.keyboard.debugPressedKeys, contains('7'));
       });
 
-      test('key up should remove key from keyboard matrix', () {
+      test('key up should remove key from pressed set', () {
         final EmulatorFrontEnd fe = _started();
         fe.handleMessageForTest(_keyDownMsg('a'));
         expect(fe.emulator!.keyboard.debugPressedKeys, contains('a'));

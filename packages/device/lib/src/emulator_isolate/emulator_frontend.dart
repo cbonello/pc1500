@@ -107,7 +107,8 @@ class EmulatorFrontEnd {
             data,
           );
           emulator?.keyboard.keyUp(msg.keyName);
-          emulator?.updateKeyboardInput();
+          // No updateKeyboardInput() — the release is deferred until the
+          // next frame via flushPendingReleases() to avoid lost keystrokes.
         case EmulatorMessageId.step:
           emulator?.step();
         default:
