@@ -4,6 +4,7 @@ import 'package:device/src/device.dart';
 import 'package:device/src/messages/messages_base.dart';
 import 'package:lcd/lcd.dart';
 
+/// Sent by the UI to create and configure the emulator.
 class StartEmulatorMessage extends EmulatorMessageBase {
   StartEmulatorMessage({required this.type, required this.debugPort})
     : super(EmulatorMessageId.startEmulator);
@@ -12,27 +13,31 @@ class StartEmulatorMessage extends EmulatorMessageBase {
   final int debugPort;
 }
 
+/// Serializer for [StartEmulatorMessage].
+///
+/// Wire format: `[messageId, type_index, debugPort_hi, debugPort_lo]`.
 class StartEmulatorMessageSerializer
     extends EmulatorMessageSerializer<StartEmulatorMessage> {
   @override
   StartEmulatorMessage deserialize(Uint8List data) {
-    assert(data.length == 4);
+    assert(data.length >= 4);
     assert(data[0] == EmulatorMessageId.startEmulator.index);
 
     return StartEmulatorMessage(
       type: HardwareDeviceType.values[data[1]],
-      debugPort: deserializeInt(data.sublist(2)),
+      debugPort: EmulatorMessageSerializer.deserializeInt(data.sublist(2)),
     );
   }
 
   @override
-  Uint8List serialize(StartEmulatorMessage le) => Uint8List.fromList(<int>[
-    le.messageId.index,
-    le.type.index,
-    ...serializeInt(le.debugPort),
+  Uint8List serialize(StartEmulatorMessage msg) => Uint8List.fromList(<int>[
+    msg.messageId.index,
+    msg.type.index,
+    ...EmulatorMessageSerializer.serializeInt(msg.debugPort),
   ]);
 }
 
+/// Sent by the UI to change the emulated hardware model.
 class UpdateDeviceTypeMessage extends EmulatorMessageBase {
   UpdateDeviceTypeMessage({required this.type})
     : super(EmulatorMessageId.updateDeviceType);
@@ -40,25 +45,31 @@ class UpdateDeviceTypeMessage extends EmulatorMessageBase {
   final HardwareDeviceType type;
 }
 
+/// Serializer for [UpdateDeviceTypeMessage].
+///
+/// Wire format: `[messageId, type_index]`.
 class UpdateDeviceTypeMessageSerializer
     extends EmulatorMessageSerializer<UpdateDeviceTypeMessage> {
   @override
   UpdateDeviceTypeMessage deserialize(Uint8List data) {
-    assert(data.length == 2);
+    assert(data.length >= 2);
     assert(data[0] == EmulatorMessageId.updateDeviceType.index);
 
     return UpdateDeviceTypeMessage(type: HardwareDeviceType.values[data[1]]);
   }
 
   @override
-  Uint8List serialize(UpdateDeviceTypeMessage sdt) =>
-      sdt.type.index.toEmulatorMessage(sdt.messageId);
+  Uint8List serialize(UpdateDeviceTypeMessage msg) =>
+      Uint8List.fromList(<int>[msg.messageId.index, msg.type.index]);
 }
 
+/// Serializer for [LcdEvent] (emulator → UI).
+///
+/// Wire format: `[messageId, buf1..., buf2..., sym0, sym1, displayOn]`.
 class LcdEventSerializer extends EmulatorMessageSerializer<LcdEvent> {
   @override
   LcdEvent deserialize(Uint8List data) {
-    assert(data.length == 1 + LcdEvent.length);
+    assert(data.length >= 1 + LcdEvent.length);
     assert(data[0] == EmulatorMessageId.lcdEvent.index);
 
     int start = 1;
@@ -91,10 +102,11 @@ class LcdEventSerializer extends EmulatorMessageSerializer<LcdEvent> {
     ...lcdEvent.displayBuffer1,
     ...lcdEvent.displayBuffer2,
     ...lcdEvent.symbols.data,
-    lcdEvent.displayOn ? 1 : 0,
+    if (lcdEvent.displayOn) 1 else 0,
   ]);
 }
 
+/// Sent by the emulator to notify the UI of debug client connection changes.
 class IsDebugClientConnectedMessage extends EmulatorMessageBase {
   IsDebugClientConnectedMessage({required this.status})
     : super(EmulatorMessageId.isDebugClientConnected);
@@ -102,29 +114,35 @@ class IsDebugClientConnectedMessage extends EmulatorMessageBase {
   final bool status;
 }
 
+/// Serializer for [IsDebugClientConnectedMessage].
+///
+/// Wire format: `[messageId, 0|1]`.
 class IsDebugClientConnectedMessageSerializer
     extends EmulatorMessageSerializer<IsDebugClientConnectedMessage> {
   @override
   IsDebugClientConnectedMessage deserialize(Uint8List data) {
-    assert(data.length == 2);
+    assert(data.length >= 2);
     assert(data[0] == EmulatorMessageId.isDebugClientConnected.index);
-    assert(<int>[0, 1].contains(data[1]));
 
     return IsDebugClientConnectedMessage(status: data[1] == 1);
   }
 
   @override
-  Uint8List serialize(IsDebugClientConnectedMessage dc) =>
-      Uint8List.fromList(<int>[dc.messageId.index, if (dc.status) 1 else 0]);
+  Uint8List serialize(IsDebugClientConnectedMessage msg) =>
+      Uint8List.fromList(<int>[msg.messageId.index, if (msg.status) 1 else 0]);
 }
 
+/// Sent by the UI when a key is pressed or released.
 class KeyEventMessage extends EmulatorMessageBase {
   KeyEventMessage({required this.keyName, required bool isDown})
-      : super(isDown ? EmulatorMessageId.keyDown : EmulatorMessageId.keyUp);
+    : super(isDown ? EmulatorMessageId.keyDown : EmulatorMessageId.keyUp);
 
   final String keyName;
 }
 
+/// Serializer for [KeyEventMessage].
+///
+/// Wire format: `[messageId, ...keyName_codeUnits]`.
 class KeyEventMessageSerializer
     extends EmulatorMessageSerializer<KeyEventMessage> {
   @override
@@ -135,8 +153,6 @@ class KeyEventMessageSerializer
   }
 
   @override
-  Uint8List serialize(KeyEventMessage msg) => Uint8List.fromList(<int>[
-        msg.messageId.index,
-        ...msg.keyName.codeUnits,
-      ]);
+  Uint8List serialize(KeyEventMessage msg) =>
+      Uint8List.fromList(<int>[msg.messageId.index, ...msg.keyName.codeUnits]);
 }

@@ -1,56 +1,47 @@
 import 'dart:typed_data';
 
+/// Identifies the type of message exchanged between the UI and the emulator
+/// isolate. The enum index is used as the first byte of each serialized
+/// message.
 enum EmulatorMessageId {
-  // UI -> Emulator messages.
+  // UI → Emulator.
   startEmulator,
   updateDeviceType,
 
-  // Emulator -> UI messages.
+  // Emulator → UI.
   isDebugClientConnected,
   lcdEvent,
 
-  // UI -> Emulator key events.
+  // UI → Emulator key events.
   keyDown,
   keyUp,
 
-  // Debugger <-> emulator messages.
+  // Debugger ↔ Emulator.
   step,
 }
 
+/// Base class for typed emulator messages.
 abstract class EmulatorMessageBase {
   EmulatorMessageBase(this.messageId);
 
   final EmulatorMessageId messageId;
 }
 
+/// Base class for message serializers. Subclasses must implement both
+/// [serialize] and [deserialize].
 abstract class EmulatorMessageSerializer<T> {
-  Uint8List serialize(T _) => throw UnimplementedError();
+  Uint8List serialize(T message);
+  T deserialize(Uint8List data);
 
-  T deserialize(Uint8List _) => throw UnimplementedError();
-
-  Uint8List serializeInt(int value) {
-    final int value16 = value & 0xFFFF; // 16-bit integers.
-
-    return Uint8List.fromList(<int>[value16 >> 8, value16 & 0xFF]);
+  /// Encodes a 16-bit integer as two bytes (big-endian).
+  static Uint8List serializeInt(int value) {
+    final int v = value & 0xFFFF;
+    return Uint8List.fromList(<int>[v >> 8, v & 0xFF]);
   }
 
-  int deserializeInt(Uint8List data) {
-    assert(data.length >= 2); // 16-bit integers.
-
+  /// Decodes a 16-bit integer from two bytes (big-endian).
+  static int deserializeInt(Uint8List data) {
+    assert(data.length >= 2);
     return data[0] << 8 | data[1];
-  }
-}
-
-extension IntEmulatorMessageSerializer on int {
-  Uint8List toUint8List() {
-    final int value = this & 0xFFFF; // 16-bit integers.
-
-    return Uint8List.fromList(<int>[value >> 8, value & 0xFF]);
-  }
-
-  Uint8List toEmulatorMessage(EmulatorMessageId id) {
-    final int value = this & 0xFFFF; // 16-bit integers.
-
-    return Uint8List.fromList(<int>[id.index, value >> 8, value & 0xFF]);
   }
 }
