@@ -24,6 +24,7 @@ dependencies:
   meta: any
   roms:
     path: ../roms
+  dap: ^1.4.0
 
 dev_dependencies:
   lint: ^2.8.0

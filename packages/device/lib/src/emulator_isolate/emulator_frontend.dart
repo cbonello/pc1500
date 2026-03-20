@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:device/src/device.dart';
+import 'package:device/src/emulator_isolate/dap_server.dart';
 import 'package:device/src/emulator_isolate/emulator.dart';
 import 'package:device/src/messages.dart';
 import 'package:meta/meta.dart';
@@ -38,6 +39,7 @@ class EmulatorFrontEnd {
 
   ServerSocket? serverSocket;
   StreamSubscription<Socket>? serverSocketSub;
+  DapServer? _dapServer;
   bool isDebugClientConnected = false;
 
   void dispose() {
@@ -133,18 +135,21 @@ class EmulatorFrontEnd {
           return;
         }
         _updateDebuggerStatus(true);
-        client.listen(
-          // Debug client still uses binary protocol for now.
-          (_) {},
-          onError: (Object error) {
-            _updateDebuggerStatus(false);
-            client.close();
-          },
-          onDone: () {
-            _updateDebuggerStatus(false);
-            client.close();
-          },
-        );
+        // Create a DAP server for this client connection.
+        _dapServer = DapServer(emulator!, client);
+        emulator!.dapServer = _dapServer;
+        _dapServer!.start();
+        client.done
+            .then((_) {
+              _dapServer = null;
+              if (emulator != null) emulator!.dapServer = null;
+              _updateDebuggerStatus(false);
+            })
+            .catchError((_) {
+              _dapServer = null;
+              if (emulator != null) emulator!.dapServer = null;
+              _updateDebuggerStatus(false);
+            });
       },
       onError: (Object _) {},
       onDone: () => _updateDebuggerStatus(false),

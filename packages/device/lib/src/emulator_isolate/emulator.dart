@@ -6,6 +6,7 @@ import 'package:annotations/annotations.dart';
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:device/src/device.dart';
 import 'package:device/src/emulator_isolate/clock.dart';
+import 'package:device/src/emulator_isolate/dap_server.dart';
 import 'package:device/src/emulator_isolate/dasm.dart';
 import 'package:device/src/emulator_isolate/extension_module.dart';
 import 'package:device/src/emulator_isolate/keyboard.dart';
@@ -185,6 +186,7 @@ class Emulator {
   final LH5801Command? subroutineEnter;
   final LH5801Command? subroutineExit;
   bool _running = false;
+  bool _paused = false;
 
   final Keyboard keyboard;
   late final LH5811 _pc1500IO;
@@ -360,6 +362,46 @@ class Emulator {
     return _cpu.step();
   }
 
+  // ── DAP debugger API ────────────────────────────────────────────────────
+
+  /// Address breakpoints checked each step. Managed by [DapServer].
+  final Set<int> breakpoints = <int>{};
+
+  /// Whether the emulator is paused (by a breakpoint or DAP pause request).
+  bool get isPaused => _paused;
+
+  /// Current program counter.
+  int get pc => _cpu.cpu.p.value;
+
+  /// Snapshot of CPU register and flag state (cloned).
+  LH5801State get cpuState => _cpu.state;
+
+  /// Current CPU pin state.
+  LH5801Pins get cpuPins => _cpu.pins;
+
+  /// DAP server reference for breakpoint notifications.
+  DapServer? dapServer;
+
+  /// Pauses the emulator at the end of the current frame.
+  void pause() {
+    _paused = true;
+  }
+
+  /// Resumes the emulator after a pause. Reschedules the frame loop.
+  void resumeExecution() {
+    if (_paused) {
+      _paused = false;
+      if (_running) _scheduleFrame();
+    }
+  }
+
+  /// Executes exactly one instruction (for DAP next/stepIn).
+  int stepSingle() {
+    return step();
+  }
+
+  // ── Emulation loop ─────────────────────────────────────────────────────
+
   /// Starts the emulation loop.
   void run() {
     _running = true;
@@ -484,8 +526,14 @@ class Emulator {
     final DateTime frameStart = DateTime.now();
     final Duration frameBudget = _clock.frameDuration;
 
-    while (_running) {
+    while (_running && !_paused) {
       final int cycles = step();
+      // Check for DAP breakpoints (O(1) hash lookup, skipped when empty).
+      if (breakpoints.isNotEmpty && breakpoints.contains(_cpu.cpu.p.value)) {
+        _paused = true;
+        dapServer?.notifyStopped('breakpoint');
+        break;
+      }
       if (_clock.increment(cycles)) {
         break;
       }
@@ -499,7 +547,7 @@ class Emulator {
     // the ROM's scan to detect it reliably.
     keyboard.tickKeyQueue();
 
-    if (!_running) {
+    if (!_running || _paused) {
       return;
     }
 

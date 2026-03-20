@@ -1,0 +1,71 @@
+{
+  "name": "pc1500-debug",
+  "displayName": "PC-1500 Debugger",
+  "description": "Debug adapter for the Sharp PC-1500 emulator",
+  "version": "0.1.0",
+  "publisher": "cbonello",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "activationEvents": [
+    "onDebugResolve:pc1500"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "debuggers": [
+      {
+        "type": "pc1500",
+        "label": "PC-1500",
+        "configurationAttributes": {
+          "attach": {
+            "properties": {
+              "host": {
+                "type": "string",
+                "description": "Host where the PC-1500 emulator is running",
+                "default": "localhost"
+              },
+              "port": {
+                "type": "number",
+                "description": "Debug port of the PC-1500 emulator",
+                "default": 3756
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "pc1500",
+            "request": "attach",
+            "name": "Attach to PC-1500",
+            "host": "localhost",
+            "port": 3756
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "PC-1500: Attach",
+            "description": "Attach to a running PC-1500 emulator",
+            "body": {
+              "type": "pc1500",
+              "request": "attach",
+              "name": "Attach to PC-1500",
+              "host": "localhost",
+              "port": 3756
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}
