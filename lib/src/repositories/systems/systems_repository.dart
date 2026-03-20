@@ -41,6 +41,7 @@ class SystemsRepository {
     final Map<String, dynamic> json =
         jsonDecode(jsonStr) as Map<String, dynamic>;
     final SkinModel skin = SkinModel.fromJson(json);
+
     return skin;
   }
 }
