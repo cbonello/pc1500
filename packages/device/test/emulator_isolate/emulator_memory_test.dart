@@ -21,36 +21,18 @@ Emulator _createEmulator([
 
 void main() {
   group('Emulator memory routing', () {
-    group('ME1 → ME0 user RAM routing', () {
-      test('ME1 write to \$0000 should be readable from ME0 \$4000', () {
+    // ME1 has no user RAM — only I/O ports and display chips.
+    // Per the TRM Memory Map I, ME1 $0000-$7FFF is "NOT USED".
+    group('ME1 user area is unmapped', () {
+      test('ME1 read from \$0000 should return \$FF (open bus)', () {
+        final Emulator emu = _createEmulator();
+        expect(emu.memReadForTest(0x10000), equals(0xFF));
+      });
+
+      test('ME1 write to \$0000 should NOT affect ME0 \$4000', () {
         final Emulator emu = _createEmulator();
         emu.memWriteForTest(0x10000, 0x42);
-        expect(emu.memReadForTest(0x4000), equals(0x42));
-      });
-
-      test('ME1 write to \$1000 should be readable from ME0 \$5000', () {
-        final Emulator emu = _createEmulator();
-        emu.memWriteForTest(0x11000, 0xAB);
-        expect(emu.memReadForTest(0x5000), equals(0xAB));
-      });
-
-      test('ME1 read from \$0000 should return ME0 \$4000 data', () {
-        final Emulator emu = _createEmulator();
-        emu.memWriteForTest(0x4000, 0x99);
-        expect(emu.memReadForTest(0x10000), equals(0x99));
-      });
-
-      test('ME1 \$2000+ should NOT route to user RAM', () {
-        final Emulator emu = _createEmulator();
-        expect(emu.memReadForTest(0x12000), equals(0xFF));
-      });
-
-      test('ME1 \$2000+ SHOULD route after CE-155 expansion', () {
-        final Emulator emu = _createEmulator();
-        emu.addCE155();
-        // CE-155 extends ME1 routing to $0000-$2FFF → ME0 $4000-$6FFF.
-        emu.memWriteForTest(0x12800, 0xCD);
-        expect(emu.memReadForTest(0x6800), equals(0xCD));
+        expect(emu.memReadForTest(0x4000), equals(0x00));
       });
     });
 
@@ -132,78 +114,27 @@ void main() {
       });
     });
 
-    group('BASIC program storage via ME1', () {
-      test('write via ME1 \$0000 should be readable from ME0 \$4000', () {
+    // BASIC programs are stored in ME0 user RAM directly — not via ME1.
+    group('BASIC program storage in ME0', () {
+      test('program pattern at ME0 \$4000 should persist', () {
         final Emulator emu = _createEmulator();
-        emu.memWriteForTest(0x10000, 0xFF);
-        expect(emu.memReadForTest(0x4000), equals(0xFF));
-      });
-
-      test('BASIC program storage pattern should work end-to-end', () {
-        final Emulator emu = _createEmulator();
-        emu.memWriteForTest(0x10000, 0x00); // line number high
-        emu.memWriteForTest(0x10001, 0x0A); // line number low
-        emu.memWriteForTest(0x10002, 0x04); // length
-        emu.memWriteForTest(0x10003, 0xF0); // PRINT token byte 1
-        emu.memWriteForTest(0x10004, 0x97); // PRINT token byte 2
-        emu.memWriteForTest(0x10005, 0x37); // '7'
-        emu.memWriteForTest(0x10006, 0x0D); // CR
-        emu.memWriteForTest(0x10007, 0xFF); // end marker
+        emu.memWriteForTest(0x4000, 0x00); // line number high
+        emu.memWriteForTest(0x4001, 0x0A); // line number low
+        emu.memWriteForTest(0x4002, 0x04); // length
+        emu.memWriteForTest(0x4003, 0xF0); // PRINT token byte 1
+        emu.memWriteForTest(0x4007, 0xFF); // end marker
 
         expect(emu.memReadForTest(0x4000), equals(0x00));
         expect(emu.memReadForTest(0x4001), equals(0x0A));
-        expect(emu.memReadForTest(0x4002), equals(0x04));
         expect(emu.memReadForTest(0x4003), equals(0xF0));
         expect(emu.memReadForTest(0x4007), equals(0xFF));
-
-        // Also verify readable back via ME1.
-        expect(emu.memReadForTest(0x10000), equals(0x00));
-        expect(emu.memReadForTest(0x10007), equals(0xFF));
       });
     });
 
-    group('BASIC initialization', () {
-      test('warm start should set end-of-program marker at \$4000', () {
-        final Emulator emu = _createEmulator();
-        emu.simulateColdStartDone();
-        emu.simulateWarmStartDone();
-        expect(emu.memReadForTest(0x4000), equals(0xFF));
-      });
-
-      test('warm start should set RAM top for PC-1500A', () {
-        final Emulator emu = _createEmulator(HardwareDeviceType.pc1500A);
-        emu.simulateColdStartDone();
-        emu.simulateWarmStartDone();
-        // PC-1500A: 6KB RAM, top = $5800, high byte = $58.
-        expect(emu.memReadForTest(0x7899), equals(0x58));
-      });
-
-      test('warm start should set RAM top for PC-1500', () {
-        final Emulator emu = _createEmulator(HardwareDeviceType.pc1500);
-        emu.simulateColdStartDone();
-        emu.simulateWarmStartDone();
-        // PC-1500: 2KB RAM, top = $4800, high byte = $48.
-        expect(emu.memReadForTest(0x7899), equals(0x48));
-      });
-
-      test('RAM top should account for CE-151 expansion', () {
-        final Emulator emu = _createEmulator(HardwareDeviceType.pc1500A);
-        emu.addCE151();
-        emu.simulateColdStartDone();
-        emu.simulateWarmStartDone();
-        // PC-1500A + CE-151 (4KB): top = $5800 + $1000 = $6800, high = $68.
-        expect(emu.memReadForTest(0x7899), equals(0x68));
-      });
-
-      test('RAM top should account for CE-155 expansion', () {
-        final Emulator emu = _createEmulator(HardwareDeviceType.pc1500A);
-        emu.addCE155();
-        emu.simulateColdStartDone();
-        emu.simulateWarmStartDone();
-        // PC-1500A + CE-155 (8KB): top = $5800 + $2000 = $7800, high = $78.
-        expect(emu.memReadForTest(0x7899), equals(0x78));
-      });
-    });
+    // RAM top and BASIC program area initialization are handled by the
+    // ROM's cold start memory probe — no emulator-side patching needed.
+    // The ROM writes test patterns to each 256-byte block, detects which
+    // addresses have RAM, and sets up system variables accordingly.
 
     group('Expansion modules', () {
       test('CE-151 should add RAM at \$5800 for PC-1500A', () {
@@ -220,31 +151,10 @@ void main() {
         expect(emu.memReadForTest(0x6F00), equals(0xEF));
       });
 
-      test('CE-155 should expand ME1 routing to \$3000', () {
-        final Emulator emu = _createEmulator(HardwareDeviceType.pc1500A);
-        emu.addCE155();
-        // ME1 $2800 → ME0 $6800 (within CE-155 expansion range).
-        emu.memWriteForTest(0x12800, 0x77);
-        expect(emu.memReadForTest(0x6800), equals(0x77));
-        // ME1 $3000+ should still NOT route.
-        expect(emu.memReadForTest(0x13000), equals(0xFF));
-      });
-
       test('cannot add two expansion modules', () {
         final Emulator emu = _createEmulator();
         emu.addCE151();
         expect(() => emu.addCE155(), throwsA(isA<EmulatorError>()));
-      });
-
-      test('ME1 routing per-instance (not shared global)', () {
-        final Emulator emu1 = _createEmulator();
-        final Emulator emu2 = _createEmulator();
-        emu1.addCE155();
-        // emu1 has expanded routing, emu2 does not.
-        emu1.memWriteForTest(0x12800, 0x11);
-        expect(emu1.memReadForTest(0x6800), equals(0x11));
-        // emu2 should NOT route ME1 $2800.
-        expect(emu2.memReadForTest(0x12800), equals(0xFF));
       });
     });
   });

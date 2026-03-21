@@ -41,15 +41,9 @@ const int _symByte0 = 0x764E;
 /// LCD symbol byte 1 (RUN, PRO, RESERVE, DEG/RAD/GRAD).
 const int _symByte1 = 0x764F;
 
-/// High byte of user RAM top. The ROM reads this to determine the
-/// available program storage. $58 for PC-1500A (6KB), $48 for PC-1500 (2KB).
-const int _ramTopPtr = 0x7899;
-
 /// Start of user RAM (program area base for BASIC storage).
 const int _userRamStart = 0x4000;
 
-/// Default ME1 user RAM routing limit (standard 8KB window: $4000-$5FFF).
-const int _defaultMe1UserRamLimit = 0x2000;
 
 // ── BASINPUT entry points (from ROM annotations) ────────────────────────
 
@@ -156,7 +150,6 @@ class Emulator {
       subroutineExit: subroutineExit,
     )..reset();
     _initCpuPins();
-    _updateRamTop();
 
     _lcd = Lcd(memRead: _csd.readAt);
     displayRam.registerObserver(MemoryAccessType.write, _lcd);
@@ -192,21 +185,6 @@ class Emulator {
   late final LH5811 _pc1500IO;
   late final LH5811 _ce153IO;
 
-  /// ME1 user RAM routing limit. ME1 $0000–(_me1UserRamLimit-1) is mapped
-  /// to ME0 $4000+. Updated by [addCE155] when expansion RAM is installed.
-  int _me1UserRamLimit = _defaultMe1UserRamLimit;
-
-  /// High byte of user RAM top, depends on model and expansion modules.
-  int _ramTopHighByte = 0;
-
-  /// Computes [_ramTopHighByte] from the model and installed expansion RAM.
-  void _updateRamTop() {
-    int top = type == HardwareDeviceType.pc1500A ? 0x5800 : 0x4800;
-    if (_connector40Pins.isUsed) {
-      top += _connector40Pins.capacity;
-    }
-    _ramTopHighByte = top >> 8;
-  }
 
   /// Initializes CPU pins to their power-on state.
   void _initCpuPins() {
@@ -260,16 +238,12 @@ class Emulator {
       if (io != null) {
         return io.read(me1Addr & 0x0F);
       }
-      // ME1 reads from RAM/display addresses: route to ME0.
-      // ME1 $0000-$xxxx → ME0 $4000+ (user RAM, offset by $4000).
-      if (me1Addr < _me1UserRamLimit) {
-        return _csd.readByteAt(me1Addr + _userRamStart);
-      }
-      // ME1 $7400-$7BFF → ME0 same address (display + system RAM).
+      // ME1 $7400-$7BFF: display chips (V2/V3) respond to ME1 at
+      // the same addresses as ME0.
       if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
         return _csd.readByteAt(me1Addr);
       }
-      // Unhandled ME1 addresses: return 0xFF (open bus).
+      // All other ME1 addresses are unmapped (no user RAM in ME1).
       return 0xFF;
     }
 
@@ -295,23 +269,14 @@ class Emulator {
 
         return;
       }
-      // ME1 writes to RAM/display addresses: route to ME0.
-      // On real hardware, RAM chips respond to both ME0 and ME1. The chip
-      // select circuit maps ME1 addresses differently:
-      //   ME1 $0000-$xxxx → ME0 $4000+ (user RAM, offset by $4000)
-      //   ME1 $7400-$7BFF → ME0 $7400-$7BFF (display + system RAM)
-      if (me1Addr < _me1UserRamLimit) {
-        _memWrite(me1Addr + _userRamStart, value);
-
-        return;
-      }
+      // ME1 $7400-$7BFF: display chips (V2/V3) respond to ME1.
       if (me1Addr >= 0x7400 && me1Addr < 0x7C00) {
         _memWrite(me1Addr, value);
 
         return;
       }
 
-      // Unhandled ME1 addresses: silently drop (no hardware responds).
+      // All other ME1 addresses are unmapped (no user RAM in ME1).
       return;
     }
     // Guard: silently drop writes to ROM ($C000+).
@@ -343,11 +308,9 @@ class Emulator {
   /// Simulates the cold-start-done state (ROM entered HLT for the first time).
   void simulateColdStartDone() => _coldStartDone = true;
 
-  /// Simulates the warm-start-done state and runs the BASIC init that
-  /// normally triggers in [_executeFrame].
+  /// Simulates a fully booted state for tests (cold start + wake from HLT).
   void simulateWarmStartDone() {
-    _warmStartDone = true;
-    _initBasicArea();
+    _coldStartDone = true;
   }
 
   /// Executes a single CPU instruction. Returns the number of cycles consumed.
@@ -409,7 +372,8 @@ class Emulator {
   }
 
   bool _coldStartDone = false;
-  bool _warmStartDone = false;
+  int _debugTraceCount = 0; // TODO: remove after debugging
+  int _debugLastPC = -1; // TODO: remove after debugging
 
   /// Powers on the emulator: resets CPU and starts execution.
   /// First call = cold start + automatic warm start.
@@ -419,11 +383,52 @@ class Emulator {
       // Already running — reset the CPU for a warm start.
       _resetCpu();
     } else {
-      // First power-on: run cold start, then schedule a warm start
-      // after the cold start completes (enters HLT).
-      // On real hardware: battery → cold start → standby → ON → warm start.
+      // First power-on: cold start.
+      //
+      // Pre-seed RAM state that the ROM expects to be preserved across
+      // power cycles (battery-backed on real hardware, but zeroed in the
+      // emulator on first boot).
+      //
+      // 1. RAM probe results at $7860-$7864: the ROM compares these with
+      //    fresh probe results. A mismatch triggers "NEW0?:CHECK" which
+      //    blocks initialization waiting for a key press.
+      // 2. VARIABLE_POINTER at $7899: must equal RAM top so the BASIC
+      //    interpreter knows where the variable area starts. CFCC does
+      //    NOT set this — it's expected to survive from the previous boot.
+      // 3. End-of-program marker ($FF) at $4000: marks an empty program.
+      final int ramTop =
+          type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
+      _csd.writeByteAt(0x7860, 0xFF); // No module at $0000.
+      _csd.writeByteAt(0x7861, 0xFF); // No module detected.
+      _csd.writeByteAt(0x7862, 0xFF); // No module detected.
+      _csd.writeByteAt(0x7863, 0x40); // RAM start high byte.
+      _csd.writeByteAt(0x7864, ramTop); // RAM end high byte.
+      // 0x7865-0x7866: base program area start address. INITBST (DF93)
+      // reads this when no expansion module is present (0x7861 bit 7 set).
+      // On real hardware this is set by the first-ever boot's "NEW0?:CHECK"
+      // response and preserved by battery-backed RAM thereafter.
+      // Per TRM 5-1-1 and 5-3-6: the user RAM area starts at $4000.
+      // ROM information occupies 8 bytes ($4000-$4007), the reserve area
+      // occupies 189 bytes ($4008-$40C4), and the BASIC program area
+      // starts at $40C5 (PC-1500 only, or $38C5 with CE-155).
+      //
+      // INITBST (DF93) reads the program block base from $7865-$7866.
+      // CFCC adds 3 to skip a 3-byte program block header, then stores
+      // the result (with bit 7 set) as DATA_POINTER ($78BE-$78BF).
+      // So $7865-$7866 = $40C2 → DATA_POINTER = $C0C5 (effective $40C5).
+      _csd.writeByteAt(0x7865, 0x40); // Program block base high.
+      _csd.writeByteAt(0x7866, 0xC2); // Program block base low.
+      // 0x7867-0x7868: current program start (VEJ CA $67).
+      // 0x7869-0x786A: current program block pointer (VEJ CC $69,
+      // read by D2E0 during line insertion). Both point to $40C2.
+      _csd.writeByteAt(0x7867, 0x40); // Current program start high.
+      _csd.writeByteAt(0x7868, 0xC2); // Current program start low.
+      _csd.writeByteAt(0x7869, 0x40); // Current program block high.
+      _csd.writeByteAt(0x786A, 0xC2); // Current program block low.
+      _csd.writeByteAt(0x7899, ramTop); // VARIABLE_POINTER high byte.
+      // End-of-BASIC-program marker (0xFF) at $40C5, per TRM 5-3-5.
+      _csd.writeByteAt(0x40C5, 0xFF); // End-of-program marker.
       _coldStartDone = false;
-      _warmStartDone = false;
       run();
     }
   }
@@ -436,16 +441,6 @@ class Emulator {
     _cpu.cpu.hlt = false;
     _cpu.pins.inputPorts = 0xFF;
     _cpu.cpu.tm.value = 1;
-    // Allow BASIC area re-initialization after the warm start completes.
-    _warmStartDone = false;
-  }
-
-  /// Initializes the BASIC program area (equivalent to what NEW does).
-  /// The ROM uses ME1 $0000 for program storage, which our ME1→ME0
-  /// routing maps to $4000 (user RAM).
-  void _initBasicArea() {
-    _csd.writeByteAt(_userRamStart, 0xFF); // End-of-program marker.
-    _csd.writeByteAt(_ramTopPtr, _ramTopHighByte);
   }
 
   /// Toggles SHIFT mode (bit 1 of $764E).
@@ -499,20 +494,14 @@ class Emulator {
   void _executeFrame() {
     if (!_running) return;
 
-    // After cold start completes (ROM enters HLT), trigger a warm start.
-    // On real hardware: battery → cold start → standby → ON press → warm start.
-    // The cold start initializes RAM signatures but not all BASIC pointers.
-    // The warm start (reset with RAM preserved) completes initialization.
+    // The ROM's cold start fully initialises all system variables and the
+    // BASIC program area, then enters the main loop (SIE + HLT at $E2A8).
+    // Undefined opcodes in unmapped memory ($FF) are treated as NOPs by
+    // the LH5801, which lets the cold start recover from a corrupt RTN
+    // through the CE-150 address space. The timer IRQ wakes the CPU from
+    // HLT naturally since the ROM enables interrupts before halting.
     if (!_coldStartDone && _cpu.cpu.hlt) {
       _coldStartDone = true;
-      _resetCpu();
-    }
-    // After warm start completes (second HLT), initialize BASIC pointers.
-    // The ROM's warm start NEW0?:CHECK doesn't fully complete in the emulator,
-    // leaving the program area uninitialized.
-    if (_coldStartDone && !_warmStartDone && _cpu.cpu.hlt) {
-      _warmStartDone = true;
-      _initBasicArea();
     }
 
     // Simulate LH5811 timer: generate a periodic IRQ each frame (~50Hz)
@@ -527,6 +516,18 @@ class Emulator {
     final Duration frameBudget = _clock.frameDuration;
 
     while (_running && !_paused) {
+      // DEBUG: trace cold start execution path
+      if (!_coldStartDone) {
+        final pc = _cpu.cpu.p.value;
+        if (pc == 0xCA55 || pc == 0xCA58 || pc == 0xC9E4) {
+          // ignore: avoid_print
+          print('DEBUG: PC=0x${pc.toRadixString(16)}'
+              ' A=0x${_cpu.cpu.a.value.toRadixString(16)}'
+              ' S=0x${_cpu.cpu.s.value.toRadixString(16)}'
+              ' 4000=0x${_csd.readByteAt(0x4000).toRadixString(16)}'
+              ' 7899=0x${_csd.readByteAt(0x7899).toRadixString(16)}');
+        }
+      }
       final int cycles = step();
       // Check for DAP breakpoints (O(1) hash lookup, skipped when empty).
       if (breakpoints.isNotEmpty && breakpoints.contains(_cpu.cpu.p.value)) {
@@ -599,7 +600,7 @@ class Emulator {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1000);
     }
     // CE-151 adds 4KB — ME1 routing already covers up to $2000 (8KB window).
-    _updateRamTop();
+    // The ROM detects expansion RAM during its cold start memory probe.
   }
 
   void addCE155() {
@@ -617,10 +618,8 @@ class Emulator {
     } else {
       _csd.appendRAM(MemoryBank.me0, 0x4800, 0x1800);
     }
-    // CE-155 extends RAM beyond the default 8KB ME1 window.
-    // Expand ME1 routing to cover the full expansion range.
-    _me1UserRamLimit = 0x3000; // ME1 $0000-$2FFF → ME0 $4000-$6FFF.
-    _updateRamTop();
+    // ME1 has no user RAM — only I/O ports. The CE-155 expansion RAM
+    // is in ME0 only, accessed directly by the ROM.
   }
 
   void dispose() {
