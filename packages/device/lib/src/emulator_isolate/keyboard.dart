@@ -183,7 +183,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   // On export models, code 0x02 toggles SMALL mode.
   'small': _KeyPosition(6, 7), // PA6, IN7 → 0x02
   'break': _KeyPosition(6, 7), // PA6, IN7 → 0x02 (same as SML)
-  'up-down': _KeyPosition(3, 4), // PA3, IN4 → 0x16
+  'up-down': _KeyPosition(3, 4), // PA3, IN4 → key code 0x16 (↕ reserve toggle)
   'clear': _KeyPosition(6, 2), // PA6, IN2 → CL (0x18)
   // MODE is a physical slide switch on the real PC-1500, handled
   // by cycleMode() in the emulator — not a keyboard matrix key.

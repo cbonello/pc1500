@@ -91,6 +91,10 @@ class EmulatorFrontEnd {
             emulator?.toggleShift();
             break;
           }
+          if (keyName == 'up-down') {
+            emulator?.cycleReserveBank();
+            break;
+          }
           emulator?.keyboard.keyDown(keyName);
           emulator?.updateKeyboardInput();
         case KeyUpMsg(:final keyName):

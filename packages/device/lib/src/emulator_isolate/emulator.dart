@@ -455,6 +455,19 @@ class Emulator {
     _csd.writeByteAt(_symByte0, flags ^ 0x02);
   }
 
+  /// Cycles through reserve banks I → II → III → I.
+  /// Replicates the ROM's MODE handler logic at CB69 which shifts the
+  /// I/II/III bits (0x40/0x20/0x10) in $764E rightward, wrapping III→I.
+  void cycleReserveBank() {
+    final int sym0 = _csd.readByteAt(_symByte0);
+    int bank = sym0 & 0x70; // isolate I(0x40)/II(0x20)/III(0x10)
+    bank >>= 1; // shift: I→II, II→III, III→below range
+    if (bank < 0x10) {
+      bank = 0x40; // wrap to I
+    }
+    _csd.writeByteAt(_symByte0, (sym0 & ~0x70) | bank);
+  }
+
   /// Cycles between RUN and PRO modes, or enters RESERVE mode when SHIFT
   /// is active. On the real PC-1500, SHIFT+MODE activates reserve mode for
   /// defining reserve keys. Without SHIFT, MODE toggles between PRO and RUN.
@@ -536,18 +549,6 @@ class Emulator {
     final Duration frameBudget = _clock.frameDuration;
 
     while (_running && !_paused) {
-      // DEBUG: trace cold start execution path
-      if (!_coldStartDone) {
-        final pc = _cpu.cpu.p.value;
-        if (pc == 0xCA55 || pc == 0xCA58 || pc == 0xC9E4) {
-          // ignore: avoid_print
-          print('DEBUG: PC=0x${pc.toRadixString(16)}'
-              ' A=0x${_cpu.cpu.a.value.toRadixString(16)}'
-              ' S=0x${_cpu.cpu.s.value.toRadixString(16)}'
-              ' 4000=0x${_csd.readByteAt(0x4000).toRadixString(16)}'
-              ' 7899=0x${_csd.readByteAt(0x7899).toRadixString(16)}');
-        }
-      }
       final int cycles = step();
       // Check for DAP breakpoints (O(1) hash lookup, skipped when empty).
       if (breakpoints.isNotEmpty && breakpoints.contains(_cpu.cpu.p.value)) {
