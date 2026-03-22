@@ -372,8 +372,6 @@ class Emulator {
   }
 
   bool _coldStartDone = false;
-  int _debugTraceCount = 0; // TODO: remove after debugging
-  int _debugLastPC = -1; // TODO: remove after debugging
 
   /// Powers on the emulator: resets CPU and starts execution.
   /// First call = cold start + automatic warm start.
@@ -415,19 +413,24 @@ class Emulator {
       // INITBST (DF93) reads the program block base from $7865-$7866.
       // CFCC adds 3 to skip a 3-byte program block header, then stores
       // the result (with bit 7 set) as DATA_POINTER ($78BE-$78BF).
-      // So $7865-$7866 = $40C2 → DATA_POINTER = $C0C5 (effective $40C5).
+      // So $7865-$7866 = $40C2 → DATA_POINTER = $C0C5.
       _csd.writeByteAt(0x7865, 0x40); // Program block base high.
       _csd.writeByteAt(0x7866, 0xC2); // Program block base low.
-      // 0x7867-0x7868: current program start (VEJ CA $67).
+      // 0x7867-0x7868: end-of-program pointer (VEJ CA $67, updated
+      // by line insertion). DFF3 computes search range as this minus
+      // the base. Starts equal to base (empty program).
+      _csd.writeByteAt(0x7867, 0x40); // End-of-program high.
+      _csd.writeByteAt(0x7868, 0xC2); // End-of-program low (= base).
       // 0x7869-0x786A: current program block pointer (VEJ CC $69,
-      // read by D2E0 during line insertion). Both point to $40C2.
-      _csd.writeByteAt(0x7867, 0x40); // Current program start high.
-      _csd.writeByteAt(0x7868, 0xC2); // Current program start low.
+      // read by D2E0 during line insertion).
       _csd.writeByteAt(0x7869, 0x40); // Current program block high.
       _csd.writeByteAt(0x786A, 0xC2); // Current program block low.
       _csd.writeByteAt(0x7899, ramTop); // VARIABLE_POINTER high byte.
-      // End-of-BASIC-program marker (0xFF) at $40C5, per TRM 5-3-5.
-      _csd.writeByteAt(0x40C5, 0xFF); // End-of-program marker.
+      // End-of-BASIC-program marker (0xFF) at the program block base.
+      // Placing it here (not at DATA_POINTER $40C5) ensures the line
+      // insertion code stores lines at the base, so BASTRANS's -3
+      // offset reads the actual line header, not a zero sentinel.
+      _csd.writeByteAt(0x40C2, 0xFF); // End-of-program marker.
       _coldStartDone = false;
       run();
     }
@@ -452,22 +455,39 @@ class Emulator {
     _csd.writeByteAt(_symByte0, flags ^ 0x02);
   }
 
-  /// Cycles between RUN and PRO modes.
-  /// On the real PC-1500, MODE is a physical slide switch that triggers a
-  /// hardware restart of the main loop. We emulate this by updating the LCD
-  /// symbol in $764F and redirecting the CPU to the correct BASINPUT entry.
+  /// Cycles between RUN and PRO modes, or enters RESERVE mode when SHIFT
+  /// is active. On the real PC-1500, SHIFT+MODE activates reserve mode for
+  /// defining reserve keys. Without SHIFT, MODE toggles between PRO and RUN.
   void cycleMode() {
+    final int sym0 = _csd.readByteAt(_symByte0);
+    final bool isShift = (sym0 & 0x02) != 0;
     final int current = _csd.readByteAt(_symByte1);
-    final bool isRun = (current & 0x40) != 0;
-    // Toggle RUN ↔ PRO, preserving angle mode bits and other state.
-    final int next = isRun
-        ? (current & ~0x40) |
-              0x20 // RUN → PRO
-        : (current & ~0x20) | 0x40; // PRO → RUN
+
+    int next;
+    if (isShift) {
+      // SHIFT+MODE → toggle RESERVE mode.
+      final bool isReserve = (current & 0x10) != 0;
+      if (isReserve) {
+        // RESERVE → PRO.
+        next = (current & ~0x70) | 0x20;
+      } else {
+        // Any mode → RESERVE.
+        next = (current & ~0x70) | 0x10;
+      }
+      // Clear SHIFT indicator.
+      _csd.writeByteAt(_symByte0, sym0 & ~0x02);
+    } else {
+      final bool isRun = (current & 0x40) != 0;
+      // Toggle RUN ↔ PRO, clearing RESERVE. Mask out all three mode bits.
+      next = isRun
+          ? (current & ~0x70) | 0x20 // RUN → PRO
+          : (current & ~0x70) | 0x40; // PRO/RESERVE → RUN
+    }
     _csd.writeByteAt(_symByte1, next);
     // Redirect the CPU to the correct BASINPUT entry point.
-    // The main loop's BASINPUT entry determines RUN vs PRO behavior.
-    _cpu.cpu.p.value = isRun ? _basinput3 : _basinput1;
+    // BASINPUT1 (CA58) displays the mode prompt; BASINPUT3 (CA80) skips it.
+    final bool enteringRun = (next & 0x40) != 0;
+    _cpu.cpu.p.value = enteringRun ? _basinput1 : _basinput3;
     _cpu.cpu.hlt = false;
   }
 
