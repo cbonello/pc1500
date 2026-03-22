@@ -191,8 +191,10 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   // Navigation
   'right': _KeyPosition(1, 2), // PA1, IN2 → 0x0F (→)
   'left': _KeyPosition(5, 1), // PA5, IN1 → 0x08 (← / BS)
+  'down': _KeyPosition(4, 7), // PA4, IN7 → 0x19 (↓ next program line)
+  'up': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (↑ previous program line)
   // Additional function keys
   'cls': _KeyPosition(0, 7), // PA0, IN7 → 0x0B (CLS)
   'tab': _KeyPosition(1, 7), // PA1, IN7 → 0x09 (TAB)
-  'lf': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (LF)
+  'lf': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (↑ / LF — same key as 'up')
 };
