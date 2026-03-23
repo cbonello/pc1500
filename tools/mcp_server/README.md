@@ -68,12 +68,13 @@ Then update `bin/start.sh` to run the compiled binary instead of `dart run`.
 | `emulator_cpu_state` | — | Read registers (A, X, Y, U, S, P), flags (C, Z, V, H, IE), and system state (HLT, IRQ, timer, DISP). |
 | `emulator_read_memory` | `address` (hex, required), `count` (int, default 64, max 4096) | Read bytes and return a hex dump with ASCII. |
 | `emulator_disassemble` | `address` (hex, default current PC), `count` (int, default 20, max 100) | Disassemble LH5801 instructions with ROM annotations. |
+| `emulator_screenshot` | — | Capture the 156×7 LCD as a PNG image (scaled 10× to 1560×70) with active status symbols (DEF, SHIFT, RUN, PRO, etc.). |
 
 ### Control
 
 | Tool | Parameters | Description |
 |------|------------|-------------|
-| `emulator_step` | `count` (int, default 1, max 10000) | Execute instruction(s) and return the new CPU state. |
+| `emulator_step` | `count` (int, default 1, max 10000) | Execute instruction(s) and return the new CPU state. Each step is a DAP round-trip, so large counts (>100) will be slow. |
 | `emulator_continue` | — | Resume execution until a breakpoint or pause. |
 | `emulator_pause` | — | Pause execution and return the CPU state. |
 
