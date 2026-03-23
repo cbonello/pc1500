@@ -184,6 +184,8 @@ class _SkinState extends State<Skin> {
         LogicalKeyboardKey.minus: '-',
         LogicalKeyboardKey.arrowLeft: 'left',
         LogicalKeyboardKey.arrowRight: 'right',
+        LogicalKeyboardKey.arrowUp: 'up',
+        LogicalKeyboardKey.arrowDown: 'down',
         LogicalKeyboardKey.delete: 'clear',
         LogicalKeyboardKey.backspace: 'clear',
       };
