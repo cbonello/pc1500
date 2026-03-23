@@ -26,7 +26,8 @@ class Keyboard {
   int _holdFrames = 0;
 
   /// Minimum frames to hold each injected key (must be seen by ROM scan).
-  static const int _minHoldFrames = 2;
+  /// The ROM scans once per frame, so 1 frame is sufficient for detection.
+  static const int _minHoldFrames = 1;
 
   /// Maximum queue depth. Prevents unbounded growth from OS auto-repeat.
   static const int _maxQueueSize = 16;
@@ -51,8 +52,9 @@ class Keyboard {
   }
 
   /// Called once per frame AFTER the ROM has scanned the keyboard.
-  /// Manages the key queue: injects one key at a time, holds it for
-  /// [_minHoldFrames], then moves to the next queued key.
+  /// Manages the key queue: decrements the hold counter, releases the
+  /// previous key, and immediately injects the next queued key in the
+  /// same tick so there is no wasted "gap" frame between keystrokes.
   void tickKeyQueue() {
     if (_holdFrames > 0) {
       _holdFrames--;
@@ -63,13 +65,16 @@ class Keyboard {
       _pressedKeys.remove(_heldKey);
       _heldKey = null;
     }
-    // Dequeue the next key if available.
+    // Immediately inject the next queued key (no gap frame).
     if (_keyQueue.isNotEmpty) {
       _heldKey = _keyQueue.removeAt(0);
-      _pressedKeys.add(_heldKey!); // Ensure it's in the pressed set.
+      _pressedKeys.add(_heldKey!);
       _holdFrames = _minHoldFrames;
     }
   }
+
+  /// Whether there are keys waiting in the queue.
+  bool get hasQueuedKeys => _keyQueue.isNotEmpty;
 
   /// Returns true if the ON key is currently pressed.
   bool get isOnKeyPressed => _pressedKeys.contains('on');

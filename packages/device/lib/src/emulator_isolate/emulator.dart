@@ -550,6 +550,15 @@ class Emulator {
     final Duration frameBudget = _clock.frameDuration;
 
     while (_running && !_paused) {
+      // When the CPU is halted and there are queued keys, advance the
+      // queue and fire another IRQ so the ROM wakes up and processes the
+      // next key within the same frame. This allows multiple keystrokes
+      // per frame instead of one.
+      if (_cpu.cpu.hlt && _coldStartDone && keyboard.hasQueuedKeys) {
+        keyboard.tickKeyQueue();
+        updateKeyboardInput();
+        _pc1500IO.triggerIRQ();
+      }
       final int cycles = step();
       // Check for DAP breakpoints (O(1) hash lookup, skipped when empty).
       if (breakpoints.isNotEmpty && breakpoints.contains(_cpu.cpu.p.value)) {
@@ -565,9 +574,7 @@ class Emulator {
     // Sync DISP flip-flop state to the LCD each frame.
     _lcd.setDisplayOn(_cpu.pins.dispFlipflop);
 
-    // Advance the key queue AFTER the ROM has scanned the keyboard.
-    // This injects one queued key per frame, holding it long enough for
-    // the ROM's scan to detect it reliably.
+    // Advance the key queue at end of frame for any remaining keys.
     keyboard.tickKeyQueue();
 
     if (!_running || _paused) {

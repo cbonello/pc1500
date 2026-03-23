@@ -118,11 +118,10 @@ void main() {
       });
     });
 
-    // Each queued key occupies 3 ticks total:
-    //   tick N:   dequeue key, add to pressed, holdFrames = 2
-    //   tick N+1: holdFrames = 1 (still held)
-    //   tick N+2: holdFrames = 0 (still held)
-    //   tick N+3: cleanup key (removed from pressed), dequeue next
+    // Each queued key occupies 2 ticks total:
+    //   tick N:   dequeue key, add to pressed, holdFrames = 1
+    //   tick N+1: holdFrames = 0 (still held)
+    //   tick N+2: cleanup key (removed from pressed), dequeue next
     group('key queue', () {
       test('queued key should be re-injected after release', () {
         final Keyboard kb = Keyboard();
@@ -139,13 +138,10 @@ void main() {
         // Tick 1: dequeue 'a'.
         kb.tickKeyQueue();
         expect(kb.debugPressedKeys, contains('a'));
-        // Tick 2: hold (holdFrames=1).
+        // Tick 2: hold (holdFrames=0).
         kb.tickKeyQueue();
         expect(kb.debugPressedKeys, contains('a'));
-        // Tick 3: hold (holdFrames=0).
-        kb.tickKeyQueue();
-        expect(kb.debugPressedKeys, contains('a'));
-        // Tick 4: cleanup 'a' — removed.
+        // Tick 3: cleanup 'a' — removed.
         kb.tickKeyQueue();
         expect(kb.debugPressedKeys, isNot(contains('a')));
       });
@@ -178,10 +174,8 @@ void main() {
         kb.tickKeyQueue(); // dequeue 'a'
         expect(kb.debugPressedKeys, contains('a'));
         kb.tickKeyQueue(); // hold
-        kb.tickKeyQueue(); // hold
         kb.tickKeyQueue(); // cleanup 'a', dequeue 'b'
         expect(kb.debugPressedKeys, contains('b'));
-        kb.tickKeyQueue(); // hold
         kb.tickKeyQueue(); // hold
         kb.tickKeyQueue(); // cleanup 'b', dequeue second 'a'
         expect(kb.debugPressedKeys, contains('a'));
@@ -196,17 +190,15 @@ void main() {
         kb.keyDown('c');
         kb.keyUp('c');
 
-        // 'a': ticks 1-3
+        // 'a': ticks 1-2
         kb.tickKeyQueue(); // dequeue 'a'
         expect(kb.scanIN(0x40, 0x00) & 0x08, equals(0)); // 'a' at PA6/IN3
         kb.tickKeyQueue(); // hold
-        kb.tickKeyQueue(); // hold
-        // 'b': ticks 4-6
+        // 'b': ticks 3-4
         kb.tickKeyQueue(); // cleanup 'a', dequeue 'b'
         expect(kb.scanIN(0x80, 0x00) & 0x40, equals(0)); // 'b' at PA7/IN6
         kb.tickKeyQueue(); // hold
-        kb.tickKeyQueue(); // hold
-        // 'c': ticks 7-9
+        // 'c': ticks 5-6
         kb.tickKeyQueue(); // cleanup 'b', dequeue 'c'
         expect(kb.scanIN(0x10, 0x00) & 0x40, equals(0)); // 'c' at PA4/IN6
       });
