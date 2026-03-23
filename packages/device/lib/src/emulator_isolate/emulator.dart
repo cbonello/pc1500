@@ -322,6 +322,7 @@ class Emulator {
       _cpu.cpu.hlt = false;
     }
 
+
     return _cpu.step();
   }
 

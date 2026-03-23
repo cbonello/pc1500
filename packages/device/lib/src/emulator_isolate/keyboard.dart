@@ -197,4 +197,11 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'cls': _KeyPosition(0, 7), // PA0, IN7 → 0x0B (CLS)
   'tab': _KeyPosition(1, 7), // PA1, IN7 → 0x09 (TAB)
   'lf': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (↑ / LF — same key as 'up')
+  // F1-F6 (all on IN4 row; SHIFT+Fn produces !, ", #, $, %, &)
+  'f1': _KeyPosition(1, 4), // PA1, IN4 → 0x11 (same key as DEF)
+  'f2': _KeyPosition(4, 4), // PA4, IN4 → 0x12
+  'f3': _KeyPosition(5, 4), // PA5, IN4 → 0x13
+  'f4': _KeyPosition(7, 4), // PA7, IN4 → 0x14
+  'f5': _KeyPosition(2, 4), // PA2, IN4 → 0x15
+  'f6': _KeyPosition(3, 4), // PA3, IN4 → 0x16
 };
