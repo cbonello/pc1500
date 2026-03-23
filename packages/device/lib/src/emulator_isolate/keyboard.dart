@@ -117,14 +117,14 @@ class _KeyPosition {
 ///
 /// ROM table layout (each row = one PA column):
 ///        [+0]IN7  [+1]IN6  [+2]IN5  [+3]IN4  [+4]IN3  [+5]IN2  [+6]IN1  [+7]IN0
-/// PA0:   CLS      N        Y        (ON)     H        8        5        2
-/// PA1:   TAB      X        W        DEF      S        →        -        .
-/// PA2:   0        M        U        SML      J        7        4        1
-/// PA3:   ENTER    (        I        SHIFT    K        O        L        )
-/// PA4:   RCL      C        E        (mode?)  D        /        *        +
-/// PA5:   SPACE    V        R        (mode?)  F        P        ←        =
-/// PA6:   SML/BRK  Z        Q        (mode?)  A        CL       MODE     (ctrl)
-/// PA7:   LF       B        T        (mode?)  G        9        6        3
+/// PA0:   ▲        N        Y        SHIFT    H        8        5        2
+/// PA1:   TAB      X        W        DEF/F1   S        →        -        .
+/// PA2:   0        M        U        F5       J        7        4        1
+/// PA3:   ENTER    (        I        F6/↕     K        O        L        )
+/// PA4:   RCL      C        E        F2       D        /        *        +
+/// PA5:   SPACE    V        R        F3       F        P        ←        =
+/// PA6:   SML/BRK  Z        Q        DEF      A        CL       MODE     (ctrl)
+/// PA7:   ▼        B        T        F4       G        9        6        3
 const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   // Digits
   '0': _KeyPosition(2, 7), // PA2, IN7
@@ -177,7 +177,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   '=': _KeyPosition(5, 0), // PA5, IN0
   // SHIFT is handled directly via toggleShift() — not a matrix key.
   // Function/control keys
-  'recall': _KeyPosition(4, 7), // PA4, IN7 → RCL
+  'recall': _KeyPosition(4, 7), // PA4, IN7 → RCL (0x19)
   'def': _KeyPosition(1, 4), // PA1, IN4 → DEF
   // SML and BREAK share PA6/IN7 — same physical matrix position.
   // On export models, code 0x02 toggles SMALL mode.
@@ -191,12 +191,10 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   // Navigation
   'right': _KeyPosition(1, 2), // PA1, IN2 → 0x0F (→)
   'left': _KeyPosition(5, 1), // PA5, IN1 → 0x08 (← / BS)
-  'down': _KeyPosition(4, 7), // PA4, IN7 → 0x19 (↓ next program line)
-  'up': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (↑ previous program line)
+  'down': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (▼, SHIFT+▼ = π)
+  'up': _KeyPosition(0, 7), // PA0, IN7 → 0x0B (▲, SHIFT+▲ = √)
   // Additional function keys
-  'cls': _KeyPosition(0, 7), // PA0, IN7 → 0x0B (CLS)
   'tab': _KeyPosition(1, 7), // PA1, IN7 → 0x09 (TAB)
-  'lf': _KeyPosition(7, 7), // PA7, IN7 → 0x0A (↑ / LF — same key as 'up')
   // F1-F6 (all on IN4 row; SHIFT+Fn produces !, ", #, $, %, &)
   'f1': _KeyPosition(1, 4), // PA1, IN4 → 0x11 (same key as DEF)
   'f2': _KeyPosition(4, 4), // PA4, IN4 → 0x12
