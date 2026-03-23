@@ -753,7 +753,7 @@
                 "value": "down"
             },
             "color": "light-gray",
-            "font-size": 22,
+            "font-size": 32,
             "top": 511,
             "left": 547,
             "width": 51,
@@ -765,7 +765,7 @@
                 "value": "up"
             },
             "color": "light-gray",
-            "font-size": 22,
+            "font-size": 32,
             "top": 511,
             "left": 632,
             "width": 51,

@@ -223,18 +223,28 @@ class _KeyButton extends StatelessWidget {
           ),
         ),
       ),
-      icon: (String value) => Icon(
-        switch (value) {
-          'left' => Icons.arrow_left,
-          'up' => Icons.arrow_drop_up,
-          'right' => Icons.arrow_right,
-          'down' => Icons.arrow_drop_down,
-          'up-down' => Icons.swap_vert,
-          _ => Icons.error,
-        },
-        size: keyboardKey.fontSize,
-        color: Color(colors.color),
-      ),
+      icon: (String value) {
+        // ↓ and ↑ use Unicode solid triangles to match the real PC-1500.
+        if (value == 'down' || value == 'up') {
+          return Text(
+            value == 'down' ? '▼' : '▲',
+            style: TextStyle(
+              fontSize: keyboardKey.fontSize * 0.6,
+              color: Color(colors.color),
+            ),
+          );
+        }
+        return Icon(
+          switch (value) {
+            'left' => Icons.arrow_left,
+            'right' => Icons.arrow_right,
+            'up-down' => Icons.swap_vert,
+            _ => Icons.error,
+          },
+          size: keyboardKey.fontSize,
+          color: Color(colors.color),
+        );
+      },
     );
 
     return Material(
