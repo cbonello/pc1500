@@ -53,7 +53,7 @@ class DapClient {
       timeout: const Duration(seconds: 5),
     );
     final client = DapClient._(socket);
-    socket.listen(client._onData, onDone: client._onDone);
+    socket.listen(client._onData, onError: client._onError, onDone: client._onDone);
     return client;
   }
 
@@ -70,12 +70,16 @@ class DapClient {
     final completer = Completer<Map<String, Object?>>();
     _pending[seq] = completer;
 
-    _send({
+    final sent = _send({
       'type': 'request',
       'seq': seq,
       'command': command,
       if (arguments != null) 'arguments': arguments,
     });
+    if (!sent) {
+      _pending.remove(seq);
+      throw StateError('DAP: failed to send "$command" — socket broken');
+    }
 
     return completer.future.timeout(
       const Duration(seconds: 10),
@@ -102,21 +106,33 @@ class DapClient {
 
   Future<void> close() async {
     if (_closed) return;
-    try {
-      await request('disconnect').timeout(const Duration(seconds: 2));
-    } catch (_) {}
     _closed = true;
+    // Try to send a disconnect and wait briefly for acknowledgement.
+    final seq = _seq++;
+    final completer = Completer<Map<String, Object?>>();
+    _pending[seq] = completer;
+    if (_send({'type': 'request', 'seq': seq, 'command': 'disconnect'})) {
+      try {
+        await completer.future.timeout(const Duration(seconds: 2));
+      } catch (_) {}
+    }
     _failPending(StateError('DAP client closed'));
     await _closeSocket();
   }
 
   // ── TCP framing (mirrors DapServer._onData) ─────────────────────────────
 
-  void _send(Map<String, Object?> message) {
-    final json = jsonEncode(message);
-    final body = utf8.encode(json);
-    final header = utf8.encode('Content-Length: ${body.length}\r\n\r\n');
-    _socket.add(header + body);
+  /// Send a DAP message. Returns `false` if the write failed.
+  bool _send(Map<String, Object?> message) {
+    try {
+      final json = jsonEncode(message);
+      final body = utf8.encode(json);
+      final header = utf8.encode('Content-Length: ${body.length}\r\n\r\n');
+      _socket.add(header + body);
+      return true;
+    } on Object {
+      return false;
+    }
   }
 
   void _onData(Uint8List data) {
@@ -126,6 +142,10 @@ class DapClient {
       return;
     }
     _processBuffer();
+  }
+
+  void _onError(Object error) {
+    _abort('socket error: $error');
   }
 
   void _onDone() {
@@ -164,15 +184,20 @@ class DapClient {
   }
 
   void _processBuffer() {
+    // Take bytes once per call; only re-take if we consumed part of it.
+    var bytes = _buffer.toBytes();
+    _buffer.clear();
+
     while (!_closed) {
-      final bytes = _buffer.toBytes();
       if (_expectedContentLength == null) {
         final headerEnd = _indexOfHeaderTerminator(bytes);
         if (headerEnd < 0) {
-          // No complete header yet — check if we've exceeded the limit.
+          // No complete header yet — put remaining bytes back.
           if (bytes.length > _maxHeaderSize) {
             _abort('header block exceeded $_maxHeaderSize bytes');
+            return;
           }
+          _buffer.add(bytes);
           return;
         }
 
@@ -194,21 +219,23 @@ class DapClient {
         }
 
         final bodyStart = headerEnd + 4;
-        _buffer.clear();
-        if (bodyStart < bytes.length) {
-          _buffer.add(bytes.sublist(bodyStart));
-        }
+        bytes = bodyStart < bytes.length
+            ? bytes.sublist(bodyStart)
+            : Uint8List(0);
         continue;
       }
 
-      if (bytes.length < _expectedContentLength!) return;
+      if (bytes.length < _expectedContentLength!) {
+        // Incomplete body — put remaining bytes back.
+        _buffer.add(bytes);
+        return;
+      }
 
       final contentLength = _expectedContentLength!;
       final jsonStr = utf8.decode(bytes.sublist(0, contentLength));
-      _buffer.clear();
-      if (contentLength < bytes.length) {
-        _buffer.add(bytes.sublist(contentLength));
-      }
+      bytes = contentLength < bytes.length
+          ? bytes.sublist(contentLength)
+          : Uint8List(0);
       _expectedContentLength = null;
 
       try {
@@ -252,9 +279,7 @@ class DapClient {
       if (completer != null) {
         final success = msg['success'] as bool? ?? false;
         if (success) {
-          completer.complete(
-            (msg['body'] as Map<String, Object?>?) ?? {},
-          );
+          completer.complete((msg['body'] as Map<String, Object?>?) ?? {});
         } else {
           final body = msg['body'] as Map<String, Object?>?;
           completer.completeError(

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show ZLibCodec;
+import 'dart:typed_data';
 
 import 'package:dart_mcp/server.dart';
 import 'package:pc1500_mcp_server/src/dap_client.dart';
@@ -39,6 +41,7 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
     registerTool(_continueTool, _handleContinue);
     registerTool(_pauseTool, _handlePause);
     registerTool(_setBreakpointsTool, _handleSetBreakpoints);
+    registerTool(_screenshotTool, _handleScreenshot);
 
     return super.initialize(request);
   }
@@ -127,7 +130,9 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
 
   static final _stepTool = Tool(
     name: 'emulator_step',
-    description: 'Execute a single CPU instruction and return the new state.',
+    description:
+        'Execute one or more CPU instructions and return the new state. '
+        'Each step is a DAP round-trip, so large counts (>100) will be slow.',
     inputSchema: ObjectSchema(
       properties: {
         'count': IntegerSchema(
@@ -170,11 +175,29 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
     annotations: ToolAnnotations(readOnlyHint: false),
   );
 
+  static final _screenshotTool = Tool(
+    name: 'emulator_screenshot',
+    description:
+        'Capture the PC-1500 LCD screen as a PNG image (156×7 LCD pixels '
+        'scaled 10× to 1560×70). Also returns active status symbols '
+        '(DEF, SHIFT, RUN, PRO, etc.) as text.',
+    inputSchema: ObjectSchema(),
+    annotations: ToolAnnotations(readOnlyHint: true),
+  );
+
   // ── Tool handlers ───────────────────────────────────────────────────────
 
   Future<CallToolResult> _handleConnect(CallToolRequest request) async {
     if (_dap != null && _dap!.isConnected) {
       return _text('Already connected to emulator.');
+    }
+    // Close stale client if the connection was lost.
+    final stale = _dap;
+    _dap = null;
+    if (stale != null) {
+      try {
+        await stale.close();
+      } catch (_) {}
     }
     DapClient? client;
     try {
@@ -281,7 +304,7 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
       });
 
       final data = base64Decode(result['data'] as String? ?? '');
-      final addr = _parseHex(addrStr);
+      final addr = _tryParseHex(addrStr) ?? 0;
       final buf = StringBuffer();
       buf.writeln('Memory at $addrStr ($count bytes):');
 
@@ -471,7 +494,7 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
           'Example: ["0xE967", "0xCD89"]',
         );
       }
-      if (_parseHex(a) == 0 && a != '0' && a != '0x0' && a != '0x0000') {
+      if (_tryParseHex(a) == null) {
         return _error('Invalid hex address: "$a"');
       }
       addrList.add(a);
@@ -491,6 +514,190 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
     }
   }
 
+  Future<CallToolResult> _handleScreenshot(CallToolRequest request) async {
+    final dap = _requireDap();
+    if (dap == null) {
+      return _notConnected();
+    }
+
+    try {
+      // Read both display halves and symbol bytes.
+      final results = await Future.wait([
+        dap.request('readMemory', {'memoryReference': '0x7600', 'count': 78}),
+        dap.request('readMemory', {'memoryReference': '0x7700', 'count': 78}),
+        dap.request('readMemory', {'memoryReference': '0x764E', 'count': 2}),
+      ]);
+
+      final left = base64Decode(results[0]['data'] as String? ?? '');
+      final right = base64Decode(results[1]['data'] as String? ?? '');
+      final symData = base64Decode(results[2]['data'] as String? ?? '');
+
+      // Decode status symbols.
+      final syms = <String>[];
+      if (symData.length >= 2) {
+        if (symData[0] & 0x80 != 0) syms.add('DEF');
+        if (symData[0] & 0x40 != 0) syms.add('I');
+        if (symData[0] & 0x20 != 0) syms.add('II');
+        if (symData[0] & 0x10 != 0) syms.add('III');
+        if (symData[0] & 0x08 != 0) syms.add('SMALL');
+        if (symData[0] & 0x04 != 0) syms.add('SML');
+        if (symData[0] & 0x02 != 0) syms.add('SHIFT');
+        if (symData[0] & 0x01 != 0) syms.add('BUSY');
+        if (symData[1] & 0x40 != 0) syms.add('RUN');
+        if (symData[1] & 0x20 != 0) syms.add('PRO');
+        if (symData[1] & 0x10 != 0) syms.add('RESERVE');
+        if (symData[1] & 0x04 != 0) syms.add('RAD');
+        if (symData[1] & 0x02 != 0) syms.add('G');
+        if (symData[1] & 0x01 != 0) syms.add('DE');
+      }
+
+      // Decode interleaved 2-byte-per-column-pair format into a pixel grid.
+      // Each buffer has 78 bytes = 39 pairs, each pair encodes 2 columns:
+      //   Even byte: bits 4-7 → x1 rows 0-3, bits 0-3 → x2 rows 0-3
+      //   Odd byte:  bits 4-6 → x1 rows 4-6, bits 0-2 → x2 rows 4-6
+      // Buffer 1: x1 starts at col 78, x2 starts at col 0.
+      // Buffer 2: x1 starts at col 117, x2 starts at col 39.
+      const lcdW = 156;
+      const lcdH = 7;
+      const scale = 10;
+      const imgW = lcdW * scale;
+      const imgH = lcdH * scale;
+      final pixels = List.generate(lcdW, (_) => List.filled(lcdH, false));
+
+      void decodeBuffer(Uint8List buf, int xStart1, int xStart2) {
+        int x1 = xStart1;
+        int x2 = xStart2;
+        for (
+          int i = 0;
+          i <= buf.length - 2 && x1 < lcdW && x2 < lcdW;
+          i += 2, x1++, x2++
+        ) {
+          final lo = buf[i];
+          final hi = buf[i + 1];
+          // x1 column.
+          pixels[x1][0] = lo & 0x10 != 0;
+          pixels[x1][1] = lo & 0x20 != 0;
+          pixels[x1][2] = lo & 0x40 != 0;
+          pixels[x1][3] = lo & 0x80 != 0;
+          pixels[x1][4] = hi & 0x10 != 0;
+          pixels[x1][5] = hi & 0x20 != 0;
+          pixels[x1][6] = hi & 0x40 != 0;
+          // x2 column.
+          pixels[x2][0] = lo & 0x01 != 0;
+          pixels[x2][1] = lo & 0x02 != 0;
+          pixels[x2][2] = lo & 0x04 != 0;
+          pixels[x2][3] = lo & 0x08 != 0;
+          pixels[x2][4] = hi & 0x01 != 0;
+          pixels[x2][5] = hi & 0x02 != 0;
+          pixels[x2][6] = hi & 0x04 != 0;
+        }
+      }
+
+      decodeBuffer(left, 78, 0);
+      decodeBuffer(right, 117, 39);
+
+      final png = _buildPng(imgW, imgH, (int x, int y) {
+        return pixels[x ~/ scale][y ~/ scale];
+      });
+
+      final content = <Content>[
+        ImageContent(data: base64Encode(png), mimeType: 'image/png'),
+        TextContent(
+          text: 'Symbols: ${syms.isEmpty ? "(none)" : syms.join(" ")}',
+        ),
+      ];
+
+      return CallToolResult(content: content);
+    } on Object catch (e) {
+      return _error('Failed to capture screen: $e');
+    }
+  }
+
+  /// Build a PNG with LCD-green colors.
+  static Uint8List _buildPng(
+    int w,
+    int h,
+    bool Function(int x, int y) pixelOn,
+  ) {
+    // LCD colors: dark green background, bright green foreground.
+    const onR = 0x2A;
+    const onG = 0x3A;
+    const onB = 0x14;
+    const offR = 0x9E;
+    const offG = 0xA8;
+    const offB = 0x85;
+
+    // Build raw scanlines: filter byte (0 = None) + RGB per pixel.
+    final raw = BytesBuilder(copy: false);
+    for (int y = 0; y < h; y++) {
+      raw.addByte(0); // filter: None
+      for (int x = 0; x < w; x++) {
+        final on = pixelOn(x, y);
+        raw.addByte(on ? onR : offR);
+        raw.addByte(on ? onG : offG);
+        raw.addByte(on ? onB : offB);
+      }
+    }
+
+    final compressed = ZLibCodec().encode(raw.takeBytes());
+
+    // Assemble PNG file.
+    final out = BytesBuilder();
+
+    // Signature.
+    out.add(const [137, 80, 78, 71, 13, 10, 26, 10]);
+
+    // IHDR.
+    final ihdr = ByteData(13);
+    ihdr.setUint32(0, w);
+    ihdr.setUint32(4, h);
+    ihdr.setUint8(8, 8); // bit depth
+    ihdr.setUint8(9, 2); // color type: RGB
+    _pngChunk(out, 'IHDR', ihdr.buffer.asUint8List());
+
+    // IDAT.
+    _pngChunk(out, 'IDAT', Uint8List.fromList(compressed));
+
+    // IEND.
+    _pngChunk(out, 'IEND', Uint8List(0));
+
+    return out.toBytes();
+  }
+
+  /// Write a PNG chunk: length + type + data + CRC.
+  static void _pngChunk(BytesBuilder out, String type, Uint8List data) {
+    final typeBytes = Uint8List.fromList(type.codeUnits);
+    final len = ByteData(4)..setUint32(0, data.length);
+    out.add(len.buffer.asUint8List());
+    out.add(typeBytes);
+    out.add(data);
+
+    // CRC-32 over type + data.
+    final crc = _crc32([...typeBytes, ...data]);
+    final crcBytes = ByteData(4)..setUint32(0, crc);
+    out.add(crcBytes.buffer.asUint8List());
+  }
+
+  /// Standard CRC-32 as used by PNG.
+  static int _crc32(List<int> data) {
+    // Build table on first use.
+    _crc32Table ??= List<int>.generate(256, (n) {
+      int c = n;
+      for (int k = 0; k < 8; k++) {
+        c = (c & 1) != 0 ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      return c;
+    });
+
+    int crc = 0xFFFFFFFF;
+    for (final b in data) {
+      crc = _crc32Table![(crc ^ b) & 0xFF] ^ (crc >>> 8);
+    }
+    return crc ^ 0xFFFFFFFF;
+  }
+
+  static List<int>? _crc32Table;
+
   // ── Helpers ─────────────────────────────────────────────────────────────
 
   DapClient? _requireDap() => (_dap != null && _dap!.isConnected) ? _dap : null;
@@ -505,24 +712,20 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
       CallToolResult(content: [TextContent(text: text)], isError: true);
 
   /// Parse a hex address string like "0x7860" or "7860".
-  /// Addresses are always hexadecimal in this context.
-  static int _parseHex(String s) {
+  /// Returns `null` if the string is not valid hex.
+  static int? _tryParseHex(String s) {
     final stripped = s.startsWith('0x') || s.startsWith('0X')
         ? s.substring(2)
         : s;
-    return int.tryParse(stripped, radix: 16) ?? 0;
+    return int.tryParse(stripped, radix: 16);
   }
 
-  /// Extract an integer argument, handling both [int] and [double] from JSON.
+  /// Extract an integer argument, handling [int], [double], and [String] values.
   static int _intArg(Map<String, Object?> args, String key, int defaultValue) {
     final v = args[key];
-    if (v is int) {
-      return v;
-    }
-    if (v is double) {
-      return v.toInt();
-    }
-
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? defaultValue;
     return defaultValue;
   }
 }
