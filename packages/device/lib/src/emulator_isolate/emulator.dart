@@ -456,6 +456,15 @@ class Emulator {
     _csd.writeByteAt(_symByte0, flags ^ 0x02);
   }
 
+  /// Toggles DEF mode (bit 7 of $764E).
+  /// Like SHIFT, DEF is a modifier that must be toggled directly to avoid
+  /// the ROM seeing it held across multiple scans (which produces "!"
+  /// from the DEF+F1 self-combination instead of entering DEF mode).
+  void toggleDef() {
+    final int flags = _csd.readByteAt(_symByte0);
+    _csd.writeByteAt(_symByte0, flags ^ 0x80);
+  }
+
   /// Cycles through reserve banks I → II → III → I.
   /// Replicates the ROM's MODE handler logic at CB69 which shifts the
   /// I/II/III bits (0x40/0x20/0x10) in $764E rightward, wrapping III→I.

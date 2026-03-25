@@ -91,6 +91,10 @@ class EmulatorFrontEnd {
             emulator?.toggleShift();
             break;
           }
+          if (keyName == 'def') {
+            emulator?.toggleDef();
+            break;
+          }
           if (keyName == 'up-down') {
             emulator?.cycleReserveBank();
             break;
