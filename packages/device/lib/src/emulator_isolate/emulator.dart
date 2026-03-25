@@ -48,7 +48,13 @@ const int _userRamStart = 0x4000;
 // ── BASINPUT entry points (from ROM annotations) ────────────────────────
 
 const int _basinput1 = 0xCA58; // RUN mode: input with '>' prompt.
-const int _basinput3 = 0xCA80; // PRO mode: input without prompt.
+const int _basinput2 = 0xCA7A; // Input with $7880 init (STA (7880)).
+
+/// Program block base address pointer (2 bytes, big-endian).
+const int _progBase = 0x7865;
+
+/// Current line header pointer used by D2B3 (2 bytes, big-endian).
+const int _curLinePtr = 0x78A6;
 
 class Emulator {
   Emulator(
@@ -323,6 +329,11 @@ class Emulator {
     }
 
 
+    // ROM patch: after the ↑/↓ handler's D2B3 displays a line, the flow
+    // reaches DCA4 (VMJ 44 → BASINPUT2 → PROGDISP). PROGDISP overwrites
+    // $78A6 and re-displays, undoing ↑ navigation. When prepareNavigateUp
+    // has set the _skipProgdisp flag, skip BASINPUT2's PROGDISP call by
+    // jumping directly to BASINPUT3 ($CA80).
     return _cpu.step();
   }
 
@@ -456,10 +467,80 @@ class Emulator {
     _csd.writeByteAt(_symByte0, flags ^ 0x02);
   }
 
-  /// Toggles DEF mode (bit 7 of $764E).
-  /// Like SHIFT, DEF is a modifier that must be toggled directly to avoid
-  /// the ROM seeing it held across multiple scans (which produces "!"
-  /// from the DEF+F1 self-combination instead of entering DEF mode).
+  // ── ↑ navigation fix ─────────────────────────────────────────────────
+
+  /// Reads a 16-bit big-endian value from system RAM.
+  int _read16(int addr) =>
+      (_csd.readByteAt(addr) << 8) | _csd.readByteAt(addr + 1);
+
+  /// Writes a 16-bit big-endian value to system RAM.
+  void _write16(int addr, int value) {
+    _csd.writeByteAt(addr, (value >> 8) & 0xFF);
+    _csd.writeByteAt(addr + 1, value & 0xFF);
+  }
+
+  /// Returns the list of line start addresses in the BASIC program area.
+  List<int> _programLineAddresses() {
+    final int base = _read16(_progBase);
+    final List<int> addrs = <int>[];
+    int addr = base;
+    while (addr < 0xC000) {
+      final int first = _csd.readByteAt(addr);
+      if (first == 0xFF) break;
+      final int len = _csd.readByteAt(addr + 2);
+      if (len == 0) break;
+      addrs.add(addr);
+      addr += 3 + len;
+    }
+    return addrs;
+  }
+
+  /// Patches $78A6 so the ROM's D2B3 forward-by-one routine displays
+  /// the previous line. Called just before the ↑ key enters the matrix.
+  ///
+  /// D2B3 reads $78A6, skips one line forward, and displays it.
+  /// So to display line[i], $78A6 must point to line[i-1].
+  /// For the first line, use program_base - 3 (a dummy zero-length line
+  /// in the padding before the program area).
+  void prepareNavigateUp() {
+    final List<int> lines = _programLineAddresses();
+    if (lines.isEmpty) return;
+
+    final int base = _read16(_progBase);
+    final int curRef = _read16(_curLinePtr);
+
+    // Determine which line is currently displayed.
+    // D2B3 displays the line AFTER $78A6. Find curRef in the line list.
+    int displayIndex;
+    final int refIndex = lines.indexOf(curRef);
+    if (refIndex >= 0 && refIndex + 1 < lines.length) {
+      displayIndex = refIndex + 1; // line after curRef
+    } else if (curRef < lines.first) {
+      displayIndex = 0; // dummy ref → first line is displayed
+    } else {
+      displayIndex = lines.length - 1; // fallback: last line
+    }
+
+    // Target: one line before the currently displayed line.
+    final int targetIndex = displayIndex > 0 ? displayIndex - 1 : 0;
+
+    // Set $78A6 so D2B3 advances to lines[targetIndex].
+    if (targetIndex == 0) {
+      _write16(_curLinePtr, base - 3); // dummy before first line
+    } else {
+      _write16(_curLinePtr, lines[targetIndex - 1]);
+    }
+
+    // Also update the current line number at $78A8 — PROGDISP and the
+    // BASINPUT input loop use this to determine which line to display.
+    final int targetAddr = lines[targetIndex];
+    final int lineNumHi = _csd.readByteAt(targetAddr);
+    final int lineNumLo = _csd.readByteAt(targetAddr + 1);
+    _csd.writeByteAt(0x78A8, lineNumHi);
+    _csd.writeByteAt(0x78A9, lineNumLo);
+
+  }
+
   void toggleDef() {
     final int flags = _csd.readByteAt(_symByte0);
     _csd.writeByteAt(_symByte0, flags ^ 0x80);
@@ -508,9 +589,19 @@ class Emulator {
     }
     _csd.writeByteAt(_symByte1, next);
     // Redirect the CPU to the correct BASINPUT entry point.
-    // BASINPUT1 (CA58) displays the mode prompt; BASINPUT3 (CA80) skips it.
+    // BASINPUT1 (CA58) displays the RUN mode '>' prompt.
+    // BASINPUT3 (CA80) skips the prompt but also skips $7880 init.
+    // Use BASINPUT2 (CA7A) for PRO mode so $7880 is set correctly —
+    // the ROM's ↑/↓ handlers check $7880 bit 4 for navigation.
     final bool enteringRun = (next & 0x40) != 0;
-    _cpu.cpu.p.value = enteringRun ? _basinput1 : _basinput3;
+    if (enteringRun) {
+      _cpu.cpu.p.value = _basinput1;
+    } else {
+      // Set A = $14 (bit 4 + bit 2) before entering BASINPUT2,
+      // which stores A into $7880.
+      _cpu.cpu.a.value = 0x14;
+      _cpu.cpu.p.value = _basinput2;
+    }
     _cpu.cpu.hlt = false;
   }
 
@@ -559,15 +650,6 @@ class Emulator {
     final Duration frameBudget = _clock.frameDuration;
 
     while (_running && !_paused) {
-      // When the CPU is halted and there are queued keys, advance the
-      // queue and fire another IRQ so the ROM wakes up and processes the
-      // next key within the same frame. This allows multiple keystrokes
-      // per frame instead of one.
-      if (_cpu.cpu.hlt && _coldStartDone && keyboard.hasQueuedKeys) {
-        keyboard.tickKeyQueue();
-        updateKeyboardInput();
-        _pc1500IO.triggerIRQ();
-      }
       final int cycles = step();
       // Check for DAP breakpoints (O(1) hash lookup, skipped when empty).
       if (breakpoints.isNotEmpty && breakpoints.contains(_cpu.cpu.p.value)) {

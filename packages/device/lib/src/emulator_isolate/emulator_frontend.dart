@@ -99,10 +99,24 @@ class EmulatorFrontEnd {
             emulator?.cycleReserveBank();
             break;
           }
+          // Arrow keys must be single-pulse (enqueue, not keyDown) to
+          // prevent re-entry into the ROM handler which corrupts state.
+          // ↑ navigation: patch $78A6 to the line before the target,
+          // then send ↓ instead of ↑. The ROM's ↓ handler uses $78A6
+          // and updates ALL state variables (including PROGDISP state),
+          // so the display shows the correct previous line.
+          if (keyName == 'up') {
+            emulator?.prepareNavigateUp();
+            emulator?.keyboard.keyDown('down');
+            emulator?.updateKeyboardInput();
+            break;
+          }
           emulator?.keyboard.keyDown(keyName);
           emulator?.updateKeyboardInput();
         case KeyUpMsg(:final keyName):
-          emulator?.keyboard.keyUp(keyName);
+          // Release 'down' when 'up' is released (since we substituted).
+          final releaseKey = keyName == 'up' ? 'down' : keyName;
+          emulator?.keyboard.keyUp(releaseKey);
         // No updateKeyboardInput() — the release is deferred until the
         // next frame via the keyboard queue to avoid lost keystrokes.
         case StepMsg():

@@ -26,8 +26,9 @@ class Keyboard {
   int _holdFrames = 0;
 
   /// Minimum frames to hold each injected key (must be seen by ROM scan).
-  /// The ROM scans once per frame, so 1 frame is sufficient for detection.
-  static const int _minHoldFrames = 1;
+  /// The ROM needs at least 2 frames: one to detect the key, one to
+  /// confirm it's held (debounce). Released on the tick after expiry.
+  static const int _minHoldFrames = 2;
 
   /// Maximum queue depth. Prevents unbounded growth from OS auto-repeat.
   static const int _maxQueueSize = 16;
@@ -39,6 +40,16 @@ class Keyboard {
     // most recent entry (OS auto-repeat fires many keyDown events).
     if (_keyQueue.length < _maxQueueSize &&
         (_keyQueue.isEmpty || _keyQueue.last != keyName)) {
+      _keyQueue.add(keyName);
+    }
+  }
+
+  /// Enqueue a key for injection via the queue.
+  ///
+  /// Unlike [keyDown], this does NOT add the key to [_pressedKeys]. The key
+  /// will be pressed by [tickKeyQueue] for [_minHoldFrames], then released.
+  void enqueue(String keyName) {
+    if (_keyQueue.length < _maxQueueSize) {
       _keyQueue.add(keyName);
     }
   }
