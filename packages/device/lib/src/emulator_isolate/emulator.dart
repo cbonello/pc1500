@@ -44,7 +44,6 @@ const int _symByte1 = 0x764F;
 /// Start of user RAM (program area base for BASIC storage).
 const int _userRamStart = 0x4000;
 
-
 // ── BASINPUT entry points (from ROM annotations) ────────────────────────
 
 const int _basinput1 = 0xCA58; // RUN mode: input with '>' prompt.
@@ -192,7 +191,6 @@ class Emulator {
   late final LH5811 _pc1500IO;
   late final LH5811 _ce153IO;
 
-
   /// Initializes CPU pins to their power-on state.
   void _initCpuPins() {
     _cpu.pins.resetPin = true;
@@ -329,7 +327,6 @@ class Emulator {
       _cpu.cpu.hlt = false;
     }
 
-
     final int pc = _cpu.cpu.p.value;
 
     // HLE: intercept the ROM's BEEP subroutine (BEEPUX at $E66F).
@@ -399,6 +396,14 @@ class Emulator {
 
   bool _coldStartDone = false;
 
+  /// Auto-power-off: frames since last key press. At 50fps, 7 minutes
+  /// = 21000 frames. Reset on any keyDown. When expired, calls powerOff().
+  int _idleFrames = 0;
+  static const int _autoPowerOffFrames = 50 * 60 * 7; // 7 minutes
+
+  /// Resets the auto-power-off idle counter. Called on every key press.
+  void resetIdleTimer() => _idleFrames = 0;
+
   /// Powers on the emulator: resets CPU and starts execution.
   /// First call = cold start + automatic warm start.
   /// Subsequent calls = warm start (RAM preserved).
@@ -420,8 +425,7 @@ class Emulator {
       //    interpreter knows where the variable area starts. CFCC does
       //    NOT set this — it's expected to survive from the previous boot.
       // 3. End-of-program marker ($FF) at $4000: marks an empty program.
-      final int ramTop =
-          type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
+      final int ramTop = type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
       _csd.writeByteAt(0x7860, 0xFF); // No module at $0000.
       _csd.writeByteAt(0x7861, 0xFF); // No module detected.
       _csd.writeByteAt(0x7862, 0xFF); // No module detected.
@@ -517,10 +521,9 @@ class Emulator {
     final double frequencyHz = _clockFreq / cyclesPerPeriod;
     final double durationMs = (x * cyclesPerPeriod / _clockFreq) * 1000;
 
-    outPort.send(BuzzerEventMsg(
-      frequencyHz: frequencyHz,
-      durationMs: durationMs,
-    ));
+    outPort.send(
+      BuzzerEventMsg(frequencyHz: frequencyHz, durationMs: durationMs),
+    );
 
     // Mark that we're inside a beep. The step() hook at E69E will
     // set IF1 after the beep finishes (not here, which would cause
@@ -599,7 +602,6 @@ class Emulator {
     final int lineNumLo = _csd.readByteAt(targetAddr + 1);
     _csd.writeByteAt(0x78A8, lineNumHi);
     _csd.writeByteAt(0x78A9, lineNumLo);
-
   }
 
   void toggleDef() {
@@ -645,7 +647,8 @@ class Emulator {
       final bool isRun = (current & 0x40) != 0;
       // Toggle RUN ↔ PRO, clearing RESERVE. Mask out all three mode bits.
       next = isRun
-          ? (current & ~0x70) | 0x20 // RUN → PRO
+          ? (current & ~0x70) |
+                0x20 // RUN → PRO
           : (current & ~0x70) | 0x40; // PRO/RESERVE → RUN
     }
     _csd.writeByteAt(_symByte1, next);
@@ -703,6 +706,7 @@ class Emulator {
     // to drive the ROM's main loop (keyboard scan, display refresh).
     _pc1500IO.triggerIRQ();
 
+    // Set IF1 (timer interrupt flag) for the ROM's timer handler at E1EA.
     final DateTime frameStart = DateTime.now();
     final Duration frameBudget = _clock.frameDuration;
 
@@ -721,6 +725,16 @@ class Emulator {
 
     // Sync DISP flip-flop state to the LCD each frame.
     _lcd.setDisplayOn(_cpu.pins.dispFlipflop);
+
+    // Auto-power-off after prolonged inactivity.
+    if (_coldStartDone) {
+      _idleFrames++;
+      if (_idleFrames >= _autoPowerOffFrames) {
+        _idleFrames = 0;
+        powerOff();
+        return;
+      }
+    }
 
     // Advance the key queue at end of frame for any remaining keys.
     keyboard.tickKeyQueue();

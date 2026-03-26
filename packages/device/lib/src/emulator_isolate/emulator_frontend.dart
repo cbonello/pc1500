@@ -74,6 +74,7 @@ class EmulatorFrontEnd {
             emulator = Emulator(type, outPort);
           }
         case KeyDownMsg(:final keyName):
+          emulator?.resetIdleTimer();
           // Keys handled outside the keyboard matrix.
           if (keyName == 'on') {
             emulator?.powerOn();
