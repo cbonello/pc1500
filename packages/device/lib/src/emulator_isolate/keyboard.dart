@@ -14,6 +14,11 @@ class Keyboard {
   /// Set of currently pressed key names (active during ROM scan).
   final Set<String> _pressedKeys = <String>{};
 
+  /// Keys the user is physically holding (via [keyDown]/[keyUp]).
+  /// When [tickKeyQueue] releases a held key, it checks this set first —
+  /// if the user is still holding the key, it stays in [_pressedKeys].
+  final Set<String> _userHeldKeys = <String>{};
+
   /// Queue of keys waiting to be injected. When the user types faster than
   /// the frame rate, key presses pile up. The ROM expects single-key presses,
   /// so we inject one queued key per frame to avoid confusing the scan.
@@ -36,6 +41,7 @@ class Keyboard {
   /// Press a key by name (e.g. 'a', 'enter', 'f1').
   void keyDown(String keyName) {
     _pressedKeys.add(keyName);
+    _userHeldKeys.add(keyName);
     // Queue the key for guaranteed scan time, but skip duplicates of the
     // most recent entry (OS auto-repeat fires many keyDown events).
     if (_keyQueue.length < _maxQueueSize &&
@@ -56,10 +62,14 @@ class Keyboard {
 
   /// Release a key by name.
   ///
-  /// The key is removed from the immediate pressed set but NOT from the
-  /// queue. Queued keystrokes still need to be injected so the ROM sees them.
+  /// The key is removed from [_userHeldKeys] and from [_pressedKeys] —
+  /// unless the queue is currently holding it ([_heldKey]), in which case
+  /// it stays in [_pressedKeys] until [tickKeyQueue] releases it.
   void keyUp(String keyName) {
-    _pressedKeys.remove(keyName);
+    _userHeldKeys.remove(keyName);
+    if (_heldKey != keyName) {
+      _pressedKeys.remove(keyName);
+    }
   }
 
   /// Called once per frame AFTER the ROM has scanned the keyboard.
@@ -71,9 +81,12 @@ class Keyboard {
       _holdFrames--;
       return; // Still holding the current key.
     }
-    // Release the previously held key now that its hold time expired.
+    // Release the previously held key now that its hold time expired,
+    // but only if the user isn't still physically holding it.
     if (_heldKey != null) {
-      _pressedKeys.remove(_heldKey);
+      if (!_userHeldKeys.contains(_heldKey)) {
+        _pressedKeys.remove(_heldKey);
+      }
       _heldKey = null;
     }
     // Immediately inject the next queued key (no gap frame).
