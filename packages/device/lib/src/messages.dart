@@ -52,3 +52,11 @@ class DebugClientStatusMsg {
 
   final bool connected;
 }
+
+/// Sent when the ROM's BEEP subroutine is called.
+class BuzzerEventMsg {
+  const BuzzerEventMsg({required this.frequencyHz, required this.durationMs});
+
+  final double frequencyHz;
+  final double durationMs;
+}

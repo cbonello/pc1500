@@ -158,6 +158,13 @@ class LH5811 {
     }
   }
 
+  /// Sets IF1 without firing _checkInterrupt. Use for frame-rate timer
+  /// ticks where the flag should be pollable but not generate an IRQ.
+  void setIF1() => _if |= 0x02;
+
+  /// Clears IF1 without firing _checkInterrupt.
+  void clearIF1() => _if &= ~0x02;
+
   /// Sets the IRQ interrupt flag (IF0) on a rising edge of the IRQ input.
   void triggerIRQ() {
     _if |= 0x01;

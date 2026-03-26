@@ -21,6 +21,7 @@ dependencies:
   lcd:
     path: packages/lcd
   shared_preferences: ^2.5.3
+  just_audio: ^0.10.5
 
 dev_dependencies:
   flutter_test:

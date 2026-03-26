@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:device/device.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:pc1500/src/buzzer.dart';
 import 'package:pc1500/src/repositories/repositories.dart';
 
 /// Maps the app-level [DeviceType] to the emulator's [HardwareDeviceType].
@@ -17,7 +20,11 @@ HardwareDeviceType _getHardwareDevice(DeviceType type) => switch (type) {
 final ChangeNotifierProvider<DeviceRepository> deviceRepositoryProvider =
     ChangeNotifierProvider<DeviceRepository>((Ref ref) {
       final DeviceRepository repository = DeviceRepository(ref: ref);
-      ref.onDispose(() => repository.device.dispose());
+      ref.onDispose(() {
+        repository._buzzerSub?.cancel();
+        repository._buzzer.dispose();
+        repository.device.dispose();
+      });
 
       return repository;
     });
@@ -39,7 +46,9 @@ class DeviceRepository with ChangeNotifier {
     required this.debugPort,
   }) : _ref = ref,
        _type = type,
+       _buzzer = Buzzer(),
        device = Device(type: _getHardwareDevice(type), debugPort: debugPort) {
+    _buzzerSub = _buzzer.listen(device.buzzerEvents);
     // Fire-and-forget: the isolate spawns asynchronously. Key events sent
     // before it's ready are silently dropped (Device._send checks
     // _isEmulatorRunning).
@@ -47,6 +56,10 @@ class DeviceRepository with ChangeNotifier {
   }
 
   final Ref _ref;
+  final Buzzer _buzzer;
+  // Cancelled in the ref.onDispose callback in deviceRepositoryProvider.
+  // ignore: cancel_subscriptions
+  StreamSubscription<BuzzerEventMsg>? _buzzerSub;
   DeviceType _type;
 
   /// Debug server TCP port.

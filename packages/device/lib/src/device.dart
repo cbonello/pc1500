@@ -17,6 +17,7 @@ class Device {
     : _type = type,
       _debugPort = debugPort,
       _outEventCtrl = StreamController<LcdEvent>.broadcast(),
+      _buzzerEventCtrl = StreamController<BuzzerEventMsg>.broadcast(),
       isDebugClientConnected = false;
 
   bool isDebugClientConnected;
@@ -24,6 +25,7 @@ class Device {
   HardwareDeviceType _type;
   final int _debugPort;
   final StreamController<LcdEvent> _outEventCtrl;
+  final StreamController<BuzzerEventMsg> _buzzerEventCtrl;
   Isolate? _isolate;
   SendPort? _toEmulatorPort;
   StreamSubscription<dynamic>? _fromEmulatorSub;
@@ -44,6 +46,9 @@ class Device {
 
   /// Stream of LCD display events from the emulator.
   Stream<LcdEvent> get lcdEvents => _outEventCtrl.stream;
+
+  /// Stream of buzzer events from the emulator.
+  Stream<BuzzerEventMsg> get buzzerEvents => _buzzerEventCtrl.stream;
 
   bool get _isEmulatorRunning => _isolate != null;
 
@@ -74,6 +79,7 @@ class Device {
   void dispose() {
     kill();
     _outEventCtrl.close();
+    _buzzerEventCtrl.close();
   }
 
   Future<SendPort> _initIsolate() async {
@@ -115,6 +121,8 @@ class Device {
     switch (data) {
       case LcdEventMsg(:final event):
         _outEventCtrl.add(event);
+      case BuzzerEventMsg():
+        _buzzerEventCtrl.add(data);
       case DebugClientStatusMsg(:final connected):
         isDebugClientConnected = connected;
       default:

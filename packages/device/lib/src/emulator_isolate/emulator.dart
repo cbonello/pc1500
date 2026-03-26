@@ -186,6 +186,7 @@ class Emulator {
   final LH5801Command? subroutineExit;
   bool _running = false;
   bool _paused = false;
+  bool _inBeep = false;
 
   final Keyboard keyboard;
   late final LH5811 _pc1500IO;
@@ -329,11 +330,24 @@ class Emulator {
     }
 
 
-    // ROM patch: after the ↑/↓ handler's D2B3 displays a line, the flow
-    // reaches DCA4 (VMJ 44 → BASINPUT2 → PROGDISP). PROGDISP overwrites
-    // $78A6 and re-displays, undoing ↑ navigation. When prepareNavigateUp
-    // has set the _skipProgdisp flag, skip BASINPUT2's PROGDISP call by
-    // jumping directly to BASINPUT3 ($CA80).
+    final int pc = _cpu.cpu.p.value;
+
+    // HLE: intercept the ROM's BEEP subroutine (BEEPUX at $E66F).
+    // Read frequency (UL) and duration (X) from registers, send a
+    // buzzer event to the UI, and let the ROM execute normally.
+    if (pc == _beepuxEntry) {
+      _onBeepEntry();
+    }
+
+    // When the beep subroutine exits at $E69E (POP U), set IF1 so
+    // the inter-beep pause loop can pass. Must happen HERE (after
+    // the beep plays) not in _onBeepEntry (which would cause E683
+    // to abort the beep immediately).
+    if (_inBeep && pc == 0xE69E) {
+      _inBeep = false;
+      _pc1500IO.setIF1();
+    }
+
     return _cpu.step();
   }
 
@@ -465,6 +479,53 @@ class Emulator {
   void toggleShift() {
     final int flags = _csd.readByteAt(_symByte0);
     _csd.writeByteAt(_symByte0, flags ^ 0x02);
+  }
+
+  // ── Buzzer HLE ──────────────────────────────────────────────────────
+
+  /// ROM clock frequency used for timing calculations.
+  static const int _clockFreq = 1300000;
+
+  /// Address of the ROM's BEEPUX subroutine.
+  static const int _beepuxEntry = 0xE66F;
+
+  /// Called when the CPU is about to execute the BEEP subroutine.
+  ///
+  /// At entry ($E66F):
+  /// - UL = frequency parameter (half-period loop count, copied to UH)
+  /// - X  = duration counter (XH decremented each full cycle)
+  ///
+  /// The subroutine toggles port B bit 6 with delay loops of UL iterations.
+  /// Each full cycle ≈ (64 + UL × 16) clock cycles.
+  void _onBeepEntry() {
+    final int ul = _cpu.cpu.u.low;
+    final int x = _cpu.cpu.x.value;
+    if (ul == 0 || x == 0) return;
+
+    // Clear IF1 before the beep plays. E683 inside the beep subroutine
+    // checks IF0|IF1 and aborts if set. IF1 may linger from a previous
+    // setIF1() call for the inter-beep pause.
+    _pc1500IO.clearIF1();
+
+    // Frequency calibrated from the PC-1500 manual:
+    //   param 0   → 7000 Hz  →  period = 1300000/7000  ≈ 186 cycles
+    //   param 255 → 230 Hz   →  period = 1300000/230   ≈ 5652 cycles
+    //   per-unit  = (5652 - 186) / 255 ≈ 21.4 cycles
+    const double baseOverhead = 186.0;
+    const double cyclesPerUnit = 21.4;
+    final double cyclesPerPeriod = baseOverhead + ul * cyclesPerUnit;
+    final double frequencyHz = _clockFreq / cyclesPerPeriod;
+    final double durationMs = (x * cyclesPerPeriod / _clockFreq) * 1000;
+
+    outPort.send(BuzzerEventMsg(
+      frequencyHz: frequencyHz,
+      durationMs: durationMs,
+    ));
+
+    // Mark that we're inside a beep. The step() hook at E69E will
+    // set IF1 after the beep finishes (not here, which would cause
+    // E683 to abort the beep immediately).
+    _inBeep = true;
   }
 
   // ── ↑ navigation fix ─────────────────────────────────────────────────
@@ -641,10 +702,6 @@ class Emulator {
     // Simulate LH5811 timer: generate a periodic IRQ each frame (~50Hz)
     // to drive the ROM's main loop (keyboard scan, display refresh).
     _pc1500IO.triggerIRQ();
-    // Keep IF1 (PB7) set while ON is held, matching real hardware behavior.
-    if (keyboard.isOnKeyPressed) {
-      _pc1500IO.triggerPB7();
-    }
 
     final DateTime frameStart = DateTime.now();
     final Duration frameBudget = _clock.frameDuration;
