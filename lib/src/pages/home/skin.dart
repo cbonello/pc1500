@@ -68,6 +68,17 @@ class _SkinState extends State<Skin> {
         // Ignore KeyRepeatEvent — only act on initial press and release.
         if (event is! KeyDownEvent && event is! KeyUpEvent) return;
 
+        // Escape → ON key; Shift+Escape → BREAK (ON key triggers
+        // the ROM's IR2 handler which stops BASIC execution).
+        if (event.logicalKey == LogicalKeyboardKey.escape) {
+          if (event is KeyDownEvent) {
+            _onKeyDown('on');
+          } else if (event is KeyUpEvent) {
+            _onKeyUp('on');
+          }
+          return;
+        }
+
         final String? keyName = _physicalKeyMap[event.logicalKey];
         if (keyName != null) {
           if (event is KeyDownEvent) {

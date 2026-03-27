@@ -68,6 +68,13 @@ class MainFlutterWindow: NSWindow, NSToolbarDelegate {
   }
 
   @objc private func screenshotTapped() {
-    screenshotChannel.invokeMethod("screenshot", arguments: nil)
+    let panel = NSSavePanel()
+    panel.allowedFileTypes = ["png"]
+    panel.nameFieldStringValue = "pc1500_screenshot.png"
+    panel.beginSheetModal(for: self) { response in
+      if response == .OK, let url = panel.url {
+        self.screenshotChannel.invokeMethod("screenshot", arguments: url.path)
+      }
+    }
   }
 }

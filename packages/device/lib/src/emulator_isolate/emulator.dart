@@ -409,8 +409,11 @@ class Emulator {
   /// Subsequent calls = warm start (RAM preserved).
   void powerOn() {
     if (_running) {
-      // Already running — reset the CPU for a warm start.
-      _resetCpu();
+      // Already running — press the ON key so the ROM's IR2 handler
+      // detects it via PB7/IF1 and performs a BREAK (stops BASIC execution).
+      keyboard.keyDown('on');
+      updateKeyboardInput();
+      return;
     } else {
       // First power-on: cold start.
       //
@@ -467,15 +470,6 @@ class Emulator {
   }
 
   /// Resets the CPU for a warm start (RAM preserved).
-  void _resetCpu() {
-    _cpu.pins.resetPin = true;
-    step(); // Use wrapper, not _cpu.step() directly.
-    _cpu.pins.resetPin = false;
-    _cpu.cpu.hlt = false;
-    _cpu.pins.inputPorts = 0xFF;
-    _cpu.cpu.tm.value = 1;
-  }
-
   /// Toggles SHIFT mode (bit 1 of $764E).
   /// The ROM's SHIFT handler (code 0x01) toggles this bit and restarts
   /// the scan, which would re-detect the held key and toggle it back.
