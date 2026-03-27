@@ -18,20 +18,22 @@ class HomeView extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFBABEC1),
-      body: Center(
-        child: systemsRepository.when<Widget>(
-          data: (SystemsRepository repository) {
-            final SkinModel skin = repository.getSkin(deviceRepository.type);
-            final LcdWidget lcd = LcdWidget(
-              config: skin.lcd,
-              eventsStream: deviceRepository.device.lcdEvents,
-            );
+      body: systemsRepository.when<Widget>(
+        data: (SystemsRepository repository) {
+          final SkinModel skin = repository.getSkin(deviceRepository.type);
+          final LcdWidget lcd = LcdWidget(
+            config: skin.lcd,
+            eventsStream: deviceRepository.device.lcdEvents,
+          );
 
-            return Skin(skin: skin, lcd: lcd, device: deviceRepository.device);
-          },
-          loading: () => const CircularProgressIndicator(),
-          error: (Object err, StackTrace _) => Text('Error: $err'),
-        ),
+          return Skin(
+            skin: skin,
+            lcd: lcd,
+            device: deviceRepository.device,
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (Object err, StackTrace _) => Center(child: Text('Error: $err')),
       ),
     );
   }
