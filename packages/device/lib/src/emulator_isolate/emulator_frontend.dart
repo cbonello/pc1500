@@ -37,6 +37,9 @@ class EmulatorFrontEnd {
   late int debugPort;
   Emulator? emulator;
 
+  /// Tracks whether the last 'up' keyDown was substituted with 'down'.
+  bool _upSubstituted = false;
+
   ServerSocket? serverSocket;
   StreamSubscription<Socket>? serverSocketSub;
   DapServer? _dapServer;
@@ -106,17 +109,27 @@ class EmulatorFrontEnd {
           // then send ↓ instead of ↑. The ROM's ↓ handler uses $78A6
           // and updates ALL state variables (including PROGDISP state),
           // so the display shows the correct previous line.
+          // When SHIFT is active, send the real 'up' key so the ROM
+          // produces √ (Shift+▲) instead of π (Shift+▼).
           if (keyName == 'up') {
-            emulator?.prepareNavigateUp();
-            emulator?.keyboard.keyDown('down');
+            if (emulator?.isShiftActive ?? false) {
+              // SHIFT active → send real 'up' so ROM produces √.
+              _upSubstituted = false;
+            } else {
+              // Navigation → substitute with 'down' via prepareNavigateUp.
+              emulator?.prepareNavigateUp();
+              _upSubstituted = true;
+            }
+            emulator?.keyboard.keyDown(_upSubstituted ? 'down' : 'up');
             emulator?.updateKeyboardInput();
             break;
           }
           emulator?.keyboard.keyDown(keyName);
           emulator?.updateKeyboardInput();
         case KeyUpMsg(:final keyName):
-          // Release 'down' when 'up' is released (since we substituted).
-          final releaseKey = keyName == 'up' ? 'down' : keyName;
+          // Release the correct key: 'down' if we substituted, 'up' if not.
+          final releaseKey =
+              (keyName == 'up' && _upSubstituted) ? 'down' : keyName;
           emulator?.keyboard.keyUp(releaseKey);
         // No updateKeyboardInput() — the release is deferred until the
         // next frame via the keyboard queue to avoid lost keystrokes.

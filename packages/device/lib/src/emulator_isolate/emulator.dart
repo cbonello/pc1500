@@ -409,10 +409,13 @@ class Emulator {
   /// Subsequent calls = warm start (RAM preserved).
   void powerOn() {
     if (_running) {
-      // Already running — press the ON key so the ROM's IR2 handler
-      // detects it via PB7/IF1 and performs a BREAK (stops BASIC execution).
-      keyboard.keyDown('on');
-      updateKeyboardInput();
+      // Already running — trigger PB7/IF1 interrupt so the ROM's IR2
+      // handler detects the ON key and performs a BREAK.
+      // Don't add 'on' to pressedKeys — that would keep PB7 active
+      // across frames and break WAIT/HLT timing.
+      _pc1500IO.triggerPB7();
+      _pc1500IO.triggerIRQ();
+      _cpu.cpu.hlt = false;
       return;
     } else {
       // First power-on: cold start.
@@ -470,6 +473,9 @@ class Emulator {
   }
 
   /// Resets the CPU for a warm start (RAM preserved).
+  /// Whether SHIFT mode is currently active (bit 1 of $764E).
+  bool get isShiftActive => (_csd.readByteAt(_symByte0) & 0x02) != 0;
+
   /// Toggles SHIFT mode (bit 1 of $764E).
   /// The ROM's SHIFT handler (code 0x01) toggles this bit and restarts
   /// the scan, which would re-detect the held key and toggle it back.
