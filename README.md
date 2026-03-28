@@ -1,16 +1,58 @@
-# pc1500
+<p align="center">
+  <img src="assets/logo/readme_logo.png" alt="PC-1500 Emulator" width="300">
+</p>
 
-A new Flutter project.
+# Sharp PC-1500 Emulator
 
-## Getting Started
+A Sharp PC-1500 / PC-1500A pocket computer emulator built with Flutter for macOS.
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+- Full LH5801 CPU emulation at 1.3 MHz
+- Accurate LCD display (156x7 pixels) with symbol indicators
+- On-screen keyboard with authentic skin
+- Physical keyboard support
+- Sound emulation (buzzer)
+- Screenshot capture (toolbar button)
+- PC-1500 and PC-1500A hardware variants
+- BASIC programming environment
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Keyboard Shortcuts
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Key | Function |
+|-----|----------|
+| A-Z, 0-9 | Alphanumeric input |
+| Enter | ENTER |
+| Space | SPACE |
+| Arrow keys | Navigation |
+| Backspace / Delete | CL (Clear) |
+| Escape | ON |
+| F1-F6 | Function keys |
+
+## Building
+
+```bash
+flutter pub get
+flutter run -d macos
+```
+
+## Requirements
+
+- Flutter SDK >= 3.10.0
+- macOS 10.15+
+- Xcode
+
+## Architecture
+
+The emulator runs the LH5801 CPU in a separate Dart isolate for consistent timing. The display and keyboard communicate with the emulator via message passing.
+
+| Package | Description |
+|---------|-------------|
+| `device` | Emulator core: CPU, keyboard, LCD, and isolate management |
+| `lcd` | LCD event model and display buffer decoding |
+| `packages/lh5801` | LH5801 CPU emulator |
+| `packages/lh5811` | LH5811 I/O port controller |
+
+## License
+
+See [LICENSE](LICENSE) for details.
