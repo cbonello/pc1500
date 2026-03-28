@@ -158,6 +158,10 @@ class LH5811 {
     }
   }
 
+  /// Toggles OPB bit 5. Used to simulate the 64 Hz timer signal
+  /// connected to PB5 on the real PC-1500 hardware.
+  void toggleOPB5() => _opb ^= 0x20;
+
   /// Sets IF1 without firing _checkInterrupt. Use for frame-rate timer
   /// ticks where the flag should be pollable but not generate an IRQ.
   void setIF1() => _if |= 0x02;
