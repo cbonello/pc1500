@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Upload BASIC",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "run",
+        "bin/upload.dart",
+        "${file}",
+        "--run"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/tools/mcp_server"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Compile BASIC (no upload)",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "run",
+        "bin/upload.dart",
+        "${file}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/tools/mcp_server"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

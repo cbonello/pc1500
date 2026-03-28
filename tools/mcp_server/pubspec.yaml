@@ -7,6 +7,8 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
+  basic_compiler:
+    path: ../../packages/basic_compiler
   dart_mcp:
     git:
       url: https://github.com/dart-lang/ai.git

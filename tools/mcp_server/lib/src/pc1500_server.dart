@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' show ZLibCodec;
 import 'dart:typed_data';
 
+import 'package:basic_compiler/basic_compiler.dart';
 import 'package:dart_mcp/server.dart';
 import 'package:pc1500_mcp_server/src/dap_client.dart';
 import 'package:stream_channel/stream_channel.dart';
@@ -42,6 +43,7 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
     registerTool(_pauseTool, _handlePause);
     registerTool(_setBreakpointsTool, _handleSetBreakpoints);
     registerTool(_screenshotTool, _handleScreenshot);
+    registerTool(_uploadBasicTool, _handleUploadBasic);
 
     return super.initialize(request);
   }
@@ -183,6 +185,27 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
         '(DEF, SHIFT, RUN, PRO, etc.) as text.',
     inputSchema: ObjectSchema(),
     annotations: ToolAnnotations(readOnlyHint: true),
+  );
+
+  static final _uploadBasicTool = Tool(
+    name: 'emulator_upload_basic',
+    description:
+        'Compile and upload a BASIC program to emulator memory. '
+        'Tokenizes keywords into internal codes and writes the binary '
+        'program at \$40C2. Updates STATUS pointers so LIST and RUN work.',
+    inputSchema: ObjectSchema(
+      properties: {
+        'program': StringSchema(
+          description:
+              'BASIC source code (one line per line, e.g. "10 PRINT \\"HELLO\\"\\n20 END")',
+        ),
+        'run': BooleanSchema(
+          description: 'Auto-run the program after upload (default false)',
+        ),
+      },
+      required: ['program'],
+    ),
+    annotations: ToolAnnotations(readOnlyHint: false, destructiveHint: true),
   );
 
   // ── Tool handlers ───────────────────────────────────────────────────────
@@ -697,6 +720,68 @@ final class PC1500MCPServer extends MCPServer with ToolsSupport {
   }
 
   static List<int>? _crc32Table;
+
+  Future<CallToolResult> _handleUploadBasic(CallToolRequest request) async {
+    final dap = _requireDap();
+    if (dap == null) return _notConnected();
+
+    final args = request.arguments ?? {};
+    final program = args['program'] as String? ?? '';
+
+    if (program.trim().isEmpty) {
+      return _error('No program source provided.');
+    }
+
+    // Compile BASIC source to binary.
+    final CompilerResult compiled;
+    try {
+      compiled = compile(program);
+    } on CompilerError catch (e) {
+      return _error('Compilation error: $e');
+    }
+
+    // Program base address.
+    const int base = 0x40C2;
+    final int endAddr = base + compiled.bytes.length - 1; // address of 0xFF
+
+    try {
+      // Write compiled program bytes at $40C2.
+      await dap.request('writeMemory', {
+        'memoryReference': '0x${base.toRadixString(16)}',
+        'data': base64Encode(compiled.bytes),
+      });
+
+      // Update end-of-program pointer ($7867-$7868) to point to the 0xFF byte.
+      await dap.request('writeMemory', {
+        'memoryReference': '0x7867',
+        'data': base64Encode([
+          (endAddr >> 8) & 0xFF,
+          endAddr & 0xFF,
+        ]),
+      });
+
+      final bool autoRun = args['run'] == true;
+      if (autoRun) {
+        // Resume emulator if paused, then type RUN + ENTER.
+        try {
+          await dap.request('continue', {'threadId': 1});
+        } catch (_) {} // Ignore if already running.
+        await dap.request('sendKeys', {
+          'keys': ['r', 'u', 'n', 'enter'],
+        });
+      }
+
+      final String status = autoRun ? ' Running.' : '';
+      return _text(
+        'Uploaded ${compiled.lineCount} lines '
+        '(${compiled.bytes.length} bytes) at '
+        '\$${base.toRadixString(16).toUpperCase()}-'
+        '\$${endAddr.toRadixString(16).toUpperCase()}.$status',
+      );
+    } on Object catch (e) {
+      return _error('Upload failed: $e');
+    }
+  }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
 

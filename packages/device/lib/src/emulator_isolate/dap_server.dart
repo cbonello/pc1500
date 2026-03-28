@@ -192,6 +192,8 @@ class DapServer {
         _handleReadMemory(seq, command, args);
       case 'writeMemory':
         _handleWriteMemory(seq, command, args);
+      case 'sendKeys':
+        _handleSendKeys(seq, command, args);
       case 'disconnect':
         _handleDisconnect(seq, command);
       default:
@@ -479,6 +481,40 @@ class DapServer {
     }
 
     _sendResponse(seq, command, body: {'bytesWritten': bytes.length});
+  }
+
+  /// Sends key-down/key-up pairs to the emulator keyboard with a small delay.
+  ///
+  /// Accepts `keys`: a list of key name strings (e.g. ["r","u","n","enter"]).
+  /// Each key is pressed and released with a brief hold time to let the ROM
+  /// scan and process it.
+  void _handleSendKeys(int seq, String command, Map<String, Object?> args) {
+    final keys = (args['keys'] as List?)?.cast<String>() ?? <String>[];
+    if (keys.isEmpty) {
+      _sendResponse(seq, command, body: {'sent': 0});
+      return;
+    }
+
+    // Send keys one at a time with frame delays so the ROM processes each.
+    int i = 0;
+    void sendNext() {
+      if (i >= keys.length) {
+        _sendResponse(seq, command, body: {'sent': keys.length});
+        return;
+      }
+      final key = keys[i];
+      i++;
+      _emulator.keyboard.keyDown(key);
+      _emulator.updateKeyboardInput();
+      // Hold for a few frames then release.
+      Future<void>.delayed(const Duration(milliseconds: 80), () {
+        _emulator.keyboard.keyUp(key);
+        // Small gap before next key.
+        Future<void>.delayed(const Duration(milliseconds: 40), sendNext);
+      });
+    }
+
+    sendNext();
   }
 
   void _handleDisconnect(int seq, String command) {
