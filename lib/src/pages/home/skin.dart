@@ -186,7 +186,7 @@ class _SkinState extends State<Skin> {
         LogicalKeyboardKey.numpadMultiply: '*',
         LogicalKeyboardKey.numpadSubtract: '-',
         LogicalKeyboardKey.numpadAdd: '+',
-        LogicalKeyboardKey.numpadEnter: 'enter',
+        LogicalKeyboardKey.numpadEnter: 'ent',
         LogicalKeyboardKey.space: ' ',
         LogicalKeyboardKey.enter: 'enter',
         LogicalKeyboardKey.period: '.',
