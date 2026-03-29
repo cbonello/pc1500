@@ -195,6 +195,7 @@ const Map<String, _KeyPosition> _keyMap = <String, _KeyPosition>{
   'z': _KeyPosition(6, 6), // PA6, IN6
   // Special keys
   'enter': _KeyPosition(3, 7), // PA3, IN7 → 0x0D
+  'ent': _KeyPosition(3, 7), // PC-2 numeric keypad enter (same as enter)
   ' ': _KeyPosition(5, 7), // PA5, IN7 → SPACE
   '(': _KeyPosition(3, 6), // PA3, IN6
   ')': _KeyPosition(3, 0), // PA3, IN0
