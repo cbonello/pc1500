@@ -15,14 +15,14 @@ List<int> tokenizeLine(String line) {
   while (pos < line.length) {
     // String literal — pass through verbatim.
     if (line[pos] == '"') {
-      bytes.add(line.codeUnitAt(pos));
+      bytes.add(0x22);
       pos++;
       while (pos < line.length && line[pos] != '"') {
-        bytes.add(line.codeUnitAt(pos));
+        bytes.add(line.codeUnitAt(pos) & 0x7F);
         pos++;
       }
       if (pos < line.length) {
-        bytes.add(line.codeUnitAt(pos)); // closing quote
+        bytes.add(0x22); // closing quote
         pos++;
       }
       continue;
@@ -40,7 +40,7 @@ List<int> tokenizeLine(String line) {
       // REM: rest of line is literal ASCII.
       if (tokensByLength[matched] == 'REM') {
         while (pos < line.length) {
-          bytes.add(line.codeUnitAt(pos));
+          bytes.add(line.codeUnitAt(pos) & 0x7F);
           pos++;
         }
         break;
@@ -49,7 +49,7 @@ List<int> tokenizeLine(String line) {
       // DATA: literal ASCII until `:` or end-of-line.
       if (tokensByLength[matched] == 'DATA') {
         while (pos < line.length && line[pos] != ':') {
-          bytes.add(line.codeUnitAt(pos));
+          bytes.add(line.codeUnitAt(pos) & 0x7F);
           pos++;
         }
       }
@@ -57,8 +57,8 @@ List<int> tokenizeLine(String line) {
       continue;
     }
 
-    // Default: emit as raw ASCII.
-    bytes.add(line.codeUnitAt(pos));
+    // Default: emit as raw ASCII (7-bit, PC-1500 charset).
+    bytes.add(line.codeUnitAt(pos) & 0x7F);
     pos++;
   }
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:basic_compiler/basic_compiler.dart';
 import 'package:basic_compiler/src/lexer.dart';
 import 'package:test/test.dart';
@@ -142,7 +144,88 @@ void main() {
         '10 FOR I=1 TO 10\n20 PRINT I\n30 NEXT I',
       );
       expect(result.lineCount, 3);
-      // Verify it ends with 0xFF.
+      expect(result.bytes.last, 0xFF);
+    });
+
+    test('housepic.bas compiles successfully', () {
+      final String source = File(
+        'test/samples/housepic.bas',
+      ).readAsStringSync();
+      final CompilerResult result = compile(source);
+
+      expect(result.lineCount, 51);
+      expect(result.bytes.last, 0xFF);
+
+      // Verify structure: every line must have valid header.
+      int offset = 0;
+      int lineCount = 0;
+      int lastLineNum = -1;
+      while (offset < result.bytes.length - 1) {
+        final int lineNum =
+            (result.bytes[offset] << 8) | result.bytes[offset + 1];
+        final int length = result.bytes[offset + 2];
+        expect(lineNum, greaterThan(lastLineNum), reason: 'line $lineNum');
+        expect(length, greaterThan(0), reason: 'line $lineNum length');
+        // Last byte of line data must be 0x0D (CR).
+        expect(
+          result.bytes[offset + 2 + length],
+          0x0D,
+          reason: 'line $lineNum missing CR',
+        );
+        lastLineNum = lineNum;
+        offset += 3 + length;
+        lineCount++;
+      }
+      expect(lineCount, result.lineCount);
+      expect(result.bytes[offset], 0xFF);
+    });
+
+    test('DATA lines preserve literal content', () {
+      final CompilerResult result = compile(
+        '1 DATA 10,20,30\n2 END',
+      );
+      expect(result.lineCount, 2);
+      // DATA token followed by literal " 10,20,30"
+      final int dataHi = result.bytes[3];
+      final int dataLo = result.bytes[4];
+      expect(dataHi, basicTokens['DATA']! >> 8);
+      expect(dataLo, basicTokens['DATA']! & 0xFF);
+    });
+
+    test('GOSUB with string label', () {
+      final CompilerResult result = compile(
+        '10 GOSUB"HOUSE"\n20 END',
+      );
+      expect(result.lineCount, 2);
+      // GOSUB token + "HOUSE"
+      expect(result.bytes[3], basicTokens['GOSUB']! >> 8);
+      expect(result.bytes[4], basicTokens['GOSUB']! & 0xFF);
+      expect(result.bytes[5], 0x22); // opening "
+    });
+
+    test('celsius_conversion.bas compiles successfully', () {
+      final String source = File(
+        'test/samples/celsius_conversion.bas',
+      ).readAsStringSync();
+      final CompilerResult result = compile(source);
+      expect(result.lineCount, 5);
+      expect(result.bytes.last, 0xFF);
+    });
+
+    test('lcd_invert.bas compiles successfully', () {
+      final String source = File(
+        'test/samples/lcd_invert.bas',
+      ).readAsStringSync();
+      final CompilerResult result = compile(source);
+      expect(result.lineCount, 15);
+      expect(result.bytes.last, 0xFF);
+    });
+
+    test('multiple statements with colon', () {
+      final CompilerResult result = compile(
+        '10 YS=0:SP=20:GRAPH:COLOR 2',
+      );
+      expect(result.lineCount, 1);
       expect(result.bytes.last, 0xFF);
     });
   });

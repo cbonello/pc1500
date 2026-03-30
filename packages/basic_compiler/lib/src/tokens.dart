@@ -77,7 +77,7 @@ const Map<String, int> basicTokens = <String, int>{
   'PAUSE': 0xF1A2,
   'PEEK': 0xF16F,
   'PEEK#': 0xF16E,
-  'PI': 0xF150,
+  'PI': 0xF168,
   'POINT': 0xF168,
   'POKE': 0xF1A1,
   'POKE#': 0xF1A0,

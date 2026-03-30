@@ -48,13 +48,18 @@ CompilerResult compile(String source) {
     final String raw = sourceLines[i].trim();
     if (raw.isEmpty) continue;
 
-    // Parse line number.
-    final int spaceIdx = raw.indexOf(' ');
-    if (spaceIdx == -1) {
+    // Parse line number: leading digits, then optional space before code.
+    // Handles both "10 PRINT A" and "300"RECT"" (label without space).
+    int numEnd = 0;
+    while (numEnd < raw.length && raw.codeUnitAt(numEnd) >= 0x30 &&
+        raw.codeUnitAt(numEnd) <= 0x39) {
+      numEnd++;
+    }
+    if (numEnd == 0 || numEnd == raw.length) {
       throw CompilerError(i + 1, 'Missing BASIC statement after line number');
     }
 
-    final String numStr = raw.substring(0, spaceIdx);
+    final String numStr = raw.substring(0, numEnd);
     final int? lineNum = int.tryParse(numStr);
     if (lineNum == null || lineNum < 1 || lineNum > 65279) {
       throw CompilerError(i + 1, 'Invalid line number: $numStr');
@@ -68,7 +73,11 @@ CompilerResult compile(String source) {
     lastLineNum = lineNum;
 
     // Tokenize the BASIC code after the line number.
-    final String code = raw.substring(spaceIdx + 1);
+    // Skip optional space between line number and code.
+    final int codeStart = numEnd < raw.length && raw[numEnd] == ' '
+        ? numEnd + 1
+        : numEnd;
+    final String code = raw.substring(codeStart);
     final List<int> tokenized = tokenizeLine(code);
 
     // Length = tokenized bytes + 1 for the 0x0D terminator.

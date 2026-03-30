@@ -1,0 +1,5 @@
+10 WAIT 0
+20 INPUT "CELSIUS? ",C
+30 F = C * 1.8 + 32
+40 PRINT C;"C = ";F;"F"
+50 END
