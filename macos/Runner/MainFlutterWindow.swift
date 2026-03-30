@@ -22,11 +22,21 @@ class MainFlutterWindow: NSWindow, NSToolbarDelegate {
     self.contentMinSize = NSSize(width: 753, height: 314)
     self.setContentSize(NSSize(width: 1054, height: 440))
 
-    // Method channel to notify Flutter of screenshot requests.
+    // Method channel for screenshot requests (toolbar button and Cmd+S).
     screenshotChannel = FlutterMethodChannel(
       name: "pc1500/toolbar",
       binaryMessenger: flutterViewController.engine.binaryMessenger
     )
+
+    // Handle screenshot requests from Flutter (Cmd+S).
+    screenshotChannel.setMethodCallHandler { [weak self] call, result in
+      if call.method == "requestScreenshot" {
+        self?.screenshotTapped()
+        result(nil)
+      } else {
+        result(FlutterMethodNotImplemented)
+      }
+    }
 
     // Add a toolbar with a screenshot button.
     let toolbar = NSToolbar(identifier: "MainToolbar")

@@ -34,6 +34,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
     });
   }
 
+  void _requestScreenshot() {
+    _toolbarChannel.invokeMethod<void>('requestScreenshot');
+  }
+
   Future<void> _takeScreenshot(String path) async {
     final RenderRepaintBoundary? boundary =
         _skinKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
@@ -73,6 +77,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
               skin: skin,
               lcd: lcd,
               device: deviceRepository.device,
+              onScreenshot: _requestScreenshot,
             ),
           );
         },

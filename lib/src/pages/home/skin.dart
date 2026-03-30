@@ -21,11 +21,13 @@ class Skin extends StatefulWidget {
     required this.skin,
     required this.lcd,
     required this.device,
+    this.onScreenshot,
   });
 
   final SkinModel skin;
   final LcdWidget lcd;
   final Device device;
+  final VoidCallback? onScreenshot;
 
   @override
   State<Skin> createState() => _SkinState();
@@ -79,6 +81,14 @@ class _SkinState extends State<Skin> {
       onKeyEvent: (KeyEvent event) {
         // Ignore KeyRepeatEvent — only act on initial press and release.
         if (event is! KeyDownEvent && event is! KeyUpEvent) return;
+
+        // Cmd+S → screenshot.
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.keyS &&
+            HardwareKeyboard.instance.isMetaPressed) {
+          widget.onScreenshot?.call();
+          return;
+        }
 
         // Escape → ON key; Shift+Escape → BREAK (ON key triggers
         // the ROM's IR2 handler which stops BASIC execution).
