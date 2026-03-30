@@ -391,6 +391,7 @@ class Emulator {
   /// Starts the emulation loop.
   void run() {
     _running = true;
+    outPort.send(const PowerStateMsg(true));
     _scheduleFrame();
   }
 
@@ -678,6 +679,7 @@ class Emulator {
   /// Stops the emulation loop.
   void stop() {
     _running = false;
+    outPort.send(const PowerStateMsg(false));
     _frameTimer?.cancel();
     _frameTimer = null;
   }

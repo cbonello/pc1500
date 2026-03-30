@@ -18,6 +18,7 @@ class Device {
       _debugPort = debugPort,
       _outEventCtrl = StreamController<LcdEvent>.broadcast(),
       _buzzerEventCtrl = StreamController<BuzzerEventMsg>.broadcast(),
+      _powerStateCtrl = StreamController<bool>.broadcast(),
       isDebugClientConnected = false;
 
   bool isDebugClientConnected;
@@ -26,6 +27,7 @@ class Device {
   final int _debugPort;
   final StreamController<LcdEvent> _outEventCtrl;
   final StreamController<BuzzerEventMsg> _buzzerEventCtrl;
+  final StreamController<bool> _powerStateCtrl;
   Isolate? _isolate;
   SendPort? _toEmulatorPort;
   StreamSubscription<dynamic>? _fromEmulatorSub;
@@ -49,6 +51,14 @@ class Device {
 
   /// Stream of buzzer events from the emulator.
   Stream<BuzzerEventMsg> get buzzerEvents => _buzzerEventCtrl.stream;
+
+  bool _isPoweredOn = false;
+
+  /// Whether the emulator is currently powered on.
+  bool get isPoweredOn => _isPoweredOn;
+
+  /// Stream of power state changes (true = on, false = off).
+  Stream<bool> get powerState => _powerStateCtrl.stream;
 
   bool get _isEmulatorRunning => _isolate != null;
 
@@ -119,6 +129,9 @@ class Device {
 
   void _messageHandler(dynamic data) {
     switch (data) {
+      case PowerStateMsg(:final isOn):
+        _isPoweredOn = isOn;
+        _powerStateCtrl.add(isOn);
       case LcdEventMsg(:final event):
         _outEventCtrl.add(event);
       case BuzzerEventMsg():

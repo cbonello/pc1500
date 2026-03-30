@@ -53,6 +53,13 @@ class DebugClientStatusMsg {
   final bool connected;
 }
 
+/// Sent when the emulator power state changes.
+class PowerStateMsg {
+  const PowerStateMsg(this.isOn);
+
+  final bool isOn;
+}
+
 /// Sent when the ROM's BEEP subroutine is called.
 class BuzzerEventMsg {
   const BuzzerEventMsg({required this.frequencyHz, required this.durationMs});

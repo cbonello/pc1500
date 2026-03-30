@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:device/device.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +33,7 @@ class Skin extends StatefulWidget {
 
 class _SkinState extends State<Skin> {
   late final FocusNode _focusNode;
+  late final StreamSubscription<bool> _powerSub;
 
   /// Tracks which on-screen buttons appear visually pressed.
   final Set<String> _pressedKeys = <String>{};
@@ -39,10 +42,16 @@ class _SkinState extends State<Skin> {
   void initState() {
     super.initState();
     _focusNode = FocusNode();
+    _powerSub = widget.device.powerState.listen((_) {
+      setState(() {
+        _pressedKeys.clear();
+      });
+    });
   }
 
   @override
   void dispose() {
+    _powerSub.cancel();
     _focusNode.dispose();
     super.dispose();
   }
@@ -50,11 +59,14 @@ class _SkinState extends State<Skin> {
   void _onKeyDown(String keyName) {
     // Skip if already pressed (OS auto-repeat sends duplicate KeyDownEvents).
     if (_pressedKeys.contains(keyName)) return;
+    // Only ON works when the emulator is off.
+    if (!widget.device.isPoweredOn && keyName != 'on') return;
     widget.device.sendKeyDown(keyName);
     setState(() => _pressedKeys.add(keyName));
   }
 
   void _onKeyUp(String keyName) {
+    if (!_pressedKeys.contains(keyName)) return;
     widget.device.sendKeyUp(keyName);
     setState(() => _pressedKeys.remove(keyName));
   }
@@ -107,6 +119,8 @@ class _SkinState extends State<Skin> {
               ),
               ...widget.skin.keys.keys.map<Widget>((String value) {
                 final KeyModel key = widget.skin.keys[value]!;
+                final bool enabled =
+                    widget.device.isPoweredOn || value == 'on';
                 return Positioned(
                   left: key.left,
                   top: key.top,
@@ -114,8 +128,8 @@ class _SkinState extends State<Skin> {
                     keyboardKey: key,
                     colors: widget.skin.keyColors[key.color]!,
                     pressed: _pressedKeys.contains(value),
-                    onTapDown: () => _onKeyDown(value),
-                    onTapUp: () => _onKeyUp(value),
+                    onTapDown: enabled ? () => _onKeyDown(value) : null,
+                    onTapUp: enabled ? () => _onKeyUp(value) : null,
                   ),
                 );
               }),
@@ -215,8 +229,8 @@ class _KeyButton extends StatelessWidget {
   final KeyModel keyboardKey;
   final ColorModel colors;
   final bool pressed;
-  final VoidCallback onTapDown;
-  final VoidCallback onTapUp;
+  final VoidCallback? onTapDown;
+  final VoidCallback? onTapUp;
 
   @override
   Widget build(BuildContext context) {
@@ -263,8 +277,8 @@ class _KeyButton extends StatelessWidget {
     return Material(
       color: bgColor,
       child: InkWell(
-        onTapDown: (_) => onTapDown(),
-        onTapUp: (_) => onTapUp(),
+        onTapDown: onTapDown != null ? (_) => onTapDown!() : null,
+        onTapUp: onTapUp != null ? (_) => onTapUp!() : null,
         onTapCancel: onTapUp,
         child: SizedBox(
           height: keyboardKey.height,

@@ -77,12 +77,13 @@ class EmulatorFrontEnd {
             emulator = Emulator(type, outPort);
           }
         case KeyDownMsg(:final keyName):
-          emulator?.resetIdleTimer();
-          // Keys handled outside the keyboard matrix.
+          // Only the ON key works when the emulator is off.
           if (keyName == 'on') {
             emulator?.powerOn();
             break;
           }
+          if (emulator?.isRunning != true) break;
+          emulator?.resetIdleTimer();
           if (keyName == 'off') {
             emulator?.powerOff();
             break;
