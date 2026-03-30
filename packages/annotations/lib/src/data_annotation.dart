@@ -26,7 +26,7 @@ class DataAnnotation extends AnnotationBase {
     AddressSpace addressSpace,
     Map<String, dynamic> json,
   ) {
-    if (area.addressSpace.containsAddress(addressSpace.start) == false) {
+    if (!area.addressSpace.containsAddressSpace(addressSpace)) {
       throw AnnotationsError(
         'DataAnnotation: area ${area.addressSpace} does not include annotation '
         '$addressSpace',

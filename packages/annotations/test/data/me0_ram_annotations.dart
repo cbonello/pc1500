@@ -8,7 +8,7 @@ const String str = '''
                 "data": {
                     "764E": {
                         "label": "LCDSYM1",
-                        "comment": "DEF, I, II, II, SMALL, SML, SHIFT and BUSY"
+                        "comment": "DEF, I, II, III, SMALL, SML, SHIFT and BUSY"
                     },
                     "764F": {
                         "label": "LCDSYM2",
@@ -145,6 +145,38 @@ const String str = '''
             "7850-78BF": {
                 "name": "System Memory #1",
                 "data": {
+                    "7860": {
+                        "label": "RAM_PROBE_0",
+                        "comment": "RAM probe result for module at 0000H (FFH = not present)"
+                    },
+                    "7861": {
+                        "label": "RAM_PROBE_1",
+                        "comment": "RAM probe result for module detection"
+                    },
+                    "7862": {
+                        "label": "RAM_PROBE_2",
+                        "comment": "RAM probe result for module detection"
+                    },
+                    "7863": {
+                        "label": "RAM_START_HIGH",
+                        "comment": "RAM start high byte (40H = 4000H)"
+                    },
+                    "7864": {
+                        "label": "RAM_END_HIGH",
+                        "comment": "RAM end high byte (48H = PC-1500, 58H = PC-1500A)"
+                    },
+                    "7865-7866": {
+                        "label": "PROGRAM_BASE",
+                        "comment": "Program block base address (big-endian, normally 40C2H)"
+                    },
+                    "7867-7868": {
+                        "label": "PROGRAM_END",
+                        "comment": "End-of-program pointer (address of FFH terminator)"
+                    },
+                    "7869-786A": {
+                        "label": "CURRENT_BLOCK",
+                        "comment": "Current program block pointer"
+                    },
                     "786B": {
                         "label": "RMT_BEEP",
                         "comment": "Remote and beep on/off pointer"
@@ -206,7 +238,7 @@ const String str = '''
                         "comment": "Integer part of Using"
                     },
                     "7897": {
-                        "label": "USINg_AMPERSAND",
+                        "label": "USING_AMPERSAND",
                         "comment": "Using of charcater string"
                     },
                     "7898": {

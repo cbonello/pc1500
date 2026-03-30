@@ -21,7 +21,7 @@ class CodeAnnotation extends AnnotationBase {
     if (addressSpace.length != 1) {
       throw AnnotationsError('CodeAnnotation: Invalid address-space');
     }
-    if (area.addressSpace.containsAddress(addressSpace.start) == false) {
+    if (!area.addressSpace.containsAddress(addressSpace.start)) {
       throw AnnotationsError(
         'CodeAnnotation: area ${area.addressSpace} does not include annotation '
         '$addressSpace',

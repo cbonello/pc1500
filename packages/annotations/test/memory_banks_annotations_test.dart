@@ -44,21 +44,21 @@ void main() {
           ..load(jsonCE150)
           ..load(jsonRAM)
           ..load(jsonROM);
-        expect(annotations.bank(0).length, equals(838));
+        expect(annotations.bank(0).length, equals(849));
         expect(annotations.bank(1).length, isZero);
 
         annotations = MemoryBanksAnnotations()
           ..load(jsonRAM)
           ..load(jsonCE150)
           ..load(jsonROM);
-        expect(annotations.bank(0).length, equals(838));
+        expect(annotations.bank(0).length, equals(849));
         expect(annotations.bank(1).length, isZero);
 
         annotations = MemoryBanksAnnotations()
           ..load(jsonRAM)
           ..load(jsonROM)
           ..load(jsonCE150);
-        expect(annotations.bank(0).length, equals(838));
+        expect(annotations.bank(0).length, equals(849));
         expect(annotations.bank(1).length, isZero);
       });
     });

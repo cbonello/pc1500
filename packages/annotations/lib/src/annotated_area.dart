@@ -36,7 +36,7 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
     Map<String, dynamic> json,
   ) {
     if (parent != null &&
-        !parent.addressSpace.containsAddress(addressSpace.start)) {
+        !parent.addressSpace.containsAddressSpace(addressSpace)) {
       throw AnnotationsError(
         'AnnotatedArea: $addressSpace is outside parent ${parent.addressSpace}',
       );
@@ -125,8 +125,7 @@ class AnnotatedArea extends AnnotationBase with EquatableMixin {
       for (int j = i + 1; j < annotations.length; j++) {
         if (annotations[i].addressSpace.intersectWith(
               annotations[j].addressSpace,
-            ) ==
-            true) {
+            )) {
           throw AnnotationsError(
             'AnnotatedArea: ${annotations[i].addressSpace} and '
             '${annotations[j].addressSpace} intersect',
