@@ -18,11 +18,7 @@ void main(List<String> arguments) {
       help: 'Display this message',
       negatable: false,
     )
-    ..addOption(
-      outputOption,
-      abbr: outputOption[0],
-      help: 'Output filename',
-    );
+    ..addOption(outputOption, abbr: outputOption[0], help: 'Output filename');
 
   final ArgResults argResults;
   try {
@@ -57,8 +53,9 @@ void main(List<String> arguments) {
       exit(kErrors);
     }
   } else {
-    outputFilename =
-        path.setExtension(path.basename(inputFilename), '.dart').toLowerCase();
+    outputFilename = path
+        .setExtension(path.basename(inputFilename), '.dart')
+        .toLowerCase();
   }
 
   final File inputFile = File(inputFilename);
