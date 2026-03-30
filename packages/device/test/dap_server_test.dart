@@ -292,7 +292,7 @@ void main() {
 
     test('multiple messages in one TCP chunk are parsed', () async {
       final client = await connectClient();
-      final bytes1 = _dapRequest('threads', seq: 1);
+      final bytes1 = _dapRequest('threads');
       final bytes2 = _dapRequest('threads', seq: 2);
       client.add([...bytes1, ...bytes2]);
 

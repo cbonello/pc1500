@@ -14,17 +14,17 @@ dependencies:
     path: ../annotations
   chip_select_decoder:
     path: ../chip_select_decoder
+  dap: ^1.4.0
   lcd:
     path: ../lcd
-  lh5811:
-    path: ../lh5811
   lh5801:
     git:
       url: https://github.com/cbonello/lh5801.git
+  lh5811:
+    path: ../lh5811
   meta: any
   roms:
     path: ../roms
-  dap: ^1.4.0
 
 dev_dependencies:
   lint: ^2.8.0

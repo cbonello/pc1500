@@ -28,12 +28,11 @@ class LocalStorageRepository {
 
   /// Reads the persisted [DeviceType], defaulting to [DeviceType.pc1500].
   DeviceType getDeviceType() {
-    return DeviceType.pc2;
-
     final int? index = _sharedPreferences.getInt(_deviceTypeKey);
     if (index != null && index >= 0 && index < DeviceType.values.length) {
       return DeviceType.values[index];
     }
+
     return DeviceType.pc1500;
   }
 

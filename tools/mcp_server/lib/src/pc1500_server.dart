@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:basic_compiler/basic_compiler.dart';
 import 'package:dart_mcp/server.dart';
 import 'package:pc1500_mcp_server/src/dap_client.dart';
-import 'package:stream_channel/stream_channel.dart';
 
 /// MCP server that bridges Claude to the PC-1500 emulator via DAP.
 ///
@@ -15,11 +14,10 @@ import 'package:stream_channel/stream_channel.dart';
 /// emulator over a DAP TCP connection.
 final class PC1500MCPServer extends MCPServer with ToolsSupport {
   PC1500MCPServer(
-    StreamChannel<String> channel, {
+    super.channel, {
     this.host = 'localhost',
     this.port = 3756,
   }) : super.fromStreamChannel(
-         channel,
          implementation: Implementation(
            name: 'pc1500-emulator',
            version: '0.1.0',

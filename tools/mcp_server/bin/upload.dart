@@ -1,7 +1,3 @@
-/// CLI tool: compile a .bas file and upload it to the running PC-1500 emulator.
-///
-/// Usage:
-///   dart run bin/upload.dart program.bas [--run] [--port 3756]
 import 'dart:convert';
 import 'dart:io';
 
@@ -76,8 +72,9 @@ Future<void> main(List<String> args) async {
       ]),
     });
 
-    stdout.writeln('Uploaded to \$${base.toRadixString(16).toUpperCase()}-'
-        '\$${endAddr.toRadixString(16).toUpperCase()}.');
+    final String baseHex = base.toRadixString(16).toUpperCase();
+    final String endHex = endAddr.toRadixString(16).toUpperCase();
+    stdout.writeln('Uploaded to \$$baseHex-\$$endHex.');
 
     if (autoRun) {
       try {

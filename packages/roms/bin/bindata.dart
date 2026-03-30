@@ -5,7 +5,6 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as path;
 
 const int kSuccess = 0;
-const int kWarnings = 1;
 const int kErrors = 2;
 
 const String helpFlag = 'help';
