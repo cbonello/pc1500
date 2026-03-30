@@ -496,20 +496,20 @@ class DapServer {
     }
 
     // Send keys one at a time with frame delays so the ROM processes each.
+    // Guard against emulator being stopped mid-sequence.
     int i = 0;
     void sendNext() {
-      if (i >= keys.length) {
-        _sendResponse(seq, command, body: {'sent': keys.length});
+      if (!_emulator.isRunning || i >= keys.length) {
+        _sendResponse(seq, command, body: {'sent': i});
         return;
       }
       final key = keys[i];
       i++;
       _emulator.keyboard.keyDown(key);
       _emulator.updateKeyboardInput();
-      // Hold for a few frames then release.
       Future<void>.delayed(const Duration(milliseconds: 80), () {
+        if (!_emulator.isRunning) return;
         _emulator.keyboard.keyUp(key);
-        // Small gap before next key.
         Future<void>.delayed(const Duration(milliseconds: 40), sendNext);
       });
     }

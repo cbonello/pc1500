@@ -90,6 +90,7 @@ class Device {
     kill();
     _outEventCtrl.close();
     _buzzerEventCtrl.close();
+    _powerStateCtrl.close();
   }
 
   Future<SendPort> _initIsolate() async {

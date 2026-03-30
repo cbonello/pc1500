@@ -49,7 +49,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
     image.dispose();
     if (byteData == null) return;
 
-    await File(path).writeAsBytes(byteData.buffer.asUint8List());
+    try {
+      await File(path).writeAsBytes(byteData.buffer.asUint8List());
+    } on FileSystemException catch (_) {
+      // Permission denied or invalid path — silently ignore.
+    }
   }
 
   @override
