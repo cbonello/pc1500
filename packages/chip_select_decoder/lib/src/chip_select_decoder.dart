@@ -67,7 +67,7 @@ class ChipSelectDecoder extends Equatable {
 
   Map<String, dynamic> saveState() {
     List<MemoryChipBase> filterRAM(List<MemoryChipBase> m) =>
-        m.where((MemoryChipBase m) => m.isReadonly == false).toList();
+        m.where((MemoryChipBase m) => !m.isReadonly).toList();
 
     final Map<String, dynamic> state = <String, dynamic>{
       MemoryBank.me0.toString(): filterRAM(
