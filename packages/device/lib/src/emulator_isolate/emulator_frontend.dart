@@ -116,22 +116,26 @@ class EmulatorFrontEnd {
             if (emulator?.isShiftActive ?? false) {
               // SHIFT active → send real 'up' so ROM produces √.
               _upSubstituted = false;
+              emulator?.keyboard.keyDown('up');
             } else {
               // Navigation → substitute with 'down' via prepareNavigateUp.
+              // Use enqueue (not keyDown) so the key is held for exactly
+              // _minHoldFrames, preventing ROM handler re-entry which
+              // corrupts $78A6 state on repeated scans.
               emulator?.prepareNavigateUp();
               _upSubstituted = true;
+              emulator?.keyboard.enqueue('down');
             }
-            emulator?.keyboard.keyDown(_upSubstituted ? 'down' : 'up');
             emulator?.updateKeyboardInput();
             break;
           }
           emulator?.keyboard.keyDown(keyName);
           emulator?.updateKeyboardInput();
         case KeyUpMsg(:final keyName):
-          // Release the correct key: 'down' if we substituted, 'up' if not.
-          final releaseKey =
-              (keyName == 'up' && _upSubstituted) ? 'down' : keyName;
-          emulator?.keyboard.keyUp(releaseKey);
+          // When ↑ was substituted, the 'down' key was enqueued (not
+          // keyDown'd) so the queue owns its lifecycle — skip keyUp.
+          if (keyName == 'up' && _upSubstituted) break;
+          emulator?.keyboard.keyUp(keyName);
         // No updateKeyboardInput() — the release is deferred until the
         // next frame via the keyboard queue to avoid lost keystrokes.
         case StepMsg():

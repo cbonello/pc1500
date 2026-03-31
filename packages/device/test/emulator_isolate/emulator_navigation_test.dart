@@ -77,10 +77,10 @@ void main() {
         _setupProgram(emu, [10, 20, 30]);
 
         // Simulate: currently showing line 30 (last line).
-        // $78A6 points to line 20, so D2B3 advanced past 20 → showed 30.
-        const int line20Addr = 0x40C2 + 7; // line 10 is 7 bytes
-        emu.memWriteForTest(0x78A6, (line20Addr >> 8) & 0xFF);
-        emu.memWriteForTest(0x78A7, line20Addr & 0xFF);
+        // ROM sets $78A6 to the displayed line's own address.
+        const int line30Addr = 0x40C2 + 7 + 7; // lines 10,20 are 7 bytes each
+        emu.memWriteForTest(0x78A6, (line30Addr >> 8) & 0xFF);
+        emu.memWriteForTest(0x78A7, line30Addr & 0xFF);
 
         emu.prepareNavigateUp();
 
@@ -114,10 +114,10 @@ void main() {
         _setupProgram(emu, [10, 20, 30, 40]);
 
         // Currently showing line 30 (index 2).
-        // $78A6 = line 20 address (index 1), D2B3 advanced to show line 30.
-        const int line20Addr = 0x40C2 + 7;
-        emu.memWriteForTest(0x78A6, (line20Addr >> 8) & 0xFF);
-        emu.memWriteForTest(0x78A7, line20Addr & 0xFF);
+        // ROM sets $78A6 to line 30's own address.
+        const int line30Addr = 0x40C2 + 7 + 7; // lines 10,20 are 7 bytes each
+        emu.memWriteForTest(0x78A6, (line30Addr >> 8) & 0xFF);
+        emu.memWriteForTest(0x78A7, line30Addr & 0xFF);
 
         emu.prepareNavigateUp();
 
@@ -131,10 +131,10 @@ void main() {
         final Emulator emu = _createEmulator();
         _setupProgram(emu, [10, 20, 30]);
 
-        // Currently showing line 30. $78A6 = line 20 addr.
-        const int line20Addr = 0x40C2 + 7;
-        emu.memWriteForTest(0x78A6, (line20Addr >> 8) & 0xFF);
-        emu.memWriteForTest(0x78A7, line20Addr & 0xFF);
+        // Currently showing line 30. ROM sets $78A6 to line 30's addr.
+        const int line30Addr = 0x40C2 + 7 + 7;
+        emu.memWriteForTest(0x78A6, (line30Addr >> 8) & 0xFF);
+        emu.memWriteForTest(0x78A7, line30Addr & 0xFF);
 
         emu.prepareNavigateUp();
 

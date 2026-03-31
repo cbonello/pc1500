@@ -575,11 +575,12 @@ class Emulator {
     final int curRef = _read16(_curLinePtr);
 
     // Determine which line is currently displayed.
-    // D2B3 displays the line AFTER $78A6. Find curRef in the line list.
+    // After D2B3 runs, the ROM updates $78A6 to the displayed line's
+    // own address (verified empirically). So curRef = lines[displayIndex].
     int displayIndex;
     final int refIndex = lines.indexOf(curRef);
-    if (refIndex >= 0 && refIndex + 1 < lines.length) {
-      displayIndex = refIndex + 1; // line after curRef
+    if (refIndex >= 0) {
+      displayIndex = refIndex;
     } else if (curRef < lines.first) {
       displayIndex = 0; // dummy ref → first line is displayed
     } else {
