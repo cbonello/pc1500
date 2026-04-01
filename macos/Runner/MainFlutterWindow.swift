@@ -1,11 +1,9 @@
 import Cocoa
 import FlutterMacOS
 
-private let screenshotToolbarItemID = NSToolbarItem.Identifier("screenshot")
-
-class MainFlutterWindow: NSWindow, NSToolbarDelegate {
+class MainFlutterWindow: NSWindow {
   private var flutterViewController: FlutterViewController!
-  private var screenshotChannel: FlutterMethodChannel!
+  private var toolbarChannel: FlutterMethodChannel!
 
   override func awakeFromNib() {
     flutterViewController = FlutterViewController.init()
@@ -22,68 +20,61 @@ class MainFlutterWindow: NSWindow, NSToolbarDelegate {
     self.contentMinSize = NSSize(width: 753, height: 314)
     self.setContentSize(NSSize(width: 1054, height: 440))
 
-    // Method channel for screenshot requests (toolbar button and Cmd+S).
-    screenshotChannel = FlutterMethodChannel(
+    // Method channel for file dialogs (screenshot, save/restore state).
+    toolbarChannel = FlutterMethodChannel(
       name: "pc1500/toolbar",
       binaryMessenger: flutterViewController.engine.binaryMessenger
     )
 
-    // Handle screenshot requests from Flutter (Cmd+S).
-    screenshotChannel.setMethodCallHandler { [weak self] call, result in
-      if call.method == "requestScreenshot" {
-        self?.screenshotTapped()
+    toolbarChannel.setMethodCallHandler { [weak self] call, result in
+      switch call.method {
+      case "requestScreenshot":
+        self?.showScreenshotPanel()
         result(nil)
-      } else {
+      case "requestSaveState":
+        self?.showSaveStatePanel()
+        result(nil)
+      case "requestRestoreState":
+        self?.showRestoreStatePanel()
+        result(nil)
+      default:
         result(FlutterMethodNotImplemented)
       }
     }
-
-    // Add a toolbar with a screenshot button.
-    let toolbar = NSToolbar(identifier: "MainToolbar")
-    toolbar.delegate = self
-    toolbar.displayMode = .iconOnly
-    self.toolbar = toolbar
-    self.titleVisibility = .hidden
   }
 
-  // MARK: - NSToolbarDelegate
+  // MARK: - File Dialogs
 
-  func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-    [.flexibleSpace, screenshotToolbarItemID]
-  }
-
-  func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-    [.flexibleSpace, screenshotToolbarItemID]
-  }
-
-  func toolbar(
-    _ toolbar: NSToolbar,
-    itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
-    willBeInsertedIntoToolbar flag: Bool
-  ) -> NSToolbarItem? {
-    if itemIdentifier == screenshotToolbarItemID {
-      let item = NSToolbarItem(itemIdentifier: screenshotToolbarItemID)
-      item.label = "Screenshot"
-      item.toolTip = "Save screenshot"
-      if #available(macOS 11.0, *) {
-        item.image = NSImage(systemSymbolName: "camera", accessibilityDescription: "Screenshot")
-      } else {
-        item.image = NSImage(named: NSImage.quickLookTemplateName)
-      }
-      item.target = self
-      item.action = #selector(screenshotTapped)
-      return item
-    }
-    return nil
-  }
-
-  @objc private func screenshotTapped() {
+  private func showScreenshotPanel() {
     let panel = NSSavePanel()
     panel.allowedFileTypes = ["png"]
     panel.nameFieldStringValue = "pc1500_screenshot.png"
     panel.beginSheetModal(for: self) { response in
       if response == .OK, let url = panel.url {
-        self.screenshotChannel.invokeMethod("screenshot", arguments: url.path)
+        self.toolbarChannel.invokeMethod("screenshot", arguments: url.path)
+      }
+    }
+  }
+
+  private func showSaveStatePanel() {
+    let panel = NSSavePanel()
+    panel.allowedFileTypes = ["json"]
+    panel.nameFieldStringValue = "pc1500_state.json"
+    panel.beginSheetModal(for: self) { response in
+      if response == .OK, let url = panel.url {
+        self.toolbarChannel.invokeMethod("saveStateTo", arguments: url.path)
+      }
+    }
+  }
+
+  private func showRestoreStatePanel() {
+    let panel = NSOpenPanel()
+    panel.allowedFileTypes = ["json"]
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = false
+    panel.beginSheetModal(for: self) { response in
+      if response == .OK, let url = panel.url {
+        self.toolbarChannel.invokeMethod("restoreStateFrom", arguments: url.path)
       }
     }
   }

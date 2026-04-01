@@ -128,6 +128,13 @@ class Device {
     }
   }
 
+  /// Sends a cold reset command to the emulator (clears RAM, cold boot).
+  void sendColdReset() {
+    if (_isEmulatorRunning) {
+      _toEmulatorPort!.send(const ColdResetMsg());
+    }
+  }
+
   // ── State persistence ──────────────────────────────────────────────
 
   Completer<Map<String, dynamic>>? _saveCompleter;

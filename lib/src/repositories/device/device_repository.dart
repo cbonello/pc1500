@@ -161,8 +161,8 @@ class DeviceRepository with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  /// Saves emulator state to disk.
-  Future<void> _saveState() async {
+  /// Saves emulator state to the default auto-save location.
+  Future<void> saveState() async {
     try {
       final Map<String, dynamic> state = await device.saveState();
       final File file = await _stateFile(_type);
@@ -175,11 +175,52 @@ class DeviceRepository with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
+  /// Saves emulator state to a user-chosen file.
+  Future<void> saveStateTo(String path) async {
+    try {
+      final Map<String, dynamic> state = await device.saveState();
+      await File(path).writeAsString(jsonEncode(state));
+    } on Object catch (e) {
+      assert(() {
+        debugPrint('State save to file failed: $e');
+        return true;
+      }());
+    }
+  }
+
+  /// Restores emulator state from a user-chosen file.
+  Future<bool> restoreStateFrom(String path) async {
+    try {
+      final File file = File(path);
+      if (!file.existsSync()) return false;
+
+      final int size = file.lengthSync();
+      if (size > _maxStateFileSize) return false;
+
+      final String json = await file.readAsString();
+      final Map<String, dynamic> state =
+          jsonDecode(json) as Map<String, dynamic>;
+
+      return device.restoreState(state);
+    } on Object catch (e) {
+      assert(() {
+        debugPrint('State restore from file failed: $e');
+        return true;
+      }());
+      return false;
+    }
+  }
+
+  /// Performs a cold reset (clears RAM, shows "NEW 0 ? CHECK").
+  void coldReset() {
+    device.sendColdReset();
+  }
+
   /// Called when the emulator power state changes.
   void _onPowerStateChanged(bool isOn) {
     if (!isOn) {
       // Auto-save on power off.
-      _saveState();
+      saveState();
     }
   }
 
@@ -188,7 +229,7 @@ class DeviceRepository with ChangeNotifier, WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       // Save state when app is backgrounded or about to be killed.
-      _saveState();
+      saveState();
     }
   }
 }

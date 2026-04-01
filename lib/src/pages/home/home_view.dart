@@ -25,17 +25,31 @@ class _HomeViewState extends ConsumerState<HomeView> {
     super.initState();
     _toolbarChannel = const MethodChannel('pc1500/toolbar');
     _toolbarChannel.setMethodCallHandler((MethodCall call) async {
-      if (call.method == 'screenshot') {
-        final String? path = call.arguments as String?;
-        if (path != null) {
+      final String? path = call.arguments as String?;
+      if (path == null) return;
+      switch (call.method) {
+        case 'screenshot':
           await _takeScreenshot(path);
-        }
+        case 'saveStateTo':
+          final DeviceRepository repo = ref.read(deviceRepositoryProvider);
+          await repo.saveStateTo(path);
+        case 'restoreStateFrom':
+          final DeviceRepository repo = ref.read(deviceRepositoryProvider);
+          await repo.restoreStateFrom(path);
       }
     });
   }
 
   void _requestScreenshot() {
     _toolbarChannel.invokeMethod<void>('requestScreenshot');
+  }
+
+  void _requestSaveState() {
+    _toolbarChannel.invokeMethod<void>('requestSaveState');
+  }
+
+  void _requestRestoreState() {
+    _toolbarChannel.invokeMethod<void>('requestRestoreState');
   }
 
   Future<void> _takeScreenshot(String path) async {
@@ -56,6 +70,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
     }
   }
 
+  Future<void> _openDoc(String assetPath) async {
+    try {
+      final ByteData data = await rootBundle.load(assetPath);
+      final String fileName = assetPath.split('/').last;
+      final Directory tempDir = Directory.systemTemp;
+      final File tempFile = File('${tempDir.path}/$fileName');
+      await tempFile.writeAsBytes(data.buffer.asUint8List());
+      await Process.run('open', <String>[tempFile.path]);
+    } on Object catch (_) {
+      // Asset not found or write failed — silently ignore.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<SystemsRepository> systemsRepository = ref.watch(
@@ -65,30 +92,212 @@ class _HomeViewState extends ConsumerState<HomeView> {
       deviceRepositoryProvider,
     );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFBABEC1),
-      body: systemsRepository.when<Widget>(
-        data: (SystemsRepository repository) {
-          final SkinModel skin = repository.getSkin(deviceRepository.type);
-          final LcdWidget lcd = LcdWidget(
-            config: skin.lcd,
-            eventsStream: deviceRepository.device.lcdEvents,
-          );
+    return PlatformMenuBar(
+      menus: _buildMenus(deviceRepository),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFBABEC1),
+        body: systemsRepository.when<Widget>(
+          data: (SystemsRepository repository) {
+            final SkinModel skin = repository.getSkin(deviceRepository.type);
+            final LcdWidget lcd = LcdWidget(
+              config: skin.lcd,
+              eventsStream: deviceRepository.device.lcdEvents,
+            );
 
-          return RepaintBoundary(
-            key: _skinKey,
-            child: Skin(
-              skin: skin,
-              lcd: lcd,
-              device: deviceRepository.device,
-              onScreenshot: _requestScreenshot,
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (Object err, StackTrace _) =>
-            Center(child: Text('Error: $err')),
+            return RepaintBoundary(
+              key: _skinKey,
+              child: Skin(
+                skin: skin,
+                lcd: lcd,
+                device: deviceRepository.device,
+                onScreenshot: _requestScreenshot,
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (Object err, StackTrace _) =>
+              Center(child: Text('Error: $err')),
+        ),
       ),
     );
+  }
+
+  List<PlatformMenu> _buildMenus(DeviceRepository deviceRepository) {
+    final DeviceType currentType = deviceRepository.type;
+
+    return <PlatformMenu>[
+      // ── App menu (About, Quit, etc.) ──
+      const PlatformMenu(
+        label: 'pc1500',
+        menus: <PlatformMenuItem>[
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformProvidedMenuItem(
+                type: PlatformProvidedMenuItemType.about,
+              ),
+            ],
+          ),
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformProvidedMenuItem(
+                type: PlatformProvidedMenuItemType.servicesSubmenu,
+              ),
+            ],
+          ),
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformProvidedMenuItem(
+                type: PlatformProvidedMenuItemType.hide,
+              ),
+              PlatformProvidedMenuItem(
+                type: PlatformProvidedMenuItemType.hideOtherApplications,
+              ),
+              PlatformProvidedMenuItem(
+                type: PlatformProvidedMenuItemType.showAllApplications,
+              ),
+            ],
+          ),
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformProvidedMenuItem(
+                type: PlatformProvidedMenuItemType.quit,
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // ── File ──
+      PlatformMenu(
+        label: 'File',
+        menus: <PlatformMenuItem>[
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformMenuItem(
+                label: 'Save State...',
+                shortcut: const SingleActivator(
+                  LogicalKeyboardKey.keyS,
+                  meta: true,
+                ),
+                onSelected: _requestSaveState,
+              ),
+              PlatformMenuItem(
+                label: 'Restore State...',
+                shortcut: const SingleActivator(
+                  LogicalKeyboardKey.keyO,
+                  meta: true,
+                ),
+                onSelected: _requestRestoreState,
+              ),
+            ],
+          ),
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformMenuItem(
+                label: 'Screenshot...',
+                shortcut: const SingleActivator(
+                  LogicalKeyboardKey.keyS,
+                  meta: true,
+                  shift: true,
+                ),
+                onSelected: _requestScreenshot,
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // ── Hardware ──
+      PlatformMenu(
+        label: 'Hardware',
+        menus: <PlatformMenuItem>[
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformMenuItem(
+                label: currentType == DeviceType.pc1500
+                    ? '\u2713 PC-1500'
+                    : '    PC-1500',
+                onSelected: () =>
+                    _switchDevice(deviceRepository, DeviceType.pc1500),
+              ),
+              PlatformMenuItem(
+                label: currentType == DeviceType.pc1500A
+                    ? '\u2713 PC-1500A'
+                    : '    PC-1500A',
+                onSelected: () =>
+                    _switchDevice(deviceRepository, DeviceType.pc1500A),
+              ),
+              PlatformMenuItem(
+                label: currentType == DeviceType.pc2
+                    ? '\u2713 PC-2'
+                    : '    PC-2',
+                onSelected: () =>
+                    _switchDevice(deviceRepository, DeviceType.pc2),
+              ),
+            ],
+          ),
+          PlatformMenuItemGroup(
+            members: <PlatformMenuItem>[
+              PlatformMenuItem(
+                label: 'Reset (Cold Boot)',
+                onSelected: () => deviceRepository.coldReset(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // ── Help ──
+      PlatformMenu(
+        label: 'Help',
+        menus: <PlatformMenuItem>[
+          PlatformMenuItem(
+            label: 'PC-2 User Manual',
+            onSelected: () => _openDoc('assets/docs/PC2_Manual.pdf'),
+          ),
+          PlatformMenuItem(
+            label: 'PC-1500 Technical Reference Manual',
+            onSelected: () =>
+                _openDoc('assets/docs/PC1500_Technical_reference_manual.pdf'),
+          ),
+        ],
+      ),
+
+      // View and Window menus are defined in MainMenu.xib with native
+      // macOS selectors (toggleFullScreen:, performMiniaturize:, etc.).
+    ];
+  }
+
+  void _switchDevice(DeviceRepository repo, DeviceType newType) {
+    if (repo.type == newType) return;
+
+    if (!repo.canSafelySwitchDevices(newType)) {
+      showDialog<bool>(
+        context: context,
+        builder: (BuildContext ctx) => AlertDialog(
+          title: const Text('Switch Hardware'),
+          content: const Text(
+            'Switching to a different RAM size will clear the current '
+            'BASIC program. Continue?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Switch'),
+            ),
+          ],
+        ),
+      ).then((bool? confirmed) {
+        if (confirmed == true) {
+          repo.type = newType;
+        }
+      });
+    } else {
+      repo.type = newType;
+    }
   }
 }

@@ -82,14 +82,6 @@ class _SkinState extends State<Skin> {
         // Ignore KeyRepeatEvent — only act on initial press and release.
         if (event is! KeyDownEvent && event is! KeyUpEvent) return;
 
-        // Cmd+S → screenshot.
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyS &&
-            HardwareKeyboard.instance.isMetaPressed) {
-          widget.onScreenshot?.call();
-          return;
-        }
-
         // Escape → ON key; Shift+Escape → BREAK (ON key triggers
         // the ROM's IR2 handler which stops BASIC execution).
         if (event.logicalKey == LogicalKeyboardKey.escape) {

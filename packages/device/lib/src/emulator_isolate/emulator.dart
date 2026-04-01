@@ -699,6 +699,15 @@ class Emulator {
     _lcd.forceRepaint();
   }
 
+  /// Performs a cold reset: stops the emulator, clears the boot flag,
+  /// and powers on. The ROM will re-probe RAM and show "NEW 0 ? CHECK".
+  void coldReset() {
+    stop();
+    _lcd.setDisplayOn(false);
+    _hasBooted = false;
+    powerOn();
+  }
+
   /// Powers off the emulator: stops CPU, turns display off.
   void powerOff() {
     stop();

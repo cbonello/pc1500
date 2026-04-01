@@ -42,6 +42,11 @@ class SaveStateMsg {
   const SaveStateMsg();
 }
 
+/// Sent to perform a cold reset (clears RAM, shows "NEW 0 ? CHECK").
+class ColdResetMsg {
+  const ColdResetMsg();
+}
+
 /// Sent to restore emulator state from a previously saved snapshot.
 class RestoreStateMsg {
   const RestoreStateMsg(this.state);

@@ -140,6 +140,8 @@ class EmulatorFrontEnd {
         // next frame via the keyboard queue to avoid lost keystrokes.
         case StepMsg():
           emulator?.step();
+        case ColdResetMsg():
+          emulator?.coldReset();
         case SaveStateMsg():
           if (emulator != null) {
             final Map<String, dynamic> state = emulator!.saveState();
