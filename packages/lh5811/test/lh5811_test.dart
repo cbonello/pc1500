@@ -199,6 +199,70 @@ void main() {
       });
     });
 
+    group('saveState / restoreState', () {
+      test('round-trip preserves all register state', () {
+        io.write(0x08, 0x42); // OPC.
+        io.write(0x09, 0xAB); // G.
+        io.write(0x0A, 0x0F); // MSK.
+        io.write(0x0B, 0x03); // IF (writable bits only).
+        io.write(0x0C, 0xF0); // DDA.
+        io.write(0x0D, 0x0F); // DDB.
+        io.write(0x0E, 0xAA); // OPA.
+        io.write(0x0F, 0x55); // OPB.
+        io.write(0x07, 0x7F); // F.
+        io.serialReceiveComplete(0xCD); // U + RD flag.
+        io.setPortAInput(0x11);
+        io.setPortBInput(0x22);
+
+        final Map<String, dynamic> state = io.saveState();
+
+        // Create a fresh LH5811 and restore.
+        final LH5811 restored = LH5811();
+        restored.restoreState(state);
+
+        // Verify all readable registers match.
+        expect(restored.read(0x08), equals(io.read(0x08))); // OPC.
+        expect(restored.read(0x09), equals(io.read(0x09))); // G.
+        expect(restored.read(0x0A), equals(io.read(0x0A))); // MSK.
+        expect(restored.read(0x0B), equals(io.read(0x0B))); // IF.
+        expect(restored.read(0x0C), equals(io.read(0x0C))); // DDA.
+        expect(restored.read(0x0D), equals(io.read(0x0D))); // DDB.
+        expect(restored.read(0x07), equals(io.read(0x07))); // F.
+        expect(restored.portCOutput, equals(io.portCOutput));
+      });
+
+      test('round-trip preserves port output and pin state', () {
+        io.write(0x0C, 0xFF); // DDA = all output.
+        io.write(0x0E, 0xAA); // OPA.
+        io.write(0x0D, 0xFF); // DDB = all output.
+        io.write(0x0F, 0x55); // OPB.
+        io.setPortAInput(0x11);
+        io.setPortBInput(0x22);
+
+        final Map<String, dynamic> state = io.saveState();
+        final LH5811 restored = LH5811();
+        restored.restoreState(state);
+
+        expect(restored.portAOutput, equals(io.portAOutput));
+        expect(restored.portBOutput, equals(io.portBOutput));
+
+        // Switch to input mode and verify pin state preserved.
+        restored.write(0x0C, 0x00); // DDA = all input.
+        restored.write(0x0D, 0x00); // DDB = all input.
+        expect(restored.read(0x0E), equals(0x11)); // pinPA.
+        expect(restored.read(0x0F), equals(0x22)); // pinPB.
+      });
+
+      test('restoreState does not affect callbacks', () {
+        int count = 0;
+        final LH5811 target = LH5811(onInterrupt: () => count++);
+        target.restoreState(io.saveState());
+        target.write(0x0A, 0x01); // Enable MSK0.
+        target.triggerIRQ();
+        expect(count, equals(1));
+      });
+    });
+
     group('Port input providers', () {
       test('onPortBRead should be called when CPU reads PB', () {
         // Simulates keyboard matrix: PA output selects column,

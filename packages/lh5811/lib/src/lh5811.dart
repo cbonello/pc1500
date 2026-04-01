@@ -200,4 +200,36 @@ class LH5811 {
       onInterrupt?.call();
     }
   }
+
+  /// Saves all register and pin state to a JSON-serializable map.
+  Map<String, dynamic> saveState() => <String, dynamic>{
+    'opc': _opc,
+    'g': _g,
+    'msk': _msk,
+    'if': _if,
+    'dda': _dda,
+    'ddb': _ddb,
+    'opa': _opa,
+    'opb': _opb,
+    'f': _f,
+    'u': _u,
+    'pinPA': _pinPA,
+    'pinPB': _pinPB,
+  };
+
+  /// Restores register and pin state from a previously saved map.
+  void restoreState(Map<String, dynamic> state) {
+    _opc = state['opc'] as int;
+    _g = state['g'] as int;
+    _msk = state['msk'] as int;
+    _if = state['if'] as int;
+    _dda = state['dda'] as int;
+    _ddb = state['ddb'] as int;
+    _opa = state['opa'] as int;
+    _opb = state['opb'] as int;
+    _f = state['f'] as int;
+    _u = state['u'] as int;
+    _pinPA = state['pinPA'] as int;
+    _pinPB = state['pinPB'] as int;
+  }
 }

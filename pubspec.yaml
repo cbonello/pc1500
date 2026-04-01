@@ -21,6 +21,7 @@ dependencies:
   just_audio: ^0.10.5
   lcd:
     path: packages/lcd
+  path_provider: ^2.1.5
   shared_preferences: ^2.5.3
 
 dev_dependencies:

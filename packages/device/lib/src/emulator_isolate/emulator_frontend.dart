@@ -140,6 +140,24 @@ class EmulatorFrontEnd {
         // next frame via the keyboard queue to avoid lost keystrokes.
         case StepMsg():
           emulator?.step();
+        case SaveStateMsg():
+          if (emulator != null) {
+            final Map<String, dynamic> state = emulator!.saveState();
+            outPort.send(SaveStateResultMsg(state));
+          }
+        case RestoreStateMsg(:final state):
+          if (emulator != null) {
+            try {
+              emulator!.restoreState(state);
+              outPort.send(
+                const RestoreStateResultMsg(success: true),
+              );
+            } on Object catch (e) {
+              outPort.send(
+                RestoreStateResultMsg(success: false, error: '$e'),
+              );
+            }
+          }
         default:
           break;
       }

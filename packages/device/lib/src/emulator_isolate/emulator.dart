@@ -658,6 +658,47 @@ class Emulator {
     _cpu.cpu.hlt = false;
   }
 
+  // ── State persistence ────────────────────────────────────────────────
+
+  /// Current state format version. Increment when the save format changes.
+  static const int _stateVersion = 1;
+
+  /// Saves the full emulator state to a JSON-serializable map.
+  Map<String, dynamic> saveState() => <String, dynamic>{
+    'version': _stateVersion,
+    'deviceType': type.name,
+    'cpu': _cpu.saveState(),
+    'memory': _csd.saveState(),
+    'pc1500IO': _pc1500IO.saveState(),
+    'ce153IO': _ce153IO.saveState(),
+    'coldStartDone': _coldStartDone,
+    'hasBooted': _hasBooted,
+  };
+
+  /// Restores emulator state from a previously saved map.
+  ///
+  /// Throws [StateError] if the version or device type doesn't match.
+  void restoreState(Map<String, dynamic> state) {
+    final int version = state['version'] as int;
+    if (version != _stateVersion) {
+      throw StateError('Unsupported state version: $version');
+    }
+    final String deviceType = state['deviceType'] as String;
+    if (deviceType != type.name) {
+      throw StateError(
+        'Device type mismatch: expected ${type.name}, got $deviceType',
+      );
+    }
+
+    _cpu.restoreState(state['cpu'] as Map<String, dynamic>);
+    _csd.restoreState(state['memory'] as Map<String, dynamic>);
+    _pc1500IO.restoreState(state['pc1500IO'] as Map<String, dynamic>);
+    _ce153IO.restoreState(state['ce153IO'] as Map<String, dynamic>);
+    _coldStartDone = state['coldStartDone'] as bool;
+    _hasBooted = state['hasBooted'] as bool;
+    _lcd.forceRepaint();
+  }
+
   /// Powers off the emulator: stops CPU, turns display off.
   void powerOff() {
     stop();

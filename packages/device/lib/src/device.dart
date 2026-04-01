@@ -128,6 +128,41 @@ class Device {
     }
   }
 
+  // ── State persistence ──────────────────────────────────────────────
+
+  Completer<Map<String, dynamic>>? _saveCompleter;
+  Completer<RestoreStateResultMsg>? _restoreCompleter;
+
+  /// Requests a state snapshot from the emulator isolate.
+  ///
+  /// Returns the serializable state map. Times out after 5 seconds.
+  Future<Map<String, dynamic>> saveState() {
+    if (!_isEmulatorRunning) {
+      return Future<Map<String, dynamic>>.error(
+        StateError('Emulator is not running'),
+      );
+    }
+    _saveCompleter = Completer<Map<String, dynamic>>();
+    _toEmulatorPort!.send(const SaveStateMsg());
+    return _saveCompleter!.future.timeout(const Duration(seconds: 5));
+  }
+
+  /// Sends a state map to the emulator isolate for restoration.
+  ///
+  /// Returns `true` on success, `false` on failure. Times out after 5 seconds.
+  Future<bool> restoreState(Map<String, dynamic> state) async {
+    if (!_isEmulatorRunning) return false;
+    _restoreCompleter = Completer<RestoreStateResultMsg>();
+    _toEmulatorPort!.send(RestoreStateMsg(state));
+    try {
+      final RestoreStateResultMsg result =
+          await _restoreCompleter!.future.timeout(const Duration(seconds: 5));
+      return result.success;
+    } on TimeoutException {
+      return false;
+    }
+  }
+
   void _messageHandler(dynamic data) {
     switch (data) {
       case PowerStateMsg(:final isOn):
@@ -139,6 +174,12 @@ class Device {
         _buzzerEventCtrl.add(data);
       case DebugClientStatusMsg(:final connected):
         isDebugClientConnected = connected;
+      case SaveStateResultMsg(:final state):
+        _saveCompleter?.complete(state);
+        _saveCompleter = null;
+      case RestoreStateResultMsg():
+        _restoreCompleter?.complete(data);
+        _restoreCompleter = null;
       default:
         assert(() {
           // ignore: avoid_print

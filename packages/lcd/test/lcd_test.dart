@@ -248,6 +248,29 @@ void main() {
       lcd.dispose();
     });
 
+    test('forceRepaint should re-read RAM and emit snapshot', () async {
+      final Lcd lcd = Lcd(memRead: memRead);
+
+      // Write to internal buffers via memoryUpdated.
+      lcd.memoryUpdated(MemoryAccessType.write, 0x7600, 0xAA);
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+
+      // Now change the backing RAM directly (simulating state restore).
+      me0[0x7600] = 0xBB;
+      me0[0x7700] = 0xCC;
+      me0[0x764E] = 0x80; // DEF symbol on.
+
+      final Completer<LcdEvent> completer = Completer<LcdEvent>();
+      lcd.events.listen(completer.complete);
+      lcd.forceRepaint();
+
+      final LcdEvent event = await completer.future;
+      expect(event.displayBuffer1[0], equals(0xBB));
+      expect(event.displayBuffer2[0], equals(0xCC));
+      expect(event.symbols.def, isTrue);
+      lcd.dispose();
+    });
+
     test('dispose() should cancel pending timer', () async {
       final Lcd lcd = Lcd(memRead: memRead);
 

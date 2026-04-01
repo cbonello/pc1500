@@ -37,6 +37,18 @@ class StepMsg {
   const StepMsg();
 }
 
+/// Sent to request a state snapshot from the emulator.
+class SaveStateMsg {
+  const SaveStateMsg();
+}
+
+/// Sent to restore emulator state from a previously saved snapshot.
+class RestoreStateMsg {
+  const RestoreStateMsg(this.state);
+
+  final Map<String, dynamic> state;
+}
+
 // ── Emulator → UI messages ──────────────────────────────────────────────────
 
 /// Sent when the LCD display state changes.
@@ -58,6 +70,21 @@ class PowerStateMsg {
   const PowerStateMsg(this.isOn);
 
   final bool isOn;
+}
+
+/// Sent in response to [SaveStateMsg] with the emulator's state snapshot.
+class SaveStateResultMsg {
+  const SaveStateResultMsg(this.state);
+
+  final Map<String, dynamic> state;
+}
+
+/// Sent in response to [RestoreStateMsg] to acknowledge completion.
+class RestoreStateResultMsg {
+  const RestoreStateResultMsg({required this.success, this.error});
+
+  final bool success;
+  final String? error;
 }
 
 /// Sent when the ROM's BEEP subroutine is called.

@@ -87,18 +87,21 @@ class LcdEvent extends Equatable {
 
 class Lcd with MemoryObserver {
   factory Lcd({required MemoryReadFn memRead}) => Lcd._(
+    memRead: memRead,
     displayBuffer1: memRead(_dispBuf1Start, _dispBufLen),
     displayBuffer2: memRead(_dispBuf2Start, _dispBufLen),
     symbolData: memRead(_symBufStart, _symBufLen),
   );
 
   Lcd._({
+    required MemoryReadFn memRead,
     required Uint8ClampedList displayBuffer1,
     required Uint8ClampedList displayBuffer2,
     required Uint8ClampedList symbolData,
   }) : assert(displayBuffer1.length == _dispBufLen),
        assert(displayBuffer2.length == _dispBufLen),
        assert(symbolData.length == _symBufLen),
+       _memRead = memRead,
        _displayBuffer1 = displayBuffer1,
        _displayBuffer2 = displayBuffer2,
        _symbolData = symbolData,
@@ -109,6 +112,7 @@ class Lcd with MemoryObserver {
   /// Call after subscribing to [events] to receive the initial state.
   void emitInitialState() => _emitSnapshot();
 
+  final MemoryReadFn _memRead;
   final Uint8ClampedList _displayBuffer1;
   final Uint8ClampedList _displayBuffer2;
   final Uint8ClampedList _symbolData;
@@ -166,6 +170,18 @@ class Lcd with MemoryObserver {
         displayOn: _displayOn,
       ),
     );
+  }
+
+  /// Re-reads display RAM into internal buffers and emits a snapshot.
+  /// Call after restoring emulator state to sync the LCD with RAM.
+  void forceRepaint() {
+    final Uint8ClampedList buf1 = _memRead(_dispBuf1Start, _dispBufLen);
+    final Uint8ClampedList buf2 = _memRead(_dispBuf2Start, _dispBufLen);
+    final Uint8ClampedList sym = _memRead(_symBufStart, _symBufLen);
+    _displayBuffer1.setRange(0, _dispBufLen, buf1);
+    _displayBuffer2.setRange(0, _dispBufLen, buf2);
+    _symbolData.setRange(0, _symBufLen, sym);
+    _emitSnapshot();
   }
 
   void dispose() {
