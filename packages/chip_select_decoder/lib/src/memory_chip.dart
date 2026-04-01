@@ -10,6 +10,7 @@ enum MemoryAccessType { read, write }
 mixin MemoryObservable {
   bool registerObserver(MemoryAccessType type, MemoryObserver observer) =>
       throw UnimplementedError();
+
   void notifyObservers(MemoryAccessType type, int address, int value) =>
       throw UnimplementedError();
 }
