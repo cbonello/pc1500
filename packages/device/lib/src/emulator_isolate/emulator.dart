@@ -396,6 +396,7 @@ class Emulator {
   }
 
   bool _coldStartDone = false;
+  bool _hasBooted = false;
 
   /// Auto-power-off: frames since last key press. At 50fps, 7 minutes
   /// = 21000 frames. Reset on any keyDown. When expired, calls powerOff().
@@ -405,9 +406,17 @@ class Emulator {
   /// Resets the auto-power-off idle counter. Called on every key press.
   void resetIdleTimer() => _idleFrames = 0;
 
-  /// Powers on the emulator: resets CPU and starts execution.
-  /// First call = cold start + automatic warm start.
-  /// Subsequent calls = warm start (RAM preserved).
+  /// Powers on the emulator.
+  ///
+  /// First call performs a cold start: CPU reset loads the reset vector
+  /// ($E000). RAM is uninitialized so the ROM's probe at $7860-$7864
+  /// mismatches → "NEW0?:CHECK", just like a real PC-1500 on first boot.
+  ///
+  /// Subsequent calls (after [powerOff]) perform a warm start: the CPU
+  /// wakes from halt via the PB7/IF1 interrupt, exactly like pressing ON
+  /// on real hardware. The ROM never re-probes RAM, so it shows ">".
+  ///
+  /// If already running, triggers the ON-key interrupt (BREAK).
   void powerOn() {
     if (_running) {
       // Already running — trigger PB7/IF1 interrupt so the ROM's IR2
@@ -418,59 +427,37 @@ class Emulator {
       _pc1500IO.triggerIRQ();
       _cpu.cpu.hlt = false;
       return;
+    }
+    _idleFrames = 0;
+    if (_hasBooted) {
+      // Warm start: wake CPU from halt and trigger ON-key interrupt.
+      // RAM is preserved — the ROM resumes from where it was.
+      _pc1500IO.triggerPB7();
+      _pc1500IO.triggerIRQ();
+      _cpu.cpu.hlt = false;
     } else {
-      // First power-on: cold start.
+      // Cold start: reset CPU so next step() reads the reset vector
+      // at $FFFE → $E000 and runs the ROM's full initialization.
       //
-      // Pre-seed RAM state that the ROM expects to be preserved across
-      // power cycles (battery-backed on real hardware, but zeroed in the
-      // emulator on first boot).
-      //
-      // 1. RAM probe results at $7860-$7864: the ROM compares these with
-      //    fresh probe results. A mismatch triggers "NEW0?:CHECK" which
-      //    blocks initialization waiting for a key press.
-      // 2. VARIABLE_POINTER at $7899: must equal RAM top so the BASIC
-      //    interpreter knows where the variable area starts. CFCC does
-      //    NOT set this — it's expected to survive from the previous boot.
-      // 3. End-of-program marker ($FF) at $4000: marks an empty program.
+      // The ROM probes RAM and compares results with $7860-$7864.
+      // Since RAM starts zeroed, the probe mismatches → "NEW0?:CHECK".
+      // However, certain system variables must be pre-seeded because
+      // the ROM expects them to be battery-backed (surviving across
+      // power cycles) and does NOT initialize them during cold start.
       final int ramTop = type == HardwareDeviceType.pc1500A ? 0x58 : 0x48;
-      _csd.writeByteAt(0x7860, 0xFF); // No module at $0000.
-      _csd.writeByteAt(0x7861, 0xFF); // No module detected.
-      _csd.writeByteAt(0x7862, 0xFF); // No module detected.
-      _csd.writeByteAt(0x7863, 0x40); // RAM start high byte.
-      _csd.writeByteAt(0x7864, ramTop); // RAM end high byte.
-      // 0x7865-0x7866: base program area start address. INITBST (DF93)
-      // reads this when no expansion module is present (0x7861 bit 7 set).
-      // On real hardware this is set by the first-ever boot's "NEW0?:CHECK"
-      // response and preserved by battery-backed RAM thereafter.
-      // Per TRM 5-1-1 and 5-3-6: the user RAM area starts at $4000.
-      // ROM information occupies 8 bytes ($4000-$4007), the reserve area
-      // occupies 189 bytes ($4008-$40C4), and the BASIC program area
-      // starts at $40C5 (PC-1500 only, or $38C5 with CE-155).
-      //
-      // INITBST (DF93) reads the program block base from $7865-$7866.
-      // CFCC adds 3 to skip a 3-byte program block header, then stores
-      // the result (with bit 7 set) as DATA_POINTER ($78BE-$78BF).
-      // So $7865-$7866 = $40C2 → DATA_POINTER = $C0C5.
       _csd.writeByteAt(0x7865, 0x40); // Program block base high.
       _csd.writeByteAt(0x7866, 0xC2); // Program block base low.
-      // 0x7867-0x7868: end-of-program pointer (VEJ CA $67, updated
-      // by line insertion). DFF3 computes search range as this minus
-      // the base. Starts equal to base (empty program).
       _csd.writeByteAt(0x7867, 0x40); // End-of-program high.
       _csd.writeByteAt(0x7868, 0xC2); // End-of-program low (= base).
-      // 0x7869-0x786A: current program block pointer (VEJ CC $69,
-      // read by D2E0 during line insertion).
       _csd.writeByteAt(0x7869, 0x40); // Current program block high.
       _csd.writeByteAt(0x786A, 0xC2); // Current program block low.
       _csd.writeByteAt(0x7899, ramTop); // VARIABLE_POINTER high byte.
-      // End-of-BASIC-program marker (0xFF) at the program block base.
-      // Placing it here (not at DATA_POINTER $40C5) ensures the line
-      // insertion code stores lines at the base, so BASTRANS's -3
-      // offset reads the actual line header, not a zero sentinel.
       _csd.writeByteAt(0x40C2, 0xFF); // End-of-program marker.
+      _initCpuPins();
       _coldStartDone = false;
-      run();
+      _hasBooted = true;
     }
+    run();
   }
 
   /// Resets the CPU for a warm start (RAM preserved).
