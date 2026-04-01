@@ -104,14 +104,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
               eventsStream: deviceRepository.device.lcdEvents,
             );
 
-            return RepaintBoundary(
-              key: _skinKey,
-              child: Skin(
-                skin: skin,
-                lcd: lcd,
-                device: deviceRepository.device,
-                onScreenshot: _requestScreenshot,
-              ),
+            return Column(
+              children: <Widget>[
+                Expanded(
+                  child: RepaintBoundary(
+                    key: _skinKey,
+                    child: Skin(
+                      skin: skin,
+                      lcd: lcd,
+                      device: deviceRepository.device,
+                      onScreenshot: _requestScreenshot,
+                    ),
+                  ),
+                ),
+                _StatusBar(deviceRepository: deviceRepository),
+              ],
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -299,5 +306,52 @@ class _HomeViewState extends ConsumerState<HomeView> {
     } else {
       repo.type = newType;
     }
+  }
+}
+
+/// A thin black status bar below the emulator skin showing device info.
+class _StatusBar extends StatelessWidget {
+  const _StatusBar({required this.deviceRepository});
+
+  final DeviceRepository deviceRepository;
+
+  String get _deviceLabel => switch (deviceRepository.type) {
+    DeviceType.pc1500 => 'PC-1500',
+    DeviceType.pc1500A => 'PC-1500A',
+    DeviceType.pc2 => 'PC-2',
+  };
+
+  String get _ramLabel => switch (deviceRepository.type) {
+    DeviceType.pc1500 || DeviceType.pc2 => '2KB RAM',
+    DeviceType.pc1500A => '6KB RAM',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final bool debugConnected = deviceRepository.device.isDebugClientConnected;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      color: const Color(0xFFBABEC1),
+      child: DefaultTextStyle(
+        style: const TextStyle(
+          color: Color(0xFF666666),
+          fontSize: 11,
+          fontFamily: 'monospace',
+        ),
+        child: Row(
+          children: <Widget>[
+            Text(_deviceLabel),
+            const SizedBox(width: 16),
+            Text(_ramLabel),
+            if (debugConnected) ...<Widget>[
+              const SizedBox(width: 16),
+              const Text('DBG'),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
