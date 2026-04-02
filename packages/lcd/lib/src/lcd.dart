@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:chip_select_decoder/chip_select_decoder.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 
 // Display buffer addresses per TRM p.96 Memory Map IV.
 // Left half:  0x7600-0x764D (chip 1, 8-bit addr, V2).
@@ -20,12 +19,20 @@ const int _symBufLen = 2;
 
 typedef MemoryReadFn = Uint8ClampedList Function(int address, int length);
 
-@immutable
 class LcdSymbols extends Equatable {
-  const LcdSymbols({required this.data}) : assert(data.length == _symBufLen);
+  LcdSymbols({required this.data}) {
+    if (data.length != _symBufLen) {
+      throw ArgumentError.value(
+        data.length,
+        'data.length',
+        'expected $_symBufLen',
+      );
+    }
+  }
 
   final Uint8ClampedList data;
 
+  // Byte 0 (LCDSYM1): DEF | I | II | III | SMALL | SML | SHIFT | BUSY.
   bool get def => (data[0] & 0x80) != 0;
   bool get one => (data[0] & 0x40) != 0;
   bool get two => (data[0] & 0x20) != 0;
@@ -35,6 +42,7 @@ class LcdSymbols extends Equatable {
   bool get shift => (data[0] & 0x02) != 0;
   bool get busy => (data[0] & 0x01) != 0;
 
+  // Byte 1 (LCDSYM2): [unused] | RUN | PRO | RESERVE | [unused] | RAD | G | DE.
   bool get run => (data[1] & 0x40) != 0;
   bool get pro => (data[1] & 0x20) != 0;
   bool get reserve => (data[1] & 0x10) != 0;
@@ -46,15 +54,28 @@ class LcdSymbols extends Equatable {
   List<Object> get props => <Object>[data];
 }
 
-@immutable
 class LcdEvent extends Equatable {
-  const LcdEvent({
+  LcdEvent({
     required this.displayBuffer1,
     required this.displayBuffer2,
     required this.symbols,
     required this.displayOn,
-  }) : assert(displayBuffer1.length == _dispBufLen),
-       assert(displayBuffer2.length == _dispBufLen);
+  }) {
+    if (displayBuffer1.length != _dispBufLen) {
+      throw ArgumentError.value(
+        displayBuffer1.length,
+        'displayBuffer1.length',
+        'expected $_dispBufLen',
+      );
+    }
+    if (displayBuffer2.length != _dispBufLen) {
+      throw ArgumentError.value(
+        displayBuffer2.length,
+        'displayBuffer2.length',
+        'expected $_dispBufLen',
+      );
+    }
+  }
 
   final Uint8ClampedList displayBuffer1;
   final Uint8ClampedList displayBuffer2;
@@ -98,10 +119,7 @@ class Lcd with MemoryObserver {
     required Uint8ClampedList displayBuffer1,
     required Uint8ClampedList displayBuffer2,
     required Uint8ClampedList symbolData,
-  }) : assert(displayBuffer1.length == _dispBufLen),
-       assert(displayBuffer2.length == _dispBufLen),
-       assert(symbolData.length == _symBufLen),
-       _memRead = memRead,
+  }) : _memRead = memRead,
        _displayBuffer1 = displayBuffer1,
        _displayBuffer2 = displayBuffer2,
        _symbolData = symbolData,
@@ -120,6 +138,7 @@ class Lcd with MemoryObserver {
   final StreamController<LcdEvent> _eventCtrl;
   Timer? _debounceTimer;
   bool _dirty = false;
+  bool _disposed = false;
 
   Stream<LcdEvent> get events => _eventCtrl.stream;
 
@@ -133,6 +152,7 @@ class Lcd with MemoryObserver {
 
   @override
   void memoryUpdated(MemoryAccessType type, int address, int value) {
+    if (type != MemoryAccessType.write) return;
     if (address >= _dispBuf1Start && address < _dispBuf1Start + _dispBufLen) {
       _displayBuffer1[address - _dispBuf1Start] = value;
     } else if (address >= _dispBuf2Start &&
@@ -162,6 +182,7 @@ class Lcd with MemoryObserver {
   /// Takes a snapshot of current buffer state and emits it.
   /// Copies the buffers so the event is immutable.
   void _emitSnapshot() {
+    if (_disposed) return;
     _eventCtrl.add(
       LcdEvent(
         displayBuffer1: Uint8ClampedList.fromList(_displayBuffer1),
@@ -185,6 +206,7 @@ class Lcd with MemoryObserver {
   }
 
   void dispose() {
+    _disposed = true;
     _debounceTimer?.cancel();
     _debounceTimer = null;
     _eventCtrl.close();

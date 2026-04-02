@@ -16,6 +16,17 @@ void main() {
   });
 
   group(LcdSymbols, () {
+    test('should reject wrong data length', () {
+      expect(
+        () => LcdSymbols(data: Uint8ClampedList(1)),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        () => LcdSymbols(data: Uint8ClampedList(3)),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
     test('should decode LCDSYM1 bitmask correctly', () {
       // All bits set: DEF, I, II, III, SMALL, SML, SHIFT, BUSY.
       final LcdSymbols allOn = LcdSymbols(
@@ -186,6 +197,19 @@ void main() {
       lcd.dispose();
     });
 
+    test('memoryUpdated should ignore read access type', () async {
+      final Lcd lcd = Lcd(memRead: memRead);
+
+      bool eventReceived = false;
+      lcd.events.listen((_) => eventReceived = true);
+
+      lcd.memoryUpdated(MemoryAccessType.read, 0x7600, 0xFF);
+
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      expect(eventReceived, isFalse);
+      lcd.dispose();
+    });
+
     test('memoryUpdated should ignore addresses outside LCD range', () async {
       final Lcd lcd = Lcd(memRead: memRead);
 
@@ -269,6 +293,16 @@ void main() {
       expect(event.displayBuffer2[0], equals(0xCC));
       expect(event.symbols.def, isTrue);
       lcd.dispose();
+    });
+
+    test('forceRepaint after dispose should not throw', () {
+      final Lcd lcd = Lcd(memRead: memRead);
+      lcd.dispose();
+
+      // Should silently no-op, not throw StateError.
+      lcd.forceRepaint();
+      lcd.emitInitialState();
+      lcd.memoryUpdated(MemoryAccessType.write, 0x7600, 0xFF);
     });
 
     test('dispose() should cancel pending timer', () async {
