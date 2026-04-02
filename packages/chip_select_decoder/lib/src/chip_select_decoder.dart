@@ -38,21 +38,25 @@ class ChipSelectDecoder extends Equatable {
       };
 
   // Flat lookup tables: address → chip. O(1) reads/writes instead of O(n).
-  final List<MemoryChipBase?> _lookupME0 =
-      List<MemoryChipBase?>.filled(bankSize, null);
-  final List<MemoryChipBase?> _lookupME1 =
-      List<MemoryChipBase?>.filled(bankSize, null);
+  final _lookupME0 = List<MemoryChipBase?>.filled(bankSize, null);
+  final _lookupME1 = List<MemoryChipBase?>.filled(bankSize, null);
 
   List<MemoryChipBase> memoryChips(MemoryBank bank) =>
       List.unmodifiable(_memoryBanks[bank]!);
 
   void restoreState(Map<String, dynamic> state) {
     for (final MemoryBank bank in MemoryBank.values) {
-      final String key = bank.toString();
+      final key = bank.toString();
       if (state.containsKey(key)) {
-        final List<Map<String, dynamic>> chips = (state[key] as Iterable)
-            .cast<Map<String, dynamic>>()
-            .toList();
+        final Object? raw = state[key];
+        if (raw is! List) {
+          throw ChipSelectDecoderError(
+            ChipSelectDecoderErrorId.config,
+            'Corrupted save state for $key: expected List',
+          );
+        }
+        final List<Map<String, dynamic>> chips = raw
+            .cast<Map<String, dynamic>>();
         for (final Map<String, dynamic> m in chips) {
           final MemoryChipBase mc = _findMemoryChip(
             _memoryBanks[bank]!,
@@ -185,19 +189,34 @@ class ChipSelectDecoder extends Equatable {
     }
 
     final int addressWithinBank = address & 0xFFFF;
-    final MemoryChipBase? mc = _lookupChip(address);
 
-    if (mc != null &&
-        mc.start <= addressWithinBank &&
-        addressWithinBank + length - 1 <= mc.end) {
-      return mc.readAt(addressWithinBank - mc.start, length);
+    // Reject reads that cross a 64KB bank boundary.
+    if (addressWithinBank + length > bankSize) {
+      throw ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.read,
+        'readAt: read at ${_meHex16(address)} length $length crosses '
+        'bank boundary',
+      );
     }
 
-    throw ChipSelectDecoderError(
-      ChipSelectDecoderErrorId.read,
-      'readAt: could not read from unmapped memory address '
-      '${_meHex16(address)}',
-    );
+    final MemoryChipBase? mc = _lookupChip(address);
+
+    if (mc == null) {
+      throw ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.read,
+        'readAt: unmapped memory address ${_meHex16(address)}',
+      );
+    }
+
+    if (addressWithinBank + length - 1 > mc.end) {
+      throw ChipSelectDecoderError(
+        ChipSelectDecoderErrorId.read,
+        'readAt: read at ${_meHex16(address)} length $length crosses '
+        'chip boundary [${_meHex16(mc.start)}..${_meHex16(mc.end)}]',
+      );
+    }
+
+    return mc.readAt(addressWithinBank - mc.start, length);
   }
 
   int readByteAt(int address) {
@@ -237,8 +256,9 @@ class ChipSelectDecoder extends Equatable {
   }
 
   void _populateLookup(MemoryBank bank, MemoryChipBase chip) {
-    final List<MemoryChipBase?> lookup =
-        bank == MemoryBank.me0 ? _lookupME0 : _lookupME1;
+    final List<MemoryChipBase?> lookup = bank == MemoryBank.me0
+        ? _lookupME0
+        : _lookupME1;
     for (int i = chip.start; i <= chip.end; i++) {
       lookup[i] = chip;
     }

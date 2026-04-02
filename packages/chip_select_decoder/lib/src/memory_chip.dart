@@ -8,16 +8,13 @@ import 'package:roms/roms.dart';
 enum MemoryAccessType { read, write }
 
 mixin MemoryObservable {
-  bool registerObserver(MemoryAccessType type, MemoryObserver observer) =>
-      throw UnimplementedError();
+  bool registerObserver(MemoryAccessType type, MemoryObserver observer);
 
-  void notifyObservers(MemoryAccessType type, int address, int value) =>
-      throw UnimplementedError();
+  void notifyObservers(MemoryAccessType type, int address, int value);
 }
 
 mixin MemoryObserver {
-  void memoryUpdated(MemoryAccessType type, int address, int value) =>
-      throw UnimplementedError();
+  void memoryUpdated(MemoryAccessType type, int address, int value);
 }
 
 abstract class MemoryChipBase extends Equatable with MemoryObservable {
@@ -224,6 +221,12 @@ class MemoryChipRom extends MemoryChipBase {
   }
 }
 
+/// Placeholder for I/O port regions.
+///
+/// Reads always return the initial fill [value]. Writes are accepted (to
+/// allow observer notification for I/O port monitoring) but are intentionally
+/// not stored — this mirrors real hardware where these addresses are
+/// memory-mapped I/O registers, not storage.
 class MemoryChipRomPlaceholder extends MemoryChipBase {
   MemoryChipRomPlaceholder({
     required super.start,
@@ -250,6 +253,7 @@ class MemoryChipRomPlaceholder extends MemoryChipBase {
   @override
   void writeByteAt(int offsetInBytes, int value) {
     _checkOffset(offsetInBytes);
+    // Write is not stored — I/O ports are not backed by memory.
     notifyObservers(MemoryAccessType.write, start + offsetInBytes, value);
   }
 

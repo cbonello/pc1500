@@ -225,17 +225,14 @@ void main() {
 
         cs.appendRAM(MemoryBank.me0, 0, 1024);
 
-        // Invalid addresses.
+        // Invalid addresses (out of range).
         expect(
           () => cs.readByteAt(-1),
           throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
 
-        // Unmapped address.
-        expect(
-          () => cs.readByteAt(2048),
-          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
-        );
+        // Unmapped address returns 0xFF (floating bus).
+        expect(cs.readByteAt(2048), equals(0xFF));
       });
 
       test('should read successfully', () {
@@ -257,17 +254,14 @@ void main() {
 
         cs.appendRAM(MemoryBank.me0, 0, 1024);
 
-        // Invalid addresses.
+        // Invalid addresses (out of range).
         expect(
           () => cs.writeByteAt(-1, 9),
           throwsA(const TypeMatcher<ChipSelectDecoderError>()),
         );
 
-        // Unmapped address.
-        expect(
-          () => cs.writeByteAt(2048, 56),
-          throwsA(const TypeMatcher<ChipSelectDecoderError>()),
-        );
+        // Unmapped address — silently ignored (no effect on real hardware).
+        cs.writeByteAt(2048, 56);
       });
 
       test('should raise an exception for writes to ROMs', () {
