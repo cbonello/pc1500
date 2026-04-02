@@ -26,29 +26,27 @@ class CE150Rom implements RomBase {
     }
 
     _bytes = Uint8List.fromList(rom);
+    _hash = sha1.convert(_bytes);
 
     final String? annotationsStr = _annotationsJson[type];
     if (annotationsStr != null) {
-      try {
-        _annotations =
-            jsonDecode(annotationsStr) as Map<String, dynamic>;
-      } catch (_) {
-        _annotations = <String, dynamic>{};
-      }
+      _annotations = jsonDecode(annotationsStr) as Map<String, dynamic>;
     }
   }
 
   final CE150RomType type;
   late final Uint8List _bytes;
+  late final Digest _hash;
   Map<String, dynamic> _annotations = <String, dynamic>{};
 
-  Map<String, dynamic> get annotations => _annotations;
+  Map<String, dynamic> get annotations =>
+      Map<String, dynamic>.unmodifiable(_annotations);
 
   @override
-  Uint8List get bytes => Uint8List.view(_bytes.buffer);
+  Uint8List get bytes => Uint8List.fromList(_bytes);
 
   @override
-  Digest get hash => sha1.convert(_bytes);
+  Digest get hash => _hash;
 
   static Iterable<CE150RomType> get available => _roms.keys;
 }

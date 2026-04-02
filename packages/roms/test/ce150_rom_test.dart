@@ -30,6 +30,33 @@ void main() {
       expect(rom.annotations.length, greaterThan(0));
     });
 
+    test('bytes should return an independent copy', () {
+      final CE150Rom rom = CE150Rom(CE150RomType.version_1);
+      final Uint8List copy = rom.bytes;
+      final int original = copy[0];
+
+      copy[0] = original ^ 0xFF;
+      expect(rom.bytes[0], equals(original));
+    });
+
+    test('hash should be stable and cached', () {
+      final CE150Rom rom = CE150Rom(CE150RomType.version_1);
+      final Digest h1 = rom.hash;
+      final Digest h2 = rom.hash;
+
+      expect(h1, equals(h2));
+      expect(identical(h1, h2), isTrue);
+    });
+
+    test('annotations should be unmodifiable', () {
+      final CE150Rom rom = CE150Rom(CE150RomType.version_1);
+
+      expect(
+        () => rom.annotations['test'] = 'value',
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
+
     test('available getter should return the available ROM-types', () {
       expect(
           CE150Rom.available, equals(<CE150RomType>[CE150RomType.version_1]));

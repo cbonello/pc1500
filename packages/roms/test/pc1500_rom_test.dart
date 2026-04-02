@@ -31,6 +31,34 @@ void main() {
       expect(rom.annotations.length, greaterThan(0));
     });
 
+    test('bytes should return an independent copy', () {
+      final PC1500Rom rom = PC1500Rom(PC1500RomType.a03);
+      final Uint8List copy = rom.bytes;
+      final int original = copy[0];
+
+      // Mutating the returned bytes should not affect the ROM.
+      copy[0] = original ^ 0xFF;
+      expect(rom.bytes[0], equals(original));
+    });
+
+    test('hash should be stable and cached', () {
+      final PC1500Rom rom = PC1500Rom(PC1500RomType.a03);
+      final Digest h1 = rom.hash;
+      final Digest h2 = rom.hash;
+
+      expect(h1, equals(h2));
+      expect(identical(h1, h2), isTrue);
+    });
+
+    test('annotations should be unmodifiable', () {
+      final PC1500Rom rom = PC1500Rom(PC1500RomType.a03);
+
+      expect(
+        () => rom.annotations['test'] = 'value',
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
+
     test('available getter should return the available ROM-types', () {
       expect(PC1500Rom.available, equals(<PC1500RomType>[PC1500RomType.a03]));
     });

@@ -8,7 +8,7 @@ const String me0RamAnnotationsJson = '''
                 "data": {
                     "764E": {
                         "label": "LCDSYM1",
-                        "comment": "DEF, I, II, II, SMALL, SML, SHIFT and BUSY"
+                        "comment": "DEF, I, II, III, SMALL, SML, SHIFT and BUSY"
                     },
                     "764F": {
                         "label": "LCDSYM2",
