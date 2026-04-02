@@ -182,6 +182,12 @@ class DapServer {
       case 'next':
       case 'stepIn':
         _handleStep(seq, command);
+      case 'stepOut':
+        _handleStepOut(seq, command);
+      case 'evaluate':
+        _handleEvaluate(seq, command, args);
+      case 'setVariable':
+        _handleSetVariable(seq, command, args);
       case 'setInstructionBreakpoints':
         _handleSetInstructionBreakpoints(seq, command, args);
       case 'setBreakpoints':
@@ -219,6 +225,9 @@ class DapServer {
         'supportsInstructionBreakpoints': true,
         'supportsSteppingGranularity': true,
         'supportsSingleThreadExecutionRequests': true,
+        'supportsSetVariable': true,
+        'supportsEvaluateForHovers': true,
+        'supportsStepBack': false,
       },
     );
     _sendEvent('initialized');
@@ -365,6 +374,193 @@ class DapServer {
     _emulator.stepSingle();
     _sendResponse(seq, command);
     notifyStopped('step');
+  }
+
+  /// Steps out of the current subroutine by running until RTN (0x9A) or
+  /// RTI (0x8A) is executed. Capped at 100 000 instructions to avoid
+  /// hanging if the code never returns.
+  void _handleStepOut(int seq, String command) {
+    const int maxSteps = 100000;
+    for (int i = 0; i < maxSteps; i++) {
+      final int pc = _emulator.pc;
+      final int opcode = _emulator.memReadForTest(pc);
+      _emulator.stepSingle();
+      // RTN = 0x9A, RTI = 0x8A — stop AFTER executing the return.
+      if (opcode == 0x9A || opcode == 0x8A) break;
+      // Also stop on breakpoints.
+      if (_emulator.breakpoints.contains(_emulator.pc)) break;
+    }
+    _sendResponse(seq, command);
+    notifyStopped('step');
+  }
+
+  /// Evaluates an expression in the debug console.
+  ///
+  /// Supports:
+  /// - Register names: A, X, Y, U, S, P, C, Z, V, H, IE, HLT
+  /// - Memory reads: [addr] or [addr:count] (hex, e.g. [7600] or [C000:10])
+  /// - Hex literals: $FF, 0xFF
+  void _handleEvaluate(int seq, String command, Map<String, Object?> args) {
+    final String expr = (args['expression'] as String? ?? '').trim();
+
+    // Register lookup.
+    final LH5801State state = _emulator.cpuState;
+    final String upper = expr.toUpperCase();
+    String? result;
+
+    switch (upper) {
+      case 'A':
+        result = _fmtReg(state.a.value, 8);
+      case 'X':
+        result = _fmtReg(state.x.value, 16);
+      case 'Y':
+        result = _fmtReg(state.y.value, 16);
+      case 'U':
+        result = _fmtReg(state.u.value, 16);
+      case 'S':
+        result = _fmtReg(state.s.value, 16);
+      case 'P' || 'PC':
+        result = _fmtReg(state.p.value, 16);
+      case 'C':
+        result = state.t.c ? '1' : '0';
+      case 'Z':
+        result = state.t.z ? '1' : '0';
+      case 'V':
+        result = state.t.v ? '1' : '0';
+      case 'H':
+        result = state.t.h ? '1' : '0';
+      case 'IE':
+        result = state.t.ie ? '1' : '0';
+      case 'HLT':
+        result = state.hlt ? '1' : '0';
+    }
+    if (result != null) {
+      _sendResponse(seq, command, body: {'result': result, 'variablesReference': 0});
+      return;
+    }
+
+    // Memory read: [addr] or [addr:count]
+    final RegExp memRe = RegExp(r'^\[([0-9a-fA-F]+)(?::(\d+))?\]$');
+    final Match? memMatch = memRe.firstMatch(expr);
+    if (memMatch != null) {
+      final int addr = int.parse(memMatch.group(1)!, radix: 16);
+      final int count = int.parse(memMatch.group(2) ?? '1');
+      final StringBuffer sb = StringBuffer();
+      for (int i = 0; i < count; i++) {
+        if (i > 0) sb.write(' ');
+        sb.write(
+          _emulator
+              .memReadForTest((addr + i) & 0x1FFFF)
+              .toRadixString(16)
+              .padLeft(2, '0')
+              .toUpperCase(),
+        );
+      }
+      _sendResponse(seq, command, body: {'result': sb.toString(), 'variablesReference': 0});
+      return;
+    }
+
+    // Hex literal: $FF or 0xFF
+    final RegExp hexRe = RegExp(r'^(?:\$|0x)([0-9a-fA-F]+)$');
+    final Match? hexMatch = hexRe.firstMatch(expr);
+    if (hexMatch != null) {
+      final int val = int.parse(hexMatch.group(1)!, radix: 16);
+      _sendResponse(seq, command, body: {'result': '$val', 'variablesReference': 0});
+      return;
+    }
+
+    _sendResponse(
+      seq,
+      command,
+      success: false,
+      message: 'Unknown expression: $expr',
+    );
+  }
+
+  String _fmtReg(int value, int bits) {
+    final String hex =
+        value.toRadixString(16).padLeft(bits ~/ 4, '0').toUpperCase();
+    return '\$$hex ($value)';
+  }
+
+  /// Sets a register or flag variable from the Variables pane.
+  void _handleSetVariable(int seq, String command, Map<String, Object?> args) {
+    final String name = (args['name'] as String? ?? '').trim();
+    final String valueStr = (args['value'] as String? ?? '').trim();
+
+    // Parse value: accept hex ($FF, 0xFF, FFh) or decimal.
+    final int? newValue = _parseValue(valueStr);
+    if (newValue == null) {
+      _sendResponse(
+        seq,
+        command,
+        success: false,
+        message: 'Invalid value: $valueStr',
+      );
+      return;
+    }
+
+    final cpu = _emulator.cpuDirect;
+    String? displayValue;
+
+    switch (name) {
+      case 'A':
+        cpu.a.value = newValue;
+        displayValue = _fmtReg(cpu.a.value, 8);
+      case 'X':
+        cpu.x.value = newValue;
+        displayValue = _fmtReg(cpu.x.value, 16);
+      case 'Y':
+        cpu.y.value = newValue;
+        displayValue = _fmtReg(cpu.y.value, 16);
+      case 'U':
+        cpu.u.value = newValue;
+        displayValue = _fmtReg(cpu.u.value, 16);
+      case 'S':
+        cpu.s.value = newValue;
+        displayValue = _fmtReg(cpu.s.value, 16);
+      case 'P':
+        cpu.p.value = newValue;
+        displayValue = _fmtReg(cpu.p.value, 16);
+      case 'C (Carry)':
+        cpu.t.c = newValue != 0;
+        displayValue = cpu.t.c ? '1' : '0';
+      case 'Z (Zero)':
+        cpu.t.z = newValue != 0;
+        displayValue = cpu.t.z ? '1' : '0';
+      case 'V (Overflow)':
+        cpu.t.v = newValue != 0;
+        displayValue = cpu.t.v ? '1' : '0';
+      case 'H (Half-carry)':
+        cpu.t.h = newValue != 0;
+        displayValue = cpu.t.h ? '1' : '0';
+      case 'IE (Interrupt)':
+        cpu.t.ie = newValue != 0;
+        displayValue = cpu.t.ie ? '1' : '0';
+      default:
+        _sendResponse(
+          seq,
+          command,
+          success: false,
+          message: 'Cannot set variable: $name',
+        );
+        return;
+    }
+
+    _sendResponse(seq, command, body: {'value': displayValue, 'variablesReference': 0});
+  }
+
+  int? _parseValue(String s) {
+    // $FF or 0xFF
+    final RegExp hexRe = RegExp(r'^(?:\$|0x)([0-9a-fA-F]+)$');
+    final Match? hexMatch = hexRe.firstMatch(s);
+    if (hexMatch != null) return int.tryParse(hexMatch.group(1)!, radix: 16);
+    // FFh
+    if (s.endsWith('h') || s.endsWith('H')) {
+      return int.tryParse(s.substring(0, s.length - 1), radix: 16);
+    }
+    // Plain decimal or hex without prefix
+    return int.tryParse(s) ?? int.tryParse(s, radix: 16);
   }
 
   void _handleSetInstructionBreakpoints(

@@ -369,6 +369,9 @@ class Emulator {
   /// Snapshot of CPU register and flag state (cloned).
   LH5801State get cpuState => _cpu.state;
 
+  /// Direct mutable access to CPU registers (for DAP setVariable).
+  LH5801State get cpuDirect => _cpu.cpu;
+
   /// Current CPU pin state.
   LH5801Pins get cpuPins => _cpu.pins;
 
