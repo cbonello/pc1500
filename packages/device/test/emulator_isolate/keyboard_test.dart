@@ -118,10 +118,11 @@ void main() {
       });
     });
 
-    // Each queued key occupies 2 ticks total:
-    //   tick N:   dequeue key, add to pressed, holdFrames = 1
-    //   tick N+1: holdFrames = 0 (still held)
-    //   tick N+2: cleanup key (removed from pressed), dequeue next
+    // With _minHoldFrames = 2, each queued key occupies 3 ticks:
+    //   tick N:   dequeue key, add to pressed, holdFrames = 2
+    //   tick N+1: holdFrames = 1 (still held)
+    //   tick N+2: holdFrames = 0 (still held)
+    //   tick N+3: cleanup key (removed from pressed), dequeue next
     group('key queue', () {
       test('queued key should be re-injected after release', () {
         final Keyboard kb = Keyboard();
@@ -135,13 +136,16 @@ void main() {
         final Keyboard kb = Keyboard();
         kb.keyDown('a');
         kb.keyUp('a');
-        // Tick 1: dequeue 'a'.
+        // Tick 1: dequeue 'a', holdFrames = 2.
         kb.tickKeyQueue();
         expect(kb.debugPressedKeys, contains('a'));
-        // Tick 2: hold (holdFrames=0).
+        // Tick 2: holdFrames = 1.
         kb.tickKeyQueue();
         expect(kb.debugPressedKeys, contains('a'));
-        // Tick 3: cleanup 'a' — removed.
+        // Tick 3: holdFrames = 0 (still held).
+        kb.tickKeyQueue();
+        expect(kb.debugPressedKeys, contains('a'));
+        // Tick 4: cleanup 'a' — removed.
         kb.tickKeyQueue();
         expect(kb.debugPressedKeys, isNot(contains('a')));
       });
@@ -155,8 +159,8 @@ void main() {
         // Only one 'a' queued.
         kb.tickKeyQueue(); // dequeue 'a'
         expect(kb.debugPressedKeys, contains('a'));
-        kb.tickKeyQueue(); // hold
-        kb.tickKeyQueue(); // hold
+        kb.tickKeyQueue(); // hold (1)
+        kb.tickKeyQueue(); // hold (0)
         kb.tickKeyQueue(); // cleanup 'a'
         // No more entries.
         kb.tickKeyQueue();
@@ -173,10 +177,12 @@ void main() {
         // Queue: ['a', 'b', 'a'].
         kb.tickKeyQueue(); // dequeue 'a'
         expect(kb.debugPressedKeys, contains('a'));
-        kb.tickKeyQueue(); // hold
+        kb.tickKeyQueue(); // hold (1)
+        kb.tickKeyQueue(); // hold (0)
         kb.tickKeyQueue(); // cleanup 'a', dequeue 'b'
         expect(kb.debugPressedKeys, contains('b'));
-        kb.tickKeyQueue(); // hold
+        kb.tickKeyQueue(); // hold (1)
+        kb.tickKeyQueue(); // hold (0)
         kb.tickKeyQueue(); // cleanup 'b', dequeue second 'a'
         expect(kb.debugPressedKeys, contains('a'));
       });
@@ -190,15 +196,17 @@ void main() {
         kb.keyDown('c');
         kb.keyUp('c');
 
-        // 'a': ticks 1-2
+        // 'a': ticks 1-3
         kb.tickKeyQueue(); // dequeue 'a'
         expect(kb.scanIN(0x40, 0x00) & 0x08, equals(0)); // 'a' at PA6/IN3
-        kb.tickKeyQueue(); // hold
-        // 'b': ticks 3-4
+        kb.tickKeyQueue(); // hold (1)
+        kb.tickKeyQueue(); // hold (0)
+        // 'b': ticks 4-6
         kb.tickKeyQueue(); // cleanup 'a', dequeue 'b'
         expect(kb.scanIN(0x80, 0x00) & 0x40, equals(0)); // 'b' at PA7/IN6
-        kb.tickKeyQueue(); // hold
-        // 'c': ticks 5-6
+        kb.tickKeyQueue(); // hold (1)
+        kb.tickKeyQueue(); // hold (0)
+        // 'c': ticks 7-9
         kb.tickKeyQueue(); // cleanup 'b', dequeue 'c'
         expect(kb.scanIN(0x10, 0x00) & 0x40, equals(0)); // 'c' at PA4/IN6
       });
@@ -212,8 +220,8 @@ void main() {
         // Both still in queue.
         kb.tickKeyQueue(); // dequeue 'a'
         expect(kb.debugPressedKeys, contains('a'));
-        kb.tickKeyQueue(); // hold
-        kb.tickKeyQueue(); // hold
+        kb.tickKeyQueue(); // hold (1)
+        kb.tickKeyQueue(); // hold (0)
         kb.tickKeyQueue(); // cleanup 'a', dequeue 'b'
         expect(kb.debugPressedKeys, contains('b'));
       });
@@ -225,7 +233,7 @@ void main() {
         }
         // Queue should be capped at 16. Drain and count injections.
         int injections = 0;
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 400; i++) {
           final bool wasFull = kb.debugPressedKeys.isNotEmpty;
           kb.tickKeyQueue();
           final bool isFull = kb.debugPressedKeys.isNotEmpty;

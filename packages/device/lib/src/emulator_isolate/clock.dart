@@ -28,6 +28,9 @@ class Clock {
   /// Current frames-per-second target.
   int get fps => _fps;
 
+  /// CPU cycles allocated per frame at the current [fps].
+  int get cyclesPerFrame => _cyclesPerFrame;
+
   /// Wall-clock duration of one frame at the current [fps].
   Duration get frameDuration =>
       Duration(microseconds: (1000000 / _fps).round());

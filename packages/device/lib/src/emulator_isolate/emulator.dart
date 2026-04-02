@@ -209,6 +209,13 @@ class Emulator {
     // Wake the CPU from HLT when a key is pressed.
     if (result != 0xFF) {
       _pc1500IO.triggerIRQ();
+      // Reset the ROM's key-repeat delay counter at $7B09 so the key
+      // is accepted on the next scan instead of waiting ~160 frames
+      // for the counter to overflow. On real hardware, IF1 (PB7 timer)
+      // gates the fast scan path which resets this counter. We can't
+      // set IF1 in the emulator (it interferes with the IR2 handler's
+      // CE-150 path), so we poke the counter directly.
+      _memWrite(0x7B09, 0xFE);
     }
     // ON key: connected to PB7 of PC-1500 I/O.
     // Sets IF1 (PB7 flag) and triggers IRQ to wake CPU via IR2.
@@ -732,12 +739,6 @@ class Emulator {
   void _executeFrame() {
     if (!_running) return;
 
-    // The ROM's cold start fully initialises all system variables and the
-    // BASIC program area, then enters the main loop (SIE + HLT at $E2A8).
-    // Undefined opcodes in unmapped memory ($FF) are treated as NOPs by
-    // the LH5801, which lets the cold start recover from a corrupt RTN
-    // through the CE-150 address space. The timer IRQ wakes the CPU from
-    // HLT naturally since the ROM enables interrupts before halting.
     if (!_coldStartDone && _cpu.cpu.hlt) {
       _coldStartDone = true;
     }
@@ -746,13 +747,11 @@ class Emulator {
     // to drive the ROM's main loop (keyboard scan, display refresh).
     _pc1500IO.triggerIRQ();
 
-    // Set IF1 (timer interrupt flag) for the ROM's timer handler at E1EA.
     final DateTime frameStart = DateTime.now();
     final Duration frameBudget = _clock.frameDuration;
 
     while (_running && !_paused) {
       final int cycles = step();
-      // Check for DAP breakpoints (O(1) hash lookup, skipped when empty).
       if (breakpoints.isNotEmpty && breakpoints.contains(_cpu.cpu.p.value)) {
         _paused = true;
         dapServer?.notifyStopped('breakpoint');
