@@ -7,6 +7,16 @@ import 'package:pc1500/src/repositories/systems/models/models.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('Sharp PC-1500 Skin', () {
+    test('Parses pc1500.json successfully', () async {
+      final File file = File('assets/systems/pc1500.json');
+      final dynamic json = jsonDecode(await file.readAsString());
+      final SkinModel skin = SkinModel.fromJson(json as Map<String, dynamic>);
+      expect(skin.keyColors.length, greaterThan(0));
+      checkSkin(skin);
+    });
+  });
+
   group('Sharp PC-1500A Skin', () {
     test('Parses pc1500a.json successfully', () async {
       final File file = File('assets/systems/pc1500a.json');

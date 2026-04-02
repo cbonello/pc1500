@@ -278,7 +278,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
   void _switchDevice(DeviceRepository repo, DeviceType newType) {
     if (repo.type == newType) return;
 
-    if (!repo.canSafelySwitchDevices(newType)) {
+    if (!repo.canSafelySwitchTo(newType)) {
       showDialog<bool>(
         context: context,
         builder: (BuildContext ctx) => AlertDialog(

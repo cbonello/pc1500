@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:device/device.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
 /// Plays buzzer tones from [BuzzerEventMsg]s using in-memory WAV buffers.
@@ -28,7 +27,7 @@ class Buzzer {
     _playing = true;
     while (_queue.isNotEmpty) {
       final BuzzerEventMsg event = _queue.removeAt(0);
-      final Uint8List wav = _generateSquareWav(
+      final Uint8List wav = generateSquareWav(
         event.frequencyHz,
         event.durationMs,
       );
@@ -52,7 +51,8 @@ class Buzzer {
   }
 
   /// Generates a 16-bit mono PCM WAV at 44100 Hz with a square wave.
-  static Uint8List _generateSquareWav(double freqHz, double durationMs) {
+  @visibleForTesting
+  static Uint8List generateSquareWav(double freqHz, double durationMs) {
     const int sampleRate = 44100;
     const int bitsPerSample = 16;
     const int numChannels = 1;

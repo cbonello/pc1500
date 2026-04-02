@@ -14,10 +14,24 @@ import 'package:pc1500/src/repositories/repositories.dart';
 ///
 /// [DeviceType.pc2] is not yet supported and falls back to
 /// [HardwareDeviceType.pc1500].
-HardwareDeviceType _getHardwareDevice(DeviceType type) => switch (type) {
+@visibleForTesting
+HardwareDeviceType getHardwareDevice(DeviceType type) => switch (type) {
   DeviceType.pc1500A => HardwareDeviceType.pc1500A,
   DeviceType.pc1500 || DeviceType.pc2 => HardwareDeviceType.pc1500,
 };
+
+/// Returns whether switching from [currentType] to [newType] can be done
+/// without losing the user's BASIC program.
+///
+/// Switching between models with different RAM sizes (e.g. PC-1500 ↔ PC-1500A)
+/// clears the program area.
+@visibleForTesting
+bool canSafelySwitchDevices(DeviceType currentType, DeviceType newType) {
+  if (currentType == DeviceType.pc1500A || newType == DeviceType.pc1500A) {
+    return false;
+  }
+  return true;
+}
 
 /// Maximum state file size (1 MB). Files larger than this are rejected
 /// to guard against corrupt or maliciously crafted data.
@@ -62,7 +76,7 @@ class DeviceRepository with ChangeNotifier, WidgetsBindingObserver {
   }) : _ref = ref,
        _type = type,
        _buzzer = Buzzer(),
-       device = Device(type: _getHardwareDevice(type), debugPort: debugPort) {
+       device = Device(type: getHardwareDevice(type), debugPort: debugPort) {
     _buzzerSub = _buzzer.listen(device.buzzerEvents);
     _powerStateSub = device.powerState.listen(_onPowerStateChanged);
     WidgetsBinding.instance.addObserver(this);
@@ -100,24 +114,14 @@ class DeviceRepository with ChangeNotifier, WidgetsBindingObserver {
     if (_type != newType) {
       _type = _ref.read(deviceTypeRepositoryProvider).deviceType = newType;
       // Fire-and-forget: the emulator restarts asynchronously.
-      device.updateHardwareDeviceType(_getHardwareDevice(newType));
+      device.updateHardwareDeviceType(getHardwareDevice(newType));
       notifyListeners();
     }
   }
 
-  /// Returns whether switching from the current type to [newType] can be done
-  /// without losing the user's BASIC program.
-  ///
-  /// Switching between models with different RAM sizes (e.g. PC-1500 ↔ PC-1500A)
-  /// clears the program area. Returns `false` if either the current or target
-  /// type is PC-1500A (6KB RAM vs 2KB).
-  bool canSafelySwitchDevices(DeviceType newType) {
-    if (_type == DeviceType.pc1500A || newType == DeviceType.pc1500A) {
-      return false;
-    }
-
-    return true;
-  }
+  /// Delegates to the top-level [canSafelySwitchDevices] with the current type.
+  bool canSafelySwitchTo(DeviceType newType) =>
+      canSafelySwitchDevices(_type, newType);
 
   // ── State persistence ──────────────────────────────────────────────
 
