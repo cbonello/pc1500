@@ -18,6 +18,10 @@ void main() {
       expect(basicTokens['GOSUB'], 0xF194);
       expect(basicTokens['RETURN'], 0xF199);
       expect(basicTokens['REM'], 0xF1AB);
+      expect(basicTokens['DATA'], 0xF1A9);
+      expect(basicTokens['PI'], 0xF15D);
+      expect(basicTokens['AREAD'], 0xF180);
+      expect(basicTokens['POINT'], 0xF168);
     });
   });
 
@@ -68,6 +72,31 @@ void main() {
       expect(result[5], 0x54); // T
       expect(result[6], 0x41); // A
       expect(result[7], 0x4C); // L
+    });
+
+    test('unterminated string literal is accepted', () {
+      // PC-1500 allows omitting the closing quote at end-of-line.
+      final List<int> result = tokenizeLine('PRINT "ABCD');
+      expect(result[0], 0xF0); // PRINT
+      expect(result[1], 0x97);
+      expect(result[2], 0x20); // space
+      expect(result[3], 0x22); // "
+      expect(result[4], 0x41); // A
+      expect(result[5], 0x42); // B
+      expect(result[6], 0x43); // C
+      expect(result[7], 0x44); // D
+      expect(result.length, 8); // no closing quote
+    });
+
+    test('rejects non-ASCII characters', () {
+      expect(
+        () => tokenizeLine('PRINT é'),
+        throwsA(isA<FormatException>()),
+      );
+      expect(
+        () => tokenizeLine('PRINT "café"'),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test('IF THEN with expression', () {

@@ -78,7 +78,12 @@ CompilerResult compile(String source) {
         ? numEnd + 1
         : numEnd;
     final String code = raw.substring(codeStart);
-    final List<int> tokenized = tokenizeLine(code);
+    final List<int> tokenized;
+    try {
+      tokenized = tokenizeLine(code);
+    } on FormatException catch (e) {
+      throw CompilerError(i + 1, e.message);
+    }
 
     // Length = tokenized bytes + 1 for the 0x0D terminator.
     final int length = tokenized.length + 1;

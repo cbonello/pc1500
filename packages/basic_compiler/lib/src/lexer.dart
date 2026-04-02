@@ -14,11 +14,18 @@ List<int> tokenizeLine(String line) {
 
   while (pos < line.length) {
     // String literal — pass through verbatim.
+    // A closing quote is optional at end-of-line (PC-1500 accepts both forms).
     if (line[pos] == '"') {
       bytes.add(0x22);
       pos++;
       while (pos < line.length && line[pos] != '"') {
-        bytes.add(line.codeUnitAt(pos) & 0x7F);
+        final int cu = line.codeUnitAt(pos);
+        if (cu > 0x7F) {
+          throw FormatException(
+            'Non-ASCII character in string literal at column ${pos + 1}',
+          );
+        }
+        bytes.add(cu);
         pos++;
       }
       if (pos < line.length) {
@@ -58,7 +65,13 @@ List<int> tokenizeLine(String line) {
     }
 
     // Default: emit as raw ASCII (7-bit, PC-1500 charset).
-    bytes.add(line.codeUnitAt(pos) & 0x7F);
+    final int cu = line.codeUnitAt(pos);
+    if (cu > 0x7F) {
+      throw FormatException(
+        'Non-ASCII character at column ${pos + 1}',
+      );
+    }
+    bytes.add(cu);
     pos++;
   }
 
