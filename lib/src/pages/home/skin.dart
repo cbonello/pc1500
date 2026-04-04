@@ -142,9 +142,15 @@ class _SkinState extends State<Skin> {
     );
   }
 
-  /// Maps physical keyboard keys to emulator key names.
-  static final Map<LogicalKeyboardKey, String> _physicalKeyMap =
-      <LogicalKeyboardKey, String>{
+  static final Map<LogicalKeyboardKey, String> _physicalKeyMap = physicalKeyMap;
+}
+
+/// Maps physical keyboard keys to emulator key names.
+///
+/// Escape is handled separately in the KeyboardListener (maps to ON/BREAK).
+@visibleForTesting
+final Map<LogicalKeyboardKey, String> physicalKeyMap =
+    <LogicalKeyboardKey, String>{
         LogicalKeyboardKey.f1: 'f1',
         LogicalKeyboardKey.f2: 'f2',
         LogicalKeyboardKey.f3: 'f3',
@@ -216,7 +222,6 @@ class _SkinState extends State<Skin> {
         LogicalKeyboardKey.delete: 'clear',
         LogicalKeyboardKey.backspace: 'clear',
       };
-}
 
 /// A single key button on the skin, with press/release visual feedback.
 class _KeyButton extends StatelessWidget {

@@ -309,22 +309,26 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 }
 
+/// Returns the display name for a [DeviceType].
+@visibleForTesting
+String deviceLabel(DeviceType type) => switch (type) {
+  DeviceType.pc1500 => 'PC-1500',
+  DeviceType.pc1500A => 'PC-1500A',
+  DeviceType.pc2 => 'PC-2',
+};
+
+/// Returns the RAM size label for a [DeviceType].
+@visibleForTesting
+String ramLabel(DeviceType type) => switch (type) {
+  DeviceType.pc1500 || DeviceType.pc2 => '2KB RAM',
+  DeviceType.pc1500A => '6KB RAM',
+};
+
 /// A thin black status bar below the emulator skin showing device info.
 class _StatusBar extends StatelessWidget {
   const _StatusBar({required this.deviceRepository});
 
   final DeviceRepository deviceRepository;
-
-  String get _deviceLabel => switch (deviceRepository.type) {
-    DeviceType.pc1500 => 'PC-1500',
-    DeviceType.pc1500A => 'PC-1500A',
-    DeviceType.pc2 => 'PC-2',
-  };
-
-  String get _ramLabel => switch (deviceRepository.type) {
-    DeviceType.pc1500 || DeviceType.pc2 => '2KB RAM',
-    DeviceType.pc1500A => '6KB RAM',
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -342,9 +346,9 @@ class _StatusBar extends StatelessWidget {
         ),
         child: Row(
           children: <Widget>[
-            Text(_deviceLabel),
+            Text(deviceLabel(deviceRepository.type)),
             const SizedBox(width: 16),
-            Text(_ramLabel),
+            Text(ramLabel(deviceRepository.type)),
             if (debugConnected) ...<Widget>[
               const SizedBox(width: 16),
               const Text('DBG'),
