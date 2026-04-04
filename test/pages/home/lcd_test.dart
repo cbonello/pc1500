@@ -110,8 +110,6 @@ void main() {
         0x00,
         xStart1: 10,
         xStart2: 20,
-        pxWidth: 2,
-        pxGap: 1,
       );
 
       expect(result.on.length, equals(2));
