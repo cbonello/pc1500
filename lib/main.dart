@@ -31,7 +31,7 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: <Override>[
+      overrides: [
         localStorageRepositoryProvider.overrideWithValue(
           LocalStorageRepository(sharedPreferences: sharedPreferences),
         ),
